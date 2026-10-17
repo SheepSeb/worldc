@@ -668,6 +668,9 @@ def build_scene_graph(seed, kit, F, S, goals, hazards, robot, lighting, cams, ch
 
 
 def main(argv=None):
+    from .isaac_env import gate_or_exit
+
+    gate_or_exit()
     ap = argparse.ArgumentParser(description="Generate a procedural Isaac Sim warehouse (USD + scene graph).")
     ap.add_argument("--seed", type=int, nargs="+", default=[0])
     ap.add_argument("--out", default="warehouse_out")

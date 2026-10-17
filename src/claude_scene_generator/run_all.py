@@ -109,6 +109,9 @@ def write_md(out: Path, summaries, results):
 
 
 def main(argv=None):
+    from .isaac_env import gate_or_exit
+
+    gate_or_exit()
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     ap.add_argument("--out", default=str(ROOT / "warehouse_out"))

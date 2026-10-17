@@ -1,0 +1,82 @@
+spec_version: "1.0"
+name: warehouse_lite
+description: Small warehouse with two rack rows, a packing belt, a forklift loop and loose cartons.
+environment:
+  kind: indoor
+  footprint: {type: rect, size: [20, 14]}
+  height: 7.0
+  apron_depth: 4.0
+  walls:
+    openings:
+      - {id: dock_0, wall: south, center: -5, width: 3.0, height: 3.2, door: rollup_door}
+      - {id: side, wall: west, center: 3, width: 1.15, height: 2.24, door: swing_door}
+zones:
+  - {id: staging, rect: [-9, -6.5, -1, -4], tags: [dock], marking: outline}
+  - {id: packing, rect: [4, 1, 9.5, 6.5], tags: [packing], marking: outline}
+  - {id: main_aisle, rect: [-9.5, -3.5, 9.5, -1.5], keep_clear: true}
+objects:
+  - id: racks
+    asset: rack_row
+    count: 4
+    params: {segments: [[-1.0, 4.4]], bays_per_segment: 2, levels: [0.2, 1.8, 3.4]}
+    placement: {layout: {type: rack_aisles, aisles: 2, aisle_width: 3.2, start_x: -9.4}}
+  - id: rack_pallets
+    asset: pallet_load
+    params:
+      variant: {choice: [boxes, wrapped, totes, empty], p: [0.55, 0.28, 0.08, 0.09]}
+      box_size: {choice: [[0.3, 0.25, 0.2], [0.4, 0.3, 0.25]]}
+      max_load_height: 1.1
+    placement:
+      fill: {anchors: "racks.*.slot_*", probability: {by: level, values: {0: 0.6, 1: 0.45, 2: 0.4}}}
+    yaw: aligned
+    jitter: {xy: 0.01, yaw: 1.0}
+  - id: staged_loads
+    asset: pallet_load
+    count: [3, 5]
+    params: {variant: {choice: [boxes, wrapped]}, full: true}
+    placement: {inside: staging}
+    yaw: {range: [-3, 3]}
+  - id: belt
+    asset: conveyor_belt
+    params: {length: 4.0, speed: 0.5}
+    placement: {pose: {xy: [6.0, 3.5], yaw: 0}}
+  - id: belt_cartons
+    asset: cardboard_box
+    count: 2
+    params: {size: {choice: [[0.3, 0.25, 0.2], [0.4, 0.3, 0.25]]}}
+    placement: {on: belt.surface}
+  - id: table
+    asset: work_table
+    placement: {next_to: {target: belt, side: right, gap: 0.8}}
+  - id: loose_cartons
+    asset: cardboard_box
+    count: [4, 8]
+    params: {size: {choice: [[0.3, 0.2, 0.2], [0.5, 0.4, 0.3], [0.6, 0.4, 0.25]]}}
+    placement: {inside: [staging, packing]}
+    yaw: random
+  - id: cones
+    asset: traffic_cone
+    count: 2
+    placement: {near: {target: [-5.0, -5.0], radius: 1.5}}
+agents:
+  - id: forklift
+    asset: forklift_proxy
+    path: {waypoints: [[-8, -2.5], [8, -2.5]], mode: pingpong, speed: 0.8}
+    keep_clear_width: 1.4
+  - id: worker
+    asset: human_proxy
+    path: {waypoints: [[3, -6], [3, 6]], speed: 0.9}
+robot:
+  spawn: {pose: {xy: [8.0, -5.5], yaw: 180}}
+  footprint_radius: 0.38
+  nav_goals:
+    - {id: pick_0, type: pick, target: "racks.1.slot_s0_b0_p0_L1", approach: front, distance: 0.95}
+    - {id: belt_infeed, type: packing, target: belt.infeed, approach: port}
+    - {id: dock, type: dock, target: env.opening_dock_0, distance: 1.5}
+constraints:
+  - {type: no_overlap, margin: 0.02}
+  - {type: reachable, from: robot.spawn, to: ["*"]}
+cameras:
+  - {id: overhead, mode: top_down, position: [0, 0, 18], focal_mm: 10.5, hide: [roof]}
+  - {id: aisle, position: [-6.0, -3.0, 1.7], look_at: [-6.0, 5.0, 2.0], focal_mm: 14}
+lighting: {preset: bright_day}

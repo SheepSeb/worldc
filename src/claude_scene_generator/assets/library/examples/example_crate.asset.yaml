@@ -1,0 +1,28 @@
+id: example_crate
+description: Small open-top plastic crate (0.6 x 0.4 x 0.3 m), dynamic, convex-hull
+  compound collider.
+tags: [crate, plastic, container]
+source: example_crate.usd
+up_axis: Z
+meters_per_unit: 1.0
+original: {up_axis: Z, meters_per_unit: 1.0}
+bounds:
+  min: [-0.3, -0.2, 0.0]
+  max: [0.3, 0.2, 0.3]
+footprint:
+- [-0.3, -0.2]
+- [0.3, -0.2]
+- [0.3, 0.2]
+- [-0.3, 0.2]
+mass_kg: 3.0
+material: plastic
+body: dynamic
+collision: {type: convex_hulls, file: example_crate.collision.usd, n_hulls: 8}
+anchors: []
+thumbnail: example_crate.png
+provenance:
+  original_file: example_crate.stl
+  sha256: a3c327f4ac9d27c4220f2a1f857dd41f98fc87e082a0d7e5e11a0fb69bd81621
+  importer_version: '1'
+  decomposition: coacd
+  warnings: []

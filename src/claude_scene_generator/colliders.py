@@ -8,6 +8,8 @@ from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
 from .geom import OBB
 
+NAMESPACES = ("scene", "warehouse", "plant")  # attribute namespaces written by Kit.tag (current + legacy)
+
 
 @dataclass
 class Collider:
@@ -18,7 +20,7 @@ class Collider:
     shape: str
     category: str
     is_mesh: bool = False
-    group: str = ""  # articulation id (plant:art); colliders of one group never collide with each other
+    group: str = ""  # articulation id (<ns>:art); colliders of one group never collide with each other
 
 
 def _owner(prim):
@@ -85,13 +87,13 @@ def collect(stage: Usd.Stage, only_enabled=True) -> list[Collider]:
             kin = bool(ka.Get()) if ka else False
         cat, grp = "", ""
         p = own or prim
-        for ns in ("warehouse", "plant"):
+        for ns in NAMESPACES:
             a = p.GetAttribute(f"{ns}:category")
             if a and a.HasValue():
                 cat = a.Get()
-        a = p.GetAttribute("plant:art")
-        if a and a.HasValue():
-            grp = a.Get()
+            a = p.GetAttribute(f"{ns}:art")
+            if a and a.HasValue():
+                grp = a.Get()
         out.append(Collider(prim.GetPath().pathString, own.GetPath().pathString if own else None, kin, obb,
                             prim.GetTypeName(), cat, prim.GetTypeName() == "Mesh", grp))
     return out
