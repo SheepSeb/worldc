@@ -1,13 +1,13 @@
-# Worldc
+# worldc
 
-**Describe a place. Get a simulation-ready environment you can verify.**
+**A compiler for physical worlds.** Describe a place; get a simulation-ready environment you can verify.
 
-Worldc lets an LLM agent build [Isaac Sim](https://developer.nvidia.com/isaac/sim) environments from a plain-language request,
-and proves the result is correct. The agent writes a short declarative *scene spec*; Worldc validates it, solves the layout,
+worldc lets an LLM agent build [Isaac Sim](https://developer.nvidia.com/isaac/sim) environments from a plain-language request,
+and proves the result is correct. The agent writes a short declarative *scene spec*; worldc validates it, solves the layout,
 builds the USD scene, checks geometry, navigation and physics, and renders it in Isaac Sim. When something is wrong, the agent gets a
 precise, actionable error instead of a silent mistake, so it fixes the scene instead of guessing.
 
-[![Worldc demo](docs/media/worldc_demo_poster.png)](docs/media/worldc_demo.mp4)
+[![worldc demo](docs/media/worldc_demo_poster.png)](docs/media/worldc_demo.mp4)
 
 ## What you get
 
@@ -29,7 +29,7 @@ From one request, with the same spec and seed always producing the same scene:
                                          │
                                          ▼
                 ┌───────────────────┐   tools (MCP)    ┌──────────────────────────────┐
-                │     LLM agent     │ ───────────────▶ │  Worldc                      │
+                │     LLM agent     │ ───────────────▶ │  worldc                      │
                 │ (any model that   │                  │   search assets · validate   │
                 │  can call tools)  │ ◀─────────────── │   solve · build · check ·    │
                 └───────────────────┘  issues + hints  │   render                     │
