@@ -13,3 +13,7 @@ wheels/
 *_out/seed_*/
 mcp_out/
 .pytest_cache/
+
+# generated data
+/dataset/
+/mcp_out/

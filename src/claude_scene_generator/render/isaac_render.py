@@ -90,7 +90,7 @@ try:
     M = UsdGeom.Xformable(stage.GetPrimAtPath(cam_path)).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
     forward_z = -M.GetRow3(2)[2] / max(float(Gf.Vec3d(*M.GetRow3(2)).GetLength()), 1e-9)
     hidden = []
-    if forward_z < -0.8:  # overhead: look through the roof
+    if forward_z < -0.8 or (args.camera_json and json.loads(args.camera_json).get("hide_roof")):  # overhead / explicit: look through the roof
         for prim in stage.Traverse():
             if "/Roof" in str(prim.GetPath()) and prim.IsA(UsdGeom.Imageable):
                 UsdGeom.Imageable(prim).MakeInvisible()

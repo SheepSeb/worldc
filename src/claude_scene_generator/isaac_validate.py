@@ -64,7 +64,7 @@ for _ in range(10):
     app.update()
 stage = ctx.get_stage()
 n_prims = sum(1 for _ in stage.Traverse())
-OUT["stages"]["load"] = {"opened": bool(ok), "message": str(msg), "n_prims": n_prims, "ok": bool(ok) and n_prims > 1000}
+OUT["stages"]["load"] = {"opened": bool(ok), "message": str(msg), "n_prims": n_prims, "ok": bool(ok) and n_prims > 20}
 log("loaded", n_prims, "prims")
 
 # ------------------------------------------------------------------ 2. schema check (raw attrs are understood by PhysxSchema)

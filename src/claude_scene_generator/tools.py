@@ -394,6 +394,23 @@ def _physics(d: Path, sim_seconds: float, timeout_s: float) -> tuple[dict, list[
     return summary, issues
 
 
+def auto_cameras(graph: dict) -> dict[str, dict]:
+    """Cameras framed from the scene extents (works for any scene): ``auto_topdown`` and a 3/4 ``auto_overview``.  Both hide roofs."""
+    import math
+
+    env = graph.get("environment") or graph.get("building") or {}
+    xr, yr = env.get("x_range") or [-10.0, 10.0], env.get("y_range") or [-10.0, 10.0]
+    cx, cy = (xr[0] + xr[1]) / 2, (yr[0] + yr[1]) / 2
+    wx, wy = xr[1] - xr[0], yr[1] - yr[0]
+    half_fov = math.atan(20.955 / 2 / 18.0)  # 18 mm lens on the default aperture
+    width = max(wx, wy * 16 / 9) * 1.08
+    top = {"name": "auto_topdown", "position": [cx, cy, width / 2 / math.tan(half_fov)], "look_at": [cx, cy, 0.0], "up": [0, 1, 0],
+           "focal_mm": 18.0, "hide_roof": True}
+    d = max(wx, wy) * 0.95 + 4.0
+    over = {"name": "auto_overview", "position": [cx + 0.3 * d, cy - 0.55 * d, 0.95 * d], "look_at": [cx, cy, 0.0], "focal_mm": 18.0, "hide_roof": True}
+    return {"auto_topdown": top, "auto_overview": over}
+
+
 @tool
 def render(path: str, camera: Any = "overview", width: int = 960, height: int = 540, engine: str = "rtx") -> dict:
     """Render a built scene from a scene-graph camera name, the string "topdown_map", or an ad-hoc camera
@@ -410,8 +427,11 @@ def render(path: str, camera: Any = "overview", width: int = 960, height: int = 
         return _out(True, {"image": str(png), "engine": "proxy", "camera": camera if isinstance(camera, str) else camera.get("name", "custom")})
     if engine != "rtx":
         return _out(False, issues=[error("render.engine", f"Unknown engine {engine!r}.", hint='Use "rtx" or "proxy".')])
-    if camera == "topdown_map":
-        camera = {"mode": "top_down"}
+    graph = json.loads((d / "scene_graph.json").read_text())
+    if camera == "topdown_map" or (isinstance(camera, dict) and camera.get("mode") == "top_down"):
+        camera = auto_cameras(graph)["auto_topdown"]
+    elif camera in ("auto_overview", "auto_topdown"):
+        camera = auto_cameras(graph)[camera]
     from .isaac_env import IsaacSimUnavailable
 
     try:

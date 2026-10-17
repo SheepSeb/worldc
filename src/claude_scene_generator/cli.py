@@ -9,12 +9,16 @@
     csg assets [--tags door,dock] [--query valve]
     csg describe rack_row
     csg isaac-check [--deep]
+    csg generate "prompt" [--model opus] [--max-budget-usd 3]    prompt -> built scene via your Claude Code; saved as a dataset record
+    csg generate --prompts-file prompts.txt                      one prompt per line, run in sequence
+    csg dataset stats | export [--format prompt_spec,sft,records,stats] | show RUN_ID | list
 """
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .isaac_env import gate_or_exit
 
@@ -52,9 +56,67 @@ def main(argv=None):
     d.add_argument("asset_id")
     i = sub.add_parser("isaac-check", help="check the Isaac Sim install")
     i.add_argument("--deep", action="store_true")
+    g = sub.add_parser("generate", help="prompt -> scene through Claude Code (headless) + the csg MCP server; collected as a dataset record")
+    g.add_argument("prompt", nargs="?", help="scene description (or use --prompt-file / --prompts-file)")
+    g.add_argument("--prompt-file", help="read the description from a file")
+    g.add_argument("--prompts-file", help="one description per line; each becomes a run")
+    g.add_argument("--dataset", default=None, help="dataset folder (default: $CSG_DATASET or ./dataset)")
+    g.add_argument("--model", default=None, help="Claude Code model alias or id (default: your Claude Code default)")
+    g.add_argument("--effort", default=None, help="low|medium|high|xhigh|max (default: Claude Code's)")
+    g.add_argument("--max-budget-usd", type=float, default=3.0, help="spend cap per run, enforced by Claude Code")
+    g.add_argument("--max-turns", type=int, default=60)
+    g.add_argument("--timeout", type=float, default=3600.0, help="seconds per run")
+    g.add_argument("--no-final-checks", action="store_true", help="skip the Isaac physics check + RTX render after the run")
+    g.add_argument("--keep-work", action="store_true", help="keep scratch builds from the run")
+    g.add_argument("--claude-bin", default="claude")
+    ds = sub.add_parser("dataset", help="inspect / export the collected dataset")
+    ds.add_argument("action", choices=["stats", "export", "show", "list"])
+    ds.add_argument("run_id", nargs="?", help="for `show`: a run id (or unique prefix)")
+    ds.add_argument("--dataset", default=None)
+    ds.add_argument("--format", default="prompt_spec,sft,records,stats")
+    ds.add_argument("--include-rejected", action="store_true")
+    ds.add_argument("--out", default=None)
     args = ap.parse_args(argv)
 
+    if args.cmd == "dataset":  # pure file work: no Isaac needed
+        from .datagen.export import export, stats
+        from .datagen.records import dataset_root, load_records
+
+        root = dataset_root(args.dataset)
+        if args.action == "stats":
+            print(json.dumps(stats(load_records(root)), indent=1))
+        elif args.action == "list":
+            for r in load_records(root):
+                print(f"{r.run_id}  {'ACCEPTED' if r.accepted else 'REJECTED':8s} ${r.usage.est_cost_usd:5.2f}  {r.description[:90]}")
+        elif args.action == "show":
+            from .datagen.view import write_markdown
+
+            runs = [r for r in load_records(root) if r.run_id.startswith(args.run_id or "\0")]
+            if len(runs) != 1:
+                sys.exit(f"{len(runs)} runs match {args.run_id!r}; `csg dataset list` shows them")
+            print(write_markdown(root / "runs" / runs[0].run_id, runs[0]))
+        else:
+            for k, p in export(root, [f for f in args.format.split(",") if f], args.include_rejected, args.out).items():
+                print(f"{k}: {p}")
+        return
     gate_or_exit(deep=getattr(args, "deep", False))
+    if args.cmd == "generate":
+        from .datagen.records import dataset_root
+        from .datagen.runner import generate
+
+        prompts_ = ([ln.strip() for ln in Path(args.prompts_file).read_text().splitlines() if ln.strip() and not ln.startswith("#")]
+                    if args.prompts_file else [Path(args.prompt_file).read_text().strip() if args.prompt_file else args.prompt])
+        if not prompts_ or not prompts_[0]:
+            sys.exit("give a prompt, --prompt-file or --prompts-file")
+        root = dataset_root(args.dataset)
+        recs = [generate(p, root=root, model=args.model, effort=args.effort, max_budget_usd=args.max_budget_usd, max_turns=args.max_turns,
+                         timeout_s=args.timeout, final_checks=not args.no_final_checks, keep_work=args.keep_work, claude_bin=args.claude_bin)
+                for p in prompts_]
+        for r in recs:
+            print(json.dumps({"run_id": r.run_id, "accepted": r.accepted, "stop_reason": r.stop_reason, "scene": str(root / r.scene_dir) if r.scene_dir else None,
+                              "spec": str(root / "runs" / r.run_id / "spec.json") if r.spec else None, "cost_usd": r.usage.est_cost_usd, "summary": r.summary}))
+        print(f"dataset: {root}  (records.jsonl, runs/)", file=sys.stderr)
+        sys.exit(0 if all(r.accepted for r in recs) else 1)
 
     if args.cmd == "validate":
         from .spec.validate import check
