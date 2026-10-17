@@ -168,7 +168,7 @@ def test_spawn_blocked_and_no_goals(scratch_ctx):
 def test_hazard_path_through_rack(scratch_ctx):
     room(scratch_ctx)
     build_asset(scratch_ctx, "rack_row", {"segments": [[-1.0, 1.0]], "bays_per_segment": 1}, Pose.xy_yaw(0.0, 0.0, 0.0))
-    build_asset(scratch_ctx, "forklift_proxy", {"waypoints": [(-3.0, 0.0), (3.0, 0.0)], "path_mode": "pingpong"},
+    build_asset(scratch_ctx, "forklift", {"waypoints": [(-3.0, 0.0), (3.0, 0.0)], "path_mode": "pingpong"},
                 Pose.xy_yaw(-4.0, 0.0, 0.0))
     r = finish(scratch_ctx)
     hz = r["hazard_path_conflicts"]
@@ -179,7 +179,7 @@ def test_hazard_path_through_rack(scratch_ctx):
 
 def test_hazard_path_clear(scratch_ctx):
     room(scratch_ctx)
-    build_asset(scratch_ctx, "forklift_proxy", {"waypoints": [(-3.0, 3.0), (3.0, 3.0)], "path_mode": "pingpong"},
+    build_asset(scratch_ctx, "forklift", {"waypoints": [(-3.0, 3.0), (3.0, 3.0)], "path_mode": "pingpong"},
                 Pose.xy_yaw(-3.0, 3.0, 0.0))
     r = finish(scratch_ctx, goals=((3.0, -3.0),))
     assert r["hazard_path_conflicts"] == [] and r["passed"], r["issues"]

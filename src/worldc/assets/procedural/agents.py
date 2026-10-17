@@ -75,35 +75,6 @@ class HumanProxy(Asset):
                                   lambda: ctx.kit.capsule(f"{path}/Shape", r, h, (0, 0, 0), Q_IDENT, mat, ctx.mats.phys("plastic"), collide=True))
 
 
-class ForkliftParams(PathParams):
-    size: tuple[float, float, float] = Field((2.6, 1.2, 2.1), description="Body box length, width, height (m)")
-    mass_kg: float = Field(3500.0, ge=500, le=10000)
-    path_mode: Literal["loop", "pingpong"] = "loop"
-
-
-@register
-class ForkliftProxy(Asset):
-    id = "forklift_proxy"
-    description = "Driving forklift proxy: kinematic box + forks following a waypoint path at runtime (loop by default)."
-    tags = frozenset({"forklift", "vehicle", "agent", "dynamic_obstacle", "kinematic", "hazard", "warehouse"})
-    Params = ForkliftParams
-    physics = PhysicsInfo("kinematic", "steel", 0.5, 3500.0, "primitives")
-
-    def footprint(self, p):
-        return Footprint.rect(p.size[0] + 0.9, p.size[1], p.size[2])
-
-    def build(self, ctx, path, pose, p, rng):
-        size = tuple(p.size)
-        z = pose.pos[2] + size[2] / 2 + 0.001
-        k, m = ctx.kit, ctx.mats
-
-        def shape():
-            k.cube(f"{path}/Shape", size, (0, 0, 0), Q_IDENT, m.get("forklift"), m.phys("steel"), collide=True)
-            k.cube(f"{path}/Forks", (1.0, 1.0, 0.08), (size[0] / 2 + 0.45, 0, -size[2] / 2 + 0.12), Q_IDENT, m.get("steel_bright"))
-
-        return _author_path_agent(ctx, path, p, size, z, p.mass_kg, "forklift_box", shape)
-
-
 def look_at_quat(eye, target, up=(0, 0, 1)):
     f = np.asarray(target, float) - np.asarray(eye, float)
     f /= np.linalg.norm(f)

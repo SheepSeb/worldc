@@ -144,7 +144,8 @@ def load() -> list[IsaacRobot]:
 
 from . import registry  # noqa: E402  (after IsaacRobot / load exist; the registry imports this module lazily)
 
-registry.add_loader(load)
+if __name__ != "__main__":  # `python -m worldc.assets.robots` would otherwise register the robots twice (as __main__ and as the package module)
+    registry.add_loader(load)
 
 
 # ------------------------------------------------------------------------------------------------------ building the table
@@ -182,9 +183,53 @@ def build_table(out: Path = TABLE, only: list[str] | None = None, log=print) -> 
     return out
 
 
+def settle_offsets(out: Path = TABLE, only: list[str] | None = None, sim_seconds: float = 3.0, log=print) -> Path:
+    """Calibrate each robot's spawn height by physics: drop it on a flat floor in Isaac Sim, measure how far its articulation root moves
+    while it comes to rest, and fold that into ``base_offset_z``.  The visual bounding box alone can sit lower than the wheels actually
+    rest (e.g. suspension), which makes a statically rendered robot float.  Robots that need a controller (legged / humanoid) sag by
+    design and keep the bounding-box offset."""
+    import os
+    import subprocess
+    import tempfile
+
+    from ..compile import compile_scene
+    from ..isaac_env import require_isaac_sim
+
+    global _CACHE
+    sim = require_isaac_sim()
+    table_ = json.loads(out.read_text())
+    for alias, d in table_.items():
+        if (only and alias not in only) or d["kind"] in NEEDS_CONTROLLER:
+            continue
+        _CACHE = None
+        scene = {"environment": {"footprint": {"size": [8, 8]}}, "zones": [], "robot": {"asset": alias, "spawn": {"pose": {"xy": [0.0, 0.0], "yaw": 0}}}}
+        with tempfile.TemporaryDirectory() as td:
+            res = compile_scene(scene, 0, Path(td) / "s", run_check=False)
+            if not res.ok:
+                log(f"  {alias}: scene build failed: {[str(i) for i in res.issues][:1]}")
+                continue
+            subprocess.run([str(sim.python), "-m", "worldc.isaac_validate", str(Path(td) / "s"), "--sim-seconds", str(sim_seconds), "--skip-render", "--skip-art"],
+                           env=dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[2])), capture_output=True, text=True)
+            f = Path(td) / "s" / "isaac_validation.json"
+            rob = json.loads(f.read_text()).get("stages", {}).get("robot", {}) if f.is_file() else {}
+        if "dz_m" not in rob:
+            log(f"  {alias}: no settle result ({rob.get('error')})")
+            continue
+        new = round(d["base_offset_z"] + rob["dz_m"] + 0.002, 4)
+        log(f"  {alias}: settled dz {rob['dz_m']:+.4f} m  base_offset_z {d['base_offset_z']} -> {new}")
+        table_[alias]["base_offset_z"] = max(new, -0.05)
+        out.write_text(json.dumps(table_, indent=1))
+    _CACHE = None
+    return out
+
+
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["build"]:
-        build_table(only=sys.argv[2:] or None)
+    from worldc.assets import robots as _pkg  # the package copy owns the registry; this __main__ copy only dispatches
+
+    if sys.argv[1:2] == ["settle"]:
+        _pkg.settle_offsets(only=sys.argv[2:] or None)
+    elif sys.argv[1:2] == ["build"]:
+        _pkg.build_table(only=sys.argv[2:] or None)
     else:
         for a, r in table().items():
             print(f"{a:20s} {r.kind:18s} {r.size_m}  r={r.footprint_radius_m}")

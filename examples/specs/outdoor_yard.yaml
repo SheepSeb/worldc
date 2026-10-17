@@ -34,7 +34,7 @@ objects:
     placement: {inside: bins}
 agents:
   - id: forklift
-    asset: forklift_proxy
+    asset: forklift
     path: {waypoints: [[-13, -6], [10, -6], [10, 0], [-13, 0]], mode: loop, speed: 1.0}
 robot:
   spawn: {inside: bins}

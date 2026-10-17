@@ -60,7 +60,8 @@ def _check_seed(res, g, seed):
     arts = Counter((a["kind"], round(a["lower"], 4), round(a["upper"], 4), a["unit"]) for a in g["articulations"])
     assert arts == Counter((k, round(lo_, 4), round(hi_, 4), u) for _, k, lo_, hi_, u in base["articulations"])
     assert Counter((cv["kind"], cv["speed_mps"]) for cv in g["conveyors"]) == Counter((k, s) for _, k, s in base["conveyors"])
-    assert Counter((h["kind"], h["path_mode"], h["speed_mps"]) for h in g["hazards"]) == Counter(tuple(h) for h in base["hazards"])
+    renamed = {"forklift_box": "forklift"}  # the proxy forklift was replaced by the real Isaac Sim forklift
+    assert Counter((h["kind"], h["path_mode"], h["speed_mps"]) for h in g["hazards"]) == Counter((renamed.get(k, k), m, v) for k, m, v in base["hazards"])
     assert sorted(cam["name"] for cam in g["cameras"]) == base["cameras"]
     assert sorted((norm(x["name"]), x["type"]) for x in g["goals"]) == sorted((norm(n), t) for n, t in base["goals"])
     ck = res.check

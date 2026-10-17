@@ -250,7 +250,7 @@ def warehouse(seed: int = 0, lighting: int | None = None, light_scale: float = 1
             {"type": "reachable", "from": "robot.spawn", "to": ["*"]},
         ],
         "agents": [
-            {"id": "forklift", "asset": "forklift_proxy", "params": {"mass_kg": 3500.0},
+            {"id": "forklift", "asset": "forklift", "params": {"mass_kg": 3500.0},
              "path": {"waypoints": [[xa, ya], [xb, ya], [xb, yb], [xa, yb]], "mode": "loop", "speed": 0.8}, "keep_clear_width": 2.1},
             {"id": "human_0", "asset": "human_proxy", "params": {"mass_kg": 80.0, "outfit": "vest"},
              "path": {"waypoints": [[-17.0, 11.2], [8.5, 11.2]], "mode": "pingpong", "speed": 0.9}, "keep_clear_width": 1.4},

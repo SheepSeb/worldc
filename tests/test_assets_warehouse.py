@@ -10,7 +10,7 @@ from worldc.assets import Pose, describe, get
 from worldc.colliders import collect
 
 IDS = ["building_shell", "slope_zone", "rack_row", "rollup_door", "swing_door", "cage", "conveyor_belt", "conveyor_roller",
-       "work_table", "charging_station", "traffic_cone", "trash_bin", "human_proxy", "forklift_proxy",
+       "work_table", "charging_station", "traffic_cone", "trash_bin", "human_proxy", "forklift",
        "pallet", "pallet_load", "cardboard_box", "tote", "pallet_jack_tipped"]
 
 
@@ -27,7 +27,7 @@ def test_builds_and_physics_valid(scratch_ctx, aid):
             assert all(v > 0 for v in m.GetDiagonalInertiaAttr().Get()), prim.GetPath()
 
 
-FOOTPRINT_EXEMPT = {"building_shell", "slope_zone", "human_proxy", "forklift_proxy", "pallet_jack_tipped"}
+FOOTPRINT_EXEMPT = {"building_shell", "slope_zone", "human_proxy", "forklift", "pallet_jack_tipped"}
 
 
 @pytest.mark.parametrize("aid", [i for i in IDS if i not in FOOTPRINT_EXEMPT])

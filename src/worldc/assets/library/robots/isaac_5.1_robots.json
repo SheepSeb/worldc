@@ -22,7 +22,7 @@
    0.6263,
    0.6628
   ],
-  "base_offset_z": 0.2509,
+  "base_offset_z": 0.2529,
   "footprint_radius_m": 0.459,
   "articulation": true,
   "n_joints": 6
@@ -36,7 +36,7 @@
    0.5172,
    0.2509
   ],
-  "base_offset_z": 0.0167,
+  "base_offset_z": 0.0185,
   "footprint_radius_m": 0.383,
   "articulation": true,
   "n_joints": 2
@@ -50,7 +50,7 @@
    0.2593,
    1.1147
   ],
-  "base_offset_z": -0.0,
+  "base_offset_z": 0.002,
   "footprint_radius_m": 0.212,
   "articulation": true,
   "n_joints": 11
@@ -64,7 +64,7 @@
    0.6591,
    0.2312
   ],
-  "base_offset_z": 0.0811,
+  "base_offset_z": 0.0831,
   "footprint_radius_m": 0.788,
   "articulation": true,
   "n_joints": 7
@@ -78,7 +78,7 @@
    0.43,
    0.4349
   ],
-  "base_offset_z": 0.0653,
+  "base_offset_z": 0.0673,
   "footprint_radius_m": 0.334,
   "articulation": true,
   "n_joints": 4
@@ -92,7 +92,7 @@
    0.2885,
    0.252
   ],
-  "base_offset_z": 0.0118,
+  "base_offset_z": 0.0049,
   "footprint_radius_m": 0.196,
   "articulation": true,
   "n_joints": 33
@@ -106,7 +106,7 @@
    0.8958,
    0.6945
   ],
-  "base_offset_z": 0.1402,
+  "base_offset_z": 0.0041,
   "footprint_radius_m": 0.577,
   "articulation": true,
   "n_joints": 7
@@ -120,7 +120,7 @@
    1.446,
    0.8848
   ],
-  "base_offset_z": 0.1471,
+  "base_offset_z": 0.0698,
   "footprint_radius_m": 1.247,
   "articulation": true,
   "n_joints": 88
@@ -134,7 +134,7 @@
    0.7932,
    1.1339
   ],
-  "base_offset_z": -0.0037,
+  "base_offset_z": -0.0017,
   "footprint_radius_m": 0.868,
   "articulation": true,
   "n_joints": 18
@@ -162,7 +162,7 @@
    0.1783,
    0.1911
   ],
-  "base_offset_z": 0.0001,
+  "base_offset_z": 0.0021,
   "footprint_radius_m": 0.113,
   "articulation": true,
   "n_joints": 5
