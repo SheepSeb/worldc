@@ -252,9 +252,9 @@ def warehouse(seed: int = 0, lighting: int | None = None, light_scale: float = 1
         "agents": [
             {"id": "forklift", "asset": "forklift", "params": {"mass_kg": 3500.0},
              "path": {"waypoints": [[xa, ya], [xb, ya], [xb, yb], [xa, yb]], "mode": "loop", "speed": 0.8}, "keep_clear_width": 2.1},
-            {"id": "human_0", "asset": "human_proxy", "params": {"mass_kg": 80.0, "outfit": "vest"},
+            {"id": "human_0", "asset": "human", "params": {"mass_kg": 80.0, "character": "male_adult_construction_05_new"},
              "path": {"waypoints": [[-17.0, 11.2], [8.5, 11.2]], "mode": "pingpong", "speed": 0.9}, "keep_clear_width": 1.4},
-            {"id": "human_1", "asset": "human_proxy", "params": {"mass_kg": 75.0, "outfit": "blue"},
+            {"id": "human_1", "asset": "human", "params": {"mass_kg": 75.0, "character": "male_adult_construction_03"},
              "path": {"waypoints": [[a3, -9.3], [a3, 10.9]], "mode": "pingpong", "speed": 0.8, "phase": 6.0}, "keep_clear_width": 1.4},
         ],
         "robot": {"asset": "dingo", "spawn": {"pose": {"xy": [12.4, -9.0], "yaw": 180}}, "nav_goals": goals},  # real Isaac robot, measured radius 0.383 m

@@ -328,7 +328,7 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
     lighting = build_lights(kit, rng_for(seed, "lights"), spec.lighting.preset, env.x_range, env.y_range, env.height if env.kind == "indoor" else None,
                             spec.lighting.scale, spec.lighting.color_temperature, sky_texture=sky)
     kit.stage.SetStartTimeCode(0)
-    kit.stage.SetEndTimeCode(0)
+    kit.stage.SetEndTimeCode(float(ctx.scene.get("animation_end_time_code", 0.0)))  # extended only when something animates (walking people)
     kit.stage.GetRootLayer().documentation = f"{spec.name} seed={seed} (worldc {GENERATOR_VERSION}, spec {SPEC_VERSION})"
     kit.save()
     # ---- scene graph

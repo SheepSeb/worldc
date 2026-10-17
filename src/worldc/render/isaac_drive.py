@@ -197,11 +197,26 @@ try:
         for _ in range(30):
             app.update()
         wide = ROUTE["wide_camera"]
+        # Kinematic targets set through the tensor API move the bodies in physics but are not drawn by the renderer: write the same
+        # pose into USD before each captured frame (translate + orient ops).
+        hz_ops = {}
+        for hp in hz_paths:
+            xf = UsdGeom.Xformable(stage.GetPrimAtPath(hp))
+            tr = next((o for o in xf.GetOrderedXformOps() if o.GetOpType() == UsdGeom.XformOp.TypeTranslate), None) or xf.AddTranslateOp()
+            ori = next((o for o in xf.GetOrderedXformOps() if o.GetOpType() == UsdGeom.XformOp.TypeOrient), None) or xf.AddOrientOp(UsdGeom.XformOp.PrecisionFloat)
+            hz_ops[hp] = (tr, ori)
+
+    def sync_hazards():
+        for hp, (tr, ori) in hz_ops.items():
+            x, y, z, yaw = followers[hp].pose(sim_t)
+            tr.Set(Gf.Vec3d(float(x), float(y), float(z)))
+            ori.Set(Gf.Quatf(math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2)))
 
     def capture():
         global frame_no
         if not VIDEO:
             return
+        sync_hazards()
         x, y, z, q = pose()
         th = yaw_of(q) + phi0
         want_p = np.array([x - 3.2 * math.cos(th), y - 3.2 * math.sin(th), 1.7])

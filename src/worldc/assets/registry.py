@@ -21,7 +21,7 @@ PROCEDURAL_MODULES = (
     "building", "racks", "doors", "conveyors", "furniture", "logistics", "clutter", "agents", "industrial",
 )
 # modules that only add loaders (mesh library sidecars, promoted generated assets)
-LOADER_MODULES = ("mesh.mesh_asset", "generated", "robots", "vehicles")
+LOADER_MODULES = ("mesh.mesh_asset", "generated", "robots", "vehicles", "people")
 
 
 def register(cls_or_obj):

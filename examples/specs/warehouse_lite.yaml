@@ -64,7 +64,7 @@ agents:
     path: {waypoints: [[-8, -2.5], [8, -2.5]], mode: pingpong, speed: 0.8}
     keep_clear_width: 1.4
   - id: worker
-    asset: human_proxy
+    asset: human
     path: {waypoints: [[3, -6], [3, 6]], speed: 0.9}
 robot:
   spawn: {pose: {xy: [8.0, -5.5], yaw: 180}}

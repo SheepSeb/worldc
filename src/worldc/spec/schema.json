@@ -116,7 +116,7 @@
    "additionalProperties": false,
    "properties": {
     "asset": {
-     "default": "human_proxy",
+     "default": "human",
      "oneOf": [
       {
        "type": "string"

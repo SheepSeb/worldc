@@ -47,34 +47,6 @@ def _author_path_agent(ctx, path, p, size, z, mass, kind, shape_fn):
     return Built(path, info=hz, bodies=[path])
 
 
-class HumanParams(PathParams):
-    height: float = Field(1.7, ge=1.2, le=2.1)
-    radius: float = Field(0.22, ge=0.15, le=0.35)
-    mass_kg: float = Field(80.0, ge=30, le=150)
-    outfit: Literal["vest", "blue"] = "vest"
-
-
-@register
-class HumanProxy(Asset):
-    id = "human_proxy"
-    description = ("Walking person proxy: kinematic capsule following a waypoint path (loop or ping-pong) at runtime. "
-                   "Its corridor should be kept clear (keep_clear).")
-    tags = frozenset({"human", "agent", "dynamic_obstacle", "kinematic", "hazard"})
-    Params = HumanParams
-    physics = PhysicsInfo("kinematic", "plastic", 0.5, 80.0, "primitives", "pose set every physics step by runtime.PathFollower")
-
-    def footprint(self, p):
-        return Footprint.circle(p.radius, p.height)
-
-    def build(self, ctx, path, pose, p, rng):
-        size = (2 * p.radius, 2 * p.radius, p.height)
-        z = pose.pos[2] + p.height / 2 + 0.001
-        mat = ctx.mats.get("human_a" if p.outfit == "vest" else "human_b")
-        r, h = p.radius, p.height - 2 * p.radius
-        return _author_path_agent(ctx, path, p, size, z, p.mass_kg, "human_capsule",
-                                  lambda: ctx.kit.capsule(f"{path}/Shape", r, h, (0, 0, 0), Q_IDENT, mat, ctx.mats.phys("plastic"), collide=True))
-
-
 def look_at_quat(eye, target, up=(0, 0, 1)):
     f = np.asarray(target, float) - np.asarray(eye, float)
     f /= np.linalg.norm(f)

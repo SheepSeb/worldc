@@ -35,6 +35,8 @@ def usdchecker(usd: Path) -> dict:
 
     host = asset_root().split("://", 1)[-1].split("/", 1)[0]
     remote = [c for c in r["failed_checks"] if "MissingReferenceChecker" in c and host in c]
+    if remote:  # a pose authored over a skeleton inside a remote character looks "not under a SkelRoot" to a checker that cannot open it
+        remote += [c for c in r["failed_checks"] if "SkelBindingAPIAppliedChecker" in c]
     r["failed_checks"] = [c for c in r["failed_checks"] if c not in remote]
     r["remote_references_not_checked"] = remote
     r["ok"] = not r["errors"] and not r["failed_checks"]

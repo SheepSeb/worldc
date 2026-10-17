@@ -28,7 +28,7 @@ cardboard) or declarative `TextureSpec`s (`texturegen.py`).
 - **Warehouse:** `building_shell`, `slope_zone`, `rack_row`, `rollup_door`, `swing_door`, `cage`, `conveyor_belt`,
   `conveyor_roller`, `work_table`, `charging_station`, `pallet`, `pallet_load`, `cardboard_box`, `tote`,
   `pallet_jack_tipped`, `traffic_cone`, `trash_bin`
-- **Agents:** `human_proxy`, `forklift`
+- **Agents (real Isaac Sim assets, referenced by URL):** `human` (Isaac Sim characters, arms down and walking), `forklift` (Isaac Sim forklift); the robot is a real Isaac Sim robot too (see SPEC.md, Robots)
 - **Industrial** (from the former plant generator): `gate_valve`, `control_valve`, `gauge`, `instrument_box`, `enclosure`,
   `control_station`, `instrument_panel`, `pump_set`, `flexible_hose`, `pipe`, `pipe_run`, `worker_static`, `loose_tool`,
   `ibeam`

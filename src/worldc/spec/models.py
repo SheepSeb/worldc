@@ -409,7 +409,7 @@ class AgentPathSpec(Strict):
 
 class AgentSpec(Strict):
     id: Id
-    asset: AssetRef = "human_proxy"
+    asset: AssetRef = "human"
     params: dict[str, Any] = Field(default_factory=dict)
     path: AgentPathSpec
     keep_clear_width: float | None = Field(None, gt=0, description="Corridor kept free along the path (default from asset size)")
