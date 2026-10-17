@@ -6,12 +6,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from sceneforge.spec.io import load_yaml
+from worldc.spec.io import load_yaml
 
-from sceneforge.spec.io import parse
-from sceneforge.spec.models import SceneSpec
-from sceneforge.spec.schema import SCHEMA_PATH, build_schema, section
-from sceneforge.spec.validate import check, validate
+from worldc.spec.io import parse
+from worldc.spec.models import SceneSpec
+from worldc.spec.schema import SCHEMA_PATH, build_schema, section
+from worldc.spec.validate import check, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 LITE = ROOT / "examples" / "specs" / "warehouse_lite.yaml"
@@ -27,7 +27,7 @@ def codes(issues, severity="error"):
 
 def test_schema_in_sync():
     assert SCHEMA_PATH.read_text() == json.dumps(build_schema(), indent=1, sort_keys=True) + "\n", \
-        "run: python -m sceneforge.spec.schema"
+        "run: python -m worldc.spec.schema"
 
 
 def test_schema_sections():

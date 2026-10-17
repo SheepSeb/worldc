@@ -1,6 +1,6 @@
 # Assets
 
-All assets implement one contract (`src/sceneforge/assets/base.py`):
+All assets implement one contract (`src/worldc/assets/base.py`):
 
 | member | |
 |---|---|
@@ -16,8 +16,8 @@ Dynamic bodies use analytic or convex colliders only, with explicit mass and ine
 | source | where | how to add |
 |---|---|---|
 | procedural | `assets/procedural/*.py` | subclass `Asset`, decorate with `@register` |
-| mesh | `assets/library/**/<id>.asset.yaml` + `.usd` + `.collision.usd` | `sceneforge-import-mesh in.glb --id cart_01 --tags cart,metal --mass 12` (CoACD convex decomposition; extra `mesh`) |
-| user file | anywhere, referenced as `asset: {file: ...}` | imported on first use into a content-addressed cache (`~/.cache/sceneforge/mesh_assets`) |
+| mesh | `assets/library/**/<id>.asset.yaml` + `.usd` + `.collision.usd` | `worldc-import-mesh in.glb --id cart_01 --tags cart,metal --mass 12` (CoACD convex decomposition; extra `mesh`) |
+| user file | anywhere, referenced as `asset: {file: ...}` | imported on first use into a content-addressed cache (`~/.cache/worldc/mesh_assets`) |
 | generated | `asset: {generate: {...}}` in a spec; promoted ones in `assets/library/generated/` | declarative parts/links/anchors validated by `assets/generated.py` (`gen.*` issue codes) |
 | catalog | Omniverse / Isaac Sim asset index | `catalog: omniverse` + `query` or `path`; see [CATALOG.md](CATALOG.md) |
 
@@ -34,4 +34,4 @@ cardboard) or declarative `TextureSpec`s (`texturegen.py`).
   `ibeam`
 - **Mesh example:** `example_crate`
 
-`uv run sceneforge assets` lists them and `uv run sceneforge describe <id>` shows the full contract.
+`uv run worldc assets` lists them and `uv run worldc describe <id>` shows the full contract.

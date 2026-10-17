@@ -16,12 +16,12 @@ Seeds 0-4 are generated here; every seed folder holds
 
 ```bash
 uv sync
-uv run python -m sceneforge.generate --seed 7 8 9 --out warehouse_out   # recipe -> spec -> compiler
+uv run python -m worldc.generate --seed 7 8 9 --out warehouse_out   # recipe -> spec -> compiler
 # optional: --lighting {0,1,2} (default seed % 3: bright / mixed warm / dim), --light-scale 1.5
-uv run python -m sceneforge.run_all --seeds 0 1 2 3 4                   # generate + all 6 validations
+uv run python -m worldc.run_all --seeds 0 1 2 3 4                   # generate + all 6 validations
 ```
-The warehouse is the `warehouse` recipe (`src/sceneforge/recipes/warehouse.py`): seed -> scene spec, compiled
-by the generic spec compiler. `uv run sceneforge recipe warehouse --seed 7` prints the spec, and each seed folder also holds
+The warehouse is the `warehouse` recipe (`src/worldc/recipes/warehouse.py`): seed -> scene spec, compiled
+by the generic spec compiler. `uv run worldc recipe warehouse --seed 7` prints the spec, and each seed folder also holds
 `resolved_spec.json` (exact replay) and `check.json`. Generation takes ~9 s per seed (plus ~3 s for the checks) and needs
 only `usd-core`, numpy, scipy, Pillow, pydantic and PyYAML (an Isaac Sim install is still required by policy). Validation needs Isaac Sim
 (`ISAACSIM_PATH`, default `~/isaacsim`), run headless. `usdchecker` is executed with Isaac's bundled USD because the
@@ -62,10 +62,10 @@ class WarehouseSceneCfg(InteractiveSceneCfg):
 ```
 * `SimulationCfg(dt=1/120, ...)`; use `replicate_physics=False` (one big heterogeneous scene) and `num_envs=1`.
 * **Hazards are not animated by USD.** Isaac Lab's stepping does not advance USD time samples, so the 2 human capsules
-  and the forklift box are kinematic bodies driven by `sceneforge.runtime.PathFollower`
+  and the forklift box are kinematic bodies driven by `worldc.runtime.PathFollower`
   (waypoints/speed/mode are also stored on the prims as `warehouse:*` attributes and in `scene_graph.json`):
   ```python
-  from sceneforge.runtime import load_scene_graph, hazard_followers
+  from worldc.runtime import load_scene_graph, hazard_followers
   followers = hazard_followers(load_scene_graph(".../scene_graph.json"))   # {prim_path: PathFollower}
   x, y, z, yaw = followers["/World/Hazards/Forklift"].pose(sim_time)       # write as kinematic target each step
   ```

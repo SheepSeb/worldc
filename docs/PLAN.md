@@ -39,9 +39,9 @@ and the regression baseline.
 
 ---
 
-## 1. Scene spec — `src/sceneforge/spec/`
+## 1. Scene spec — `src/worldc/spec/`
 
-Pydantic v2 models. `spec/schema.json` is exported from the models (by `python -m sceneforge.spec export`) and
+Pydantic v2 models. `spec/schema.json` is exported from the models (by `python -m worldc.spec export`) and
 checked in. A test fails if the two drift apart.
 
 ### 1.1 Design rules
@@ -157,7 +157,7 @@ LLM can learn from it.
 
 ---
 
-## 2. Asset registry — `src/sceneforge/assets/`
+## 2. Asset registry — `src/worldc/assets/`
 
 ```
 assets/
@@ -218,7 +218,7 @@ surfaces and ports, hand-authored or auto-detected flat top faces), optional art
 already contain joints). `build()` adds a USD reference to the visual, plus the precomputed hull prims with `CollisionAPI`
 (`convexHull` approximation). This keeps the "no triangle meshes on dynamic bodies" rule.
 
-`python -m sceneforge.assets.mesh.import_mesh in.glb --id cart_01 --tags cart,metal --mass 12`:
+`python -m worldc.assets.mesh.import_mesh in.glb --id cart_01 --tags cart,metal --mass 12`:
 1. Load (USD via pxr; GLB/OBJ/STL via `trimesh`, optional).
 2. Normalise: metres, Z-up, origin at bottom-centre of the footprint.
 3. Convex decomposition with CoACD (optional; falls back to a single convex hull with a warning).
@@ -252,7 +252,7 @@ has a close catalog/registry match. Data collection records which source each ob
 trained on the preference.
 
 ### 2.6 Omniverse / Isaac Sim catalog (extra `[omniverse]`, optional)
-- **Index, don't query live.** `python -m sceneforge.assets.catalog index --root <assets root>` walks an Isaac
+- **Index, don't query live.** `python -m worldc.assets.catalog index --root <assets root>` walks an Isaac
   Sim / SimReady asset root and writes `catalog.jsonl`: path, name, folder taxonomy, semantic labels found in the USD, bounds
   (metres, Z-up after reading `metersPerUnit`/`upAxis`), whether physics (rigid body / colliders / joints) is authored, and
   a thumbnail if one is shipped. The root can be a local download of the asset packs, a Nucleus server, or the public HTTP
@@ -301,7 +301,7 @@ asset:
 
 ---
 
-## 3. Layout solver — `src/sceneforge/solver/`
+## 3. Layout solver — `src/worldc/solver/`
 
 ```
 solver/
@@ -344,7 +344,7 @@ is reused).
 
 ---
 
-## 4. Compiler — `src/sceneforge/compile.py`
+## 4. Compiler — `src/worldc/compile.py`
 
 ```python
 def compile_scene(spec: SceneSpec | dict | Path, seed: int, out_dir: Path, *, check=True) -> CompileResult
@@ -367,7 +367,7 @@ Attribute namespace becomes `scene:`; `colliders.collect` reads `scene:`, `wareh
 
 ---
 
-## 5. Recipes — `src/sceneforge/recipes/`
+## 5. Recipes — `src/worldc/recipes/`
 
 ### 5.1 `recipes/warehouse.py`: `def warehouse(seed: int, **overrides) -> SceneSpec`
 - All `layout.py` constants become spec values. Seed-dependent choices that are *structural* (lighting preset `seed % 3`,
@@ -392,13 +392,13 @@ Bit-exact output is impossible (RNG order changes), so equivalence is defined as
 - Runs for 2 seeds in the default suite; all 5 run under `-m slow`.
 
 ### 5.3 Old CLI
-`python -m sceneforge.generate --seed N --out warehouse_out` is a thin shim: `compile_scene(warehouse(N), N,
+`python -m worldc.generate --seed N --out warehouse_out` is a thin shim: `compile_scene(warehouse(N), N,
 out/f"seed_{N}", usd_name="warehouse.usd")`. Same flags (`--lighting`, `--light-scale`). `run_all.py` keeps working
-unchanged. New general CLI: `python -m sceneforge build spec.yaml --seed 3 --out out/`.
+unchanged. New general CLI: `python -m worldc build spec.yaml --seed 3 --out out/`.
 
 ---
 
-## 6. MCP server — `src/sceneforge/mcp_server.py` (extra `[mcp]`)
+## 6. MCP server — `src/worldc/mcp_server.py` (extra `[mcp]`)
 
 Official `mcp` Python SDK (FastMCP), stdio transport by default. Every tool returns
 `{ok, result | issues: [Issue...]}`, never a bare traceback; unexpected exceptions become `internal.*` issues with the type
@@ -413,7 +413,7 @@ and message.
 | `describe_asset(id)` | full `describe()` (params with ranges/defaults/units, footprint, anchors, ports, physics, joints, example) |
 | `get_spec_schema(section?: str)` | JSON Schema (whole, or one `$defs` entry to save tokens) + link to SPEC.md examples |
 | `validate_spec(spec)` | schema + semantic + a **dry-run solve** (no USD). Returns issues and a solve summary (placed/dropped counts) |
-| `build_scene(spec, seed, out_dir?)` | full compile; returns paths, counts, check summary. Output in a managed workspace dir (`$SCENEFORGE_WORKSPACE`, default `./mcp_out/<spec_hash>_<seed>`) |
+| `build_scene(spec, seed, out_dir?)` | full compile; returns paths, counts, check summary. Output in a managed workspace dir (`$WORLDC_WORKSPACE`, default `./mcp_out/<spec_hash>_<seed>`) |
 | `check_scene(path, physics=true)` | overlap / floating / nav reachability (pure Python) + Isaac Sim physics settle in a subprocess with a timeout (Isaac is guaranteed by the §8 gate) |
 | `render(path, camera, width?, height?, engine="rtx"\|"proxy")` | Isaac RTX by default; `proxy` = the fast built-in renderer (below). Returns the image as MCP image content + path |
 | `edit_scene(spec, json_patch)` | RFC 6902 patch (small in-house implementation, no dependency) → validate → returns the new spec + issues + a diff summary. Patch errors cite the failing op index |
@@ -425,7 +425,7 @@ and it runs everywhere. RTX renders reuse `isaac_validate`'s camera code via a s
 
 ---
 
-## 7. Data collection — `src/sceneforge/datagen/` (extra `[datagen]`)
+## 7. Data collection — `src/worldc/datagen/` (extra `[datagen]`)
 
 ```
 datagen/
@@ -437,7 +437,7 @@ datagen/
   forward.py     # (b) description generation + spec writing via tools + rejection sampling
   agentic.py     # (c) full tool-use loop runner/logger (the MCP tools called in-process, no server needed)
   score.py       # (d) N specs per description, judged with renders + validator metrics -> preference pairs
-  cli.py         # python -m sceneforge.datagen {caption,forward,agentic,score,dedup,split} --config job.yaml
+  cli.py         # python -m worldc.datagen {caption,forward,agentic,score,dedup,split} --config job.yaml
 ```
 
 - **(a) Reverse captioning:** recipe(seed, overrides) → resolved spec + proxy render (top-down + 1 perspective) → model writes
@@ -483,20 +483,20 @@ datagen/
   rather keep JSON-only).
 - extras: `mesh = [trimesh, coacd]`, `omniverse = []` (catalog indexing uses only pxr; the extra is reserved for an
   optional embedding reranker), `mcp = [mcp]`, `datagen = [anthropic]`, `langfuse = [langfuse]`, `dev = [pytest]`.
-- Console scripts: `sceneforge` (build/validate/export-schema), `sceneforge-mcp`, `sceneforge-datagen`, `sceneforge-import-mesh`. The existing
-  `sceneforge` stays as the warehouse shim.
+- Console scripts: `worldc` (build/validate/export-schema), `worldc-mcp`, `worldc-datagen`, `worldc-import-mesh`. The existing
+  `worldc` stays as the warehouse shim.
 
-**Isaac Sim gate (hard requirement).** `src/sceneforge/isaac_env.py` has a `require_isaac_sim()` function that runs
+**Isaac Sim gate (hard requirement).** `src/worldc/isaac_env.py` has a `require_isaac_sim()` function that runs
 before anything else does work:
 - Resolve the root from `ISAACSIM_PATH`, falling back to `~/isaacsim`. Require `python.sh` (executable) and `VERSION`
   (parsed, must be ≥ 5.0). Today this resolves to `/home/sebnae/isaacsim`, version `5.1.0-rc.19`.
 - `--deep` (and the first run per root+version) also launches a headless `SimulationApp` smoke test in a subprocess with a
-  timeout. The result is cached in `~/.cache/sceneforge/isaac_check.json`, keyed by root + version, so later
+  timeout. The result is cached in `~/.cache/worldc/isaac_check.json`, keyed by root + version, so later
   runs only do the cheap file check.
 - On failure: exit non-zero with one actionable `Issue` (`env.isaac_sim_missing` / `env.isaac_sim_version` /
   `env.isaac_sim_broken`) saying what was looked for, where, and how to fix it (install, or set `ISAACSIM_PATH`). Nothing
   is written. There is no silent fallback.
-- **Called by every entrypoint:** `sceneforge build/validate`, the `generate` shim, `run_all`, `import_mesh`, the catalog indexer,
+- **Called by every entrypoint:** `worldc build/validate`, the `generate` shim, `run_all`, `import_mesh`, the catalog indexer,
   the MCP server at startup (it refuses to start, rather than starting and failing per tool), and every datagen job (checked
   before any API call is made, so no spend happens on a broken setup). `pytest` checks it once per session in `conftest.py`
   and aborts the session if it fails.
@@ -534,7 +534,7 @@ and the industrial deck from the salvaged assets); `docs/ASSETS.md` (adding proc
 |---|---|---|---|
 | 0 | Baseline | Branch `refactor/spec-pipeline`; commit current tree as-is; record `tests/fixtures/warehouse_baseline.json` from the current generator (seeds 0–4) | fixture committed |
 | 1+2 | Spec + registry | `spec/` (models, schema export, migrate, issues), `materials.py`, `assets/` with every warehouse builder + salvaged plant equipment, `import_mesh` + user-file assets (§2.5), `GeneratedAsset` builder + `TextureSpec` (§2.7) | schema/registry tests pass; each asset builds standalone; generated-asset examples build and validate; old generator still runs (it is untouched in this phase) |
-| 3+4 | Solver + compiler | `solver/`, generic nav/checks (`check/`), `compile.py`, `sceneforge build` CLI, proxy renderer (needed to eyeball phase output) | solver/compiler tests pass; hand-written example specs build and pass checks |
+| 3+4 | Solver + compiler | `solver/`, generic nav/checks (`check/`), `compile.py`, `worldc build` CLI, proxy renderer (needed to eyeball phase output) | solver/compiler tests pass; hand-written example specs build and pass checks |
 | 5 | Recipes | `recipes/warehouse.py`, `generate.py` shim, **plant generator removed**, `layout.py`/`structures.py`/`objects.py` reduced to re-exports or deleted | equivalence test passes for seeds 0–1 (0–4 under `slow`); `run_all --skip-isaac` passes; Isaac run optional if you want it |
 | 5b | Omniverse catalog | `assets/catalog/` indexer + search, checked-in index for the local Isaac Sim asset version, license findings | index builds offline; a spec using a catalog asset compiles and passes checks |
 | 6 | MCP | `mcp_server.py`, JSON-patch, render tool | tool tests pass; manual session with Claude Code builds a scene from NL |

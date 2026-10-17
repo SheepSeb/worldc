@@ -7,13 +7,13 @@ import json
 import numpy as np
 import pytest
 
-from sceneforge import texturegen
-from sceneforge.assets import Pose
-from sceneforge.assets.generated import (
+from worldc import texturegen
+from worldc.assets import Pose
+from worldc.assets.generated import (
     GeneratedAsset, GeneratedAssetError, GeneratedAssetSpec, load_promoted, promote, validate_generated,
 )
-from sceneforge.colliders import collect
-from sceneforge.spec.issues import has_errors
+from worldc.colliders import collect
+from worldc.spec.issues import has_errors
 
 
 # --------------------------------------------------------------------------- example specs
@@ -182,7 +182,7 @@ def test_describe_json_serialisable():
 
 
 def test_params_rejected():
-    from sceneforge.assets.base import ParamError
+    from worldc.assets.base import ParamError
 
     with pytest.raises(ParamError):
         GeneratedAsset(shelf()).params({"x": 1})
@@ -210,7 +210,7 @@ def test_promote_and_load_roundtrip(tmp_path):
 
 
 def test_registry_loader_dir_exists():
-    from sceneforge.assets import generated
+    from worldc.assets import generated
 
     assert generated.LIBRARY_GENERATED_DIR.is_dir()
 

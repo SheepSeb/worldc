@@ -1,13 +1,13 @@
 # Prompt to scene, collected as a dataset
 
 ```
-sceneforge generate "A 12x8 m workshop with two work tables on the north wall and a pallet near the door"
-sceneforge generate --prompts-file prompts.txt          # one description per line (# comments allowed), run in sequence
-sceneforge dataset list | stats | show <run_id>
-sceneforge dataset export                               # training files, see below
+worldc generate "A 12x8 m workshop with two work tables on the north wall and a pallet near the door"
+worldc generate --prompts-file prompts.txt          # one description per line (# comments allowed), run in sequence
+worldc dataset list | stats | show <run_id>
+worldc dataset export                               # training files, see below
 ```
 
-`sceneforge generate` runs **your Claude Code** headless (`claude -p`, your own login, no API key). Claude Code gets only the `sceneforge` MCP
+`worldc generate` runs **your Claude Code** headless (`claude -p`, your own login, no API key). Claude Code gets only the `worldc` MCP
 tools (built-in tools are off, project settings only), so every run is the same loop an interactive session would do: search
 assets, write a spec, `validate_spec`, `build_scene`, `check_scene`, proxy renders, `edit_scene`. A run stops at the spend cap
 (`--max-budget-usd`, default 3), `--max-turns` (60) or `--timeout`. Options: `--model`, `--effort`, `--dataset DIR`,
@@ -20,7 +20,7 @@ checks, an Isaac Sim physics settle, and **Isaac Sim RTX renders of every scene 
 ## What is collected
 
 ```
-dataset/                         ($SCENEFORGE_DATASET or --dataset)
+dataset/                         ($WORLDC_DATASET or --dataset)
   records.jsonl                  one record per run, accepted or not (canonical index, append-only)
   README.md                      layout + schema
   runs/<run_id>/
@@ -34,7 +34,7 @@ dataset/                         ($SCENEFORGE_DATASET or --dataset)
     images/                      renders the model looked at (proxy and RTX)
     final_renders/*.png          the closing Isaac Sim RTX renders, one per camera
     prompt.txt  record.json  mcp.json
-  exports/                       from `sceneforge dataset export`
+  exports/                       from `worldc dataset export`
 ```
 
 A record (`datagen/records.py`, `record_version` 1) holds: `description` (prompt), `spec`, `accepted` (built, static checks
@@ -44,7 +44,7 @@ counts), `env_signature`, `split`, `scene_dir`, `render_paths`, `final_render_pa
 `usage` (turns, tool calls, tokens, cost as reported by Claude Code), `generator` (git rev, prompt id), `params`.
 Rejected runs are kept with their issues: they are the repair / negative data.
 
-## Training files (`sceneforge dataset export [--include-rejected] [--format ...]`)
+## Training files (`worldc dataset export [--include-rejected] [--format ...]`)
 
 | file | rows |
 |---|---|

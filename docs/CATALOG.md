@@ -11,16 +11,16 @@ The index and these findings are for Isaac Sim **5.1.0** (`~/isaacsim/VERSION`).
 * Layout under that root: `Isaac/{Props,Environments,People,Robots,Sensors,IsaacLab,Samples}`.
   Spec paths are relative to the root and start with `Isaac/`, e.g. `Isaac/Props/Pallet/pallet.usd`.
 * **Nucleus search (DeepSearch) is not used.** It needs a Nucleus server. The bucket allows anonymous S3 listing and
-  GET, so we index it ourselves and search the index offline. Override the root with `SCENEFORGE_ISAAC_ASSET_ROOT` (a URL or a
+  GET, so we index it ourselves and search the index offline. Override the root with `WORLDC_ISAAC_ASSET_ROOT` (a URL or a
   local mirror directory laid out the same way).
 
 ## The index
 
-`src/sceneforge/assets/library/catalog/isaac_5.1.jsonl` (checked in; first line is `_meta`).
+`src/worldc/assets/library/catalog/isaac_5.1.jsonl` (checked in; first line is `_meta`).
 
 ```
-python -m sceneforge.assets.catalog_index index [--packs Props Environments People] [--no-deep]
-python -m sceneforge.assets.catalog_index search "hand truck" -k 5
+python -m worldc.assets.catalog_index index [--packs Props Environments People] [--no-deep]
+python -m worldc.assets.catalog_index search "hand truck" -k 5
 ```
 
 * Scope: packs `Props`, `Environments` (everything except the Outdoor/Rivermark terrain) and `People`. Whole-environment
@@ -48,7 +48,7 @@ objects:
 
 * `resolved_spec.json` replaces every `query` with the exact `path` and the index's `rev` (ETag), which is part of the
   download cache key, so a replay uses the same file.
-* The asset is downloaded once into `~/.cache/sceneforge/catalog/`, imported like a user file (footprint,
+* The asset is downloaded once into `~/.cache/worldc/catalog/`, imported like a user file (footprint,
   bounds, convex-hull colliders) and **referenced by URL** from the scene. The asset's own rigid-body and collision prims
   are switched off by overrides, and our hulls are the only physics. Missing mass and friction come from the tag-based
   defaults and are flagged in `scene_graph.json`.

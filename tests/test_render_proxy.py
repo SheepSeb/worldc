@@ -10,8 +10,8 @@ from PIL import Image
 from pxr import Gf, UsdGeom
 
 from conftest import build_asset
-from sceneforge.assets import Pose
-from sceneforge.render import render_proxy, render_topdown_map
+from worldc.assets import Pose
+from worldc.render import render_proxy, render_topdown_map
 
 BG = (238, 240, 243)
 RED_PATH = "/World/RedBox"
@@ -178,7 +178,7 @@ def test_small_scene_is_fast(scene_dir):
 
 @pytest.mark.slow
 def test_warehouse_overhead_perf(tmp_path):
-    subprocess.run([sys.executable, "-m", "sceneforge.generate", "--seed", "0", "--out", str(tmp_path)],
+    subprocess.run([sys.executable, "-m", "worldc.generate", "--seed", "0", "--out", str(tmp_path)],
                    check=True, capture_output=True)
     d = tmp_path / "seed_0"
     t = time.time()

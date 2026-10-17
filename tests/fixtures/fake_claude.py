@@ -1,12 +1,12 @@
 """Stand-in for `claude -p ... --output-format stream-json`: emits the same event shapes, but the 'model' is a fixed script and the
-tool calls are executed for real through sceneforge.tools.  Behaviour via FAKE_MODE: ok | invalid | nospec | crash."""
+tool calls are executed for real through worldc.tools.  Behaviour via FAKE_MODE: ok | invalid | nospec | crash."""
 import base64
 import json
 import os
 import sys
 import uuid
 
-from sceneforge import tools as T
+from worldc import tools as T
 
 MODE = os.environ.get("FAKE_MODE", "ok")
 MINI = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
@@ -21,7 +21,7 @@ def emit(**e):
 def call(name, inp):
     tid = "toolu_" + uuid.uuid4().hex[:10]
     emit(type="assistant", message={"id": "msg_" + tid, "role": "assistant", "model": "fake-model", "usage": {"input_tokens": 3, "output_tokens": 5},
-                                    "content": [{"type": "tool_use", "id": tid, "name": "mcp__sceneforge__" + name, "input": inp, "caller": {"type": "direct"}}]})
+                                    "content": [{"type": "tool_use", "id": tid, "name": "mcp__worldc__" + name, "input": inp, "caller": {"type": "direct"}}]})
     res = T.TOOLS[name](**inp)
     content = [{"type": "text", "text": json.dumps(res)}]
     img = res.get("result", {}).get("image")
@@ -31,7 +31,7 @@ def call(name, inp):
     return res
 
 
-emit(type="system", subtype="init", session_id="sess-1", model="fake-model", tools=["mcp__sceneforge__build_scene"], mcp_servers=[{"name": "sceneforge", "status": "connected"}])
+emit(type="system", subtype="init", session_id="sess-1", model="fake-model", tools=["mcp__worldc__build_scene"], mcp_servers=[{"name": "worldc", "status": "connected"}])
 if MODE == "crash":
     sys.exit(3)
 if MODE == "invalid":

@@ -6,9 +6,9 @@ import pytest
 from pxr import Usd, UsdPhysics
 
 from conftest import build_asset
-from sceneforge.assets import Pose, describe, get
-from sceneforge.assets.base import ParamError
-from sceneforge.colliders import collect
+from worldc.assets import Pose, describe, get
+from worldc.assets.base import ParamError
+from worldc.colliders import collect
 
 IDS = ["gate_valve", "control_valve", "gauge", "instrument_box", "enclosure", "control_station", "instrument_panel", "pump_set",
        "flexible_hose", "pipe", "pipe_run", "worker_static", "loose_tool", "ibeam"]

@@ -18,8 +18,8 @@ import numpy as np
 import pytest
 from pxr import Usd, UsdPhysics
 
-from sceneforge.compile import compile_scene
-from sceneforge.recipes import warehouse
+from worldc.compile import compile_scene
+from worldc.recipes import warehouse
 
 BASE = json.loads((Path(__file__).parent / "fixtures" / "warehouse_baseline.json").read_text())
 STOCHASTIC = ("pallet", "box", "tote", "tote_item", "clutter")
@@ -95,7 +95,7 @@ def test_recipe_matches_baseline_all_seeds(built):
 
 
 def test_recipe_spec_is_compact_and_valid():
-    from sceneforge.spec.validate import semantic
+    from worldc.spec.validate import semantic
 
     spec = warehouse(3)
     assert not [i for i in semantic(spec) if i.severity == "error"]
@@ -104,7 +104,7 @@ def test_recipe_spec_is_compact_and_valid():
 
 
 def test_legacy_cli_through_pipeline(tmp_path):
-    from sceneforge.generate import build
+    from worldc.generate import build
 
     d = build(0, tmp_path)
     assert (d / "warehouse.usd").exists() and (d / "scene_graph.json").exists() and (d / "resolved_spec.json").exists()

@@ -6,8 +6,8 @@ import pytest
 from pxr import UsdPhysics
 
 from conftest import build_asset
-from sceneforge.assets import Pose, get, ids, list_assets
-from sceneforge.assets.resolve import AssetResolutionError, resolve, source_of
+from worldc.assets import Pose, get, ids, list_assets
+from worldc.assets.resolve import AssetResolutionError, resolve, source_of
 
 
 @pytest.mark.parametrize("aid", ids())
@@ -25,9 +25,9 @@ def test_contract(aid):
 
 @pytest.mark.parametrize("aid", ids())
 def test_build_deterministic_and_valid(tmp_path, aid):
-    from sceneforge.assets.base import BuildContext
-    from sceneforge.materials import Materials, TextureCache
-    from sceneforge.usdkit import Kit
+    from worldc.assets.base import BuildContext
+    from worldc.materials import Materials, TextureCache
+    from worldc.usdkit import Kit
 
     recs = []
     for k in range(2):

@@ -1,5 +1,5 @@
 [project]
-name = "sceneforge"
+name = "worldc"
 version = "0.1.0"
 description = "Declarative, agent-usable scene generation for Isaac Sim (scene spec -> USD)"
 readme = "README.md"
@@ -17,10 +17,10 @@ dependencies = [
 ]
 
 [project.scripts]
-sceneforge-warehouse = "sceneforge:main"
-sceneforge = "sceneforge.cli:main"
-sceneforge-import-mesh = "sceneforge.assets.mesh.import_mesh:main"
-sceneforge-mcp = "sceneforge.mcp_server:main"
+worldc-warehouse = "worldc:main"
+worldc = "worldc.cli:main"
+worldc-import-mesh = "worldc.assets.mesh.import_mesh:main"
+worldc-mcp = "worldc.mcp_server:main"
 
 [project.optional-dependencies]
 mesh = [

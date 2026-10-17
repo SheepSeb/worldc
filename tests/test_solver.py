@@ -5,9 +5,9 @@ import math
 import numpy as np
 import pytest
 
-from sceneforge.solver.geometry import overlap
-from sceneforge.solver.solve import solve
-from sceneforge.spec.io import parse
+from worldc.solver.geometry import overlap
+from worldc.solver.solve import solve
+from worldc.spec.io import parse
 
 
 def room(objects, **kw):

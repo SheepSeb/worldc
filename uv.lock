@@ -888,50 +888,6 @@ wheels = [
 ]
 
 [[package]]
-name = "sceneforge"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "scipy" },
-    { name = "usd-core" },
-]
-
-[package.optional-dependencies]
-mcp = [
-    { name = "mcp" },
-]
-mesh = [
-    { name = "coacd" },
-    { name = "trimesh" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "coacd", marker = "extra == 'mesh'", specifier = ">=1.0.14" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0" },
-    { name = "numpy", specifier = ">=2.5.4" },
-    { name = "pillow", specifier = ">=12.3.0" },
-    { name = "pydantic", specifier = ">=2.9" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "scipy", specifier = ">=1.18.1" },
-    { name = "trimesh", marker = "extra == 'mesh'", specifier = ">=5.1.1" },
-    { name = "usd-core", specifier = "==24.11" },
-]
-provides-extras = ["mesh", "mcp"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.1.1" }]
-
-[[package]]
 name = "scipy"
 version = "1.18.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1092,3 +1048,47 @@ sdist = { url = "https://files.pythonhosted.org/packages/da/34/30e9280707135d2cf
 wheels = [
     { url = "https://files.pythonhosted.org/packages/38/0c/b54a4fdd7f90a3af8b02ebc9ce6712c2c208b7926a2f7bad95c33ebbe943/uvicorn-0.54.0-py3-none-any.whl", hash = "sha256:505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf", size = 87427, upload-time = "2026-09-25T06:52:35.829Z" },
 ]
+
+[[package]]
+name = "worldc"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "scipy" },
+    { name = "usd-core" },
+]
+
+[package.optional-dependencies]
+mcp = [
+    { name = "mcp" },
+]
+mesh = [
+    { name = "coacd" },
+    { name = "trimesh" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "coacd", marker = "extra == 'mesh'", specifier = ">=1.0.14" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0" },
+    { name = "numpy", specifier = ">=2.5.4" },
+    { name = "pillow", specifier = ">=12.3.0" },
+    { name = "pydantic", specifier = ">=2.9" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "scipy", specifier = ">=1.18.1" },
+    { name = "trimesh", marker = "extra == 'mesh'", specifier = ">=5.1.1" },
+    { name = "usd-core", specifier = "==24.11" },
+]
+provides-extras = ["mesh", "mcp"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]

@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from sceneforge.isaac_env import IsaacSimUnavailable, require_isaac_sim
+from worldc.isaac_env import IsaacSimUnavailable, require_isaac_sim
 
 
 def pytest_sessionstart(session):
@@ -21,9 +21,9 @@ def pytest_configure(config):
 @pytest.fixture
 def scratch_ctx(tmp_path):
     """A BuildContext writing to a fresh stage in tmp_path (namespace ``scene``)."""
-    from sceneforge.assets.base import BuildContext
-    from sceneforge.materials import Materials, TextureCache
-    from sceneforge.usdkit import Kit
+    from worldc.assets.base import BuildContext
+    from worldc.materials import Materials, TextureCache
+    from worldc.usdkit import Kit
 
     kit = Kit(tmp_path / "scene.usd")
     kit.ns = "scene"
@@ -34,7 +34,7 @@ def scratch_ctx(tmp_path):
 
 def build_asset(ctx, asset_id, params=None, pose=None, seed=0, path=None):
     """Build one asset instance into ``ctx``; returns (asset, params, Built)."""
-    from sceneforge.assets import Pose, get
+    from worldc.assets import Pose, get
 
     a = get(asset_id)
     p = a.params(params)

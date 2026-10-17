@@ -1,4 +1,4 @@
-"""Generic post-build checker (sceneforge.check.check_scene) on tiny authored scenes + a legacy warehouse."""
+"""Generic post-build checker (worldc.check.check_scene) on tiny authored scenes + a legacy warehouse."""
 from __future__ import annotations
 
 import json
@@ -7,8 +7,8 @@ import pytest
 from pxr import UsdPhysics
 
 from conftest import build_asset
-from sceneforge.assets import Pose
-from sceneforge.check import check_scene
+from worldc.assets import Pose
+from worldc.check import check_scene
 
 ROOM = 10.0, 8.0  # building_shell interior (x, y), centred at the origin
 
@@ -216,7 +216,7 @@ def test_load_failed(tmp_path):
 # --------------------------------------------------------------------------- full warehouse (slow)
 @pytest.fixture(scope="session")
 def warehouse_seed(tmp_path_factory):
-    from sceneforge.generate import build
+    from worldc.generate import build
 
     return build(0, tmp_path_factory.mktemp("warehouse"))
 

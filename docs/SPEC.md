@@ -1,12 +1,12 @@
 # Scene spec v1.0
 
 > Status: phase 5. Specs validate, solve, and compile to USD, `scene_graph.json`, `resolved_spec.json` and `check.json`.
-> The original warehouse is now a recipe (`recipes/warehouse.py`, `sceneforge recipe warehouse --seed 3`). The MCP server comes
+> The original warehouse is now a recipe (`recipes/warehouse.py`, `worldc recipe warehouse --seed 3`). The MCP server comes
 > in phase 6.
 
 A **scene spec** is a JSON/YAML document that describes a scene declaratively. The machine-readable contract is
-[`src/sceneforge/spec/schema.json`](../src/sceneforge/spec/schema.json) (generated from the
-pydantic models in `spec/models.py`; `python -m sceneforge.spec.schema` regenerates it).
+[`src/worldc/spec/schema.json`](../src/worldc/spec/schema.json) (generated from the
+pydantic models in `spec/models.py`; `python -m worldc.spec.schema` regenerates it).
 
 Examples (all compile and pass the post-build checks):
 - [`minimal_room.yaml`](../examples/specs/minimal_room.yaml)
@@ -15,13 +15,13 @@ Examples (all compile and pass the post-build checks):
 - [`industrial_deck.yaml`](../examples/specs/industrial_deck.yaml)
 
 ```bash
-uv run sceneforge validate examples/specs/warehouse_lite.yaml       # schema + semantic validation
-uv run sceneforge build examples/specs/warehouse_lite.yaml --seed 3 --out out/lite_3   # solve + USD + checks
-uv run sceneforge render out/lite_3 --camera aisle                  # fast proxy render (+ --map for a semantic top-down map)
-uv run sceneforge check out/lite_3                                  # re-run the post-build checks
-uv run sceneforge schema --section ObjectSpec                       # one part of the schema
-uv run sceneforge assets --tags door                                # find assets
-uv run sceneforge describe rack_row                                 # params, footprint, anchors, joints
+uv run worldc validate examples/specs/warehouse_lite.yaml       # schema + semantic validation
+uv run worldc build examples/specs/warehouse_lite.yaml --seed 3 --out out/lite_3   # solve + USD + checks
+uv run worldc render out/lite_3 --camera aisle                  # fast proxy render (+ --map for a semantic top-down map)
+uv run worldc check out/lite_3                                  # re-run the post-build checks
+uv run worldc schema --section ObjectSpec                       # one part of the schema
+uv run worldc assets --tags door                                # find assets
+uv run worldc describe rack_row                                 # params, footprint, anchors, joints
 ```
 
 ## Conventions
@@ -113,7 +113,7 @@ Nav goals: `target` may be an object, anchor, port, `clearance:<id>` (the narrow
 - Anchors with a `face` meta (rack slots): stand `distance` beyond the parent's footprint edge on the face side.
 - Otherwise: stand `distance` in front of the target (its +y).
 
-## Outputs (`sceneforge build` / `compile_scene`)
+## Outputs (`worldc build` / `compile_scene`)
 | file | |
 |---|---|
 | `<output.usd_name>` | the stage (Z-up, metres, kg, default prim `/World`) |

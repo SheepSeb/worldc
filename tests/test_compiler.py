@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from pxr import Usd
 
-from sceneforge.compile import compile_scene, resolved_spec
-from sceneforge.spec.io import parse
+from worldc.compile import compile_scene, resolved_spec
+from worldc.spec.io import parse
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = sorted((ROOT / "examples" / "specs").glob("*.yaml"))

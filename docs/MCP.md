@@ -1,16 +1,16 @@
 # MCP server
 
-`sceneforge-mcp` exposes the scene pipeline as 11 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
+`worldc-mcp` exposes the scene pipeline as 11 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
 can go from a description to a validated, rendered scene. It needs the `mcp` extra and a working Isaac Sim install; it
 refuses to start otherwise (`env.isaac_sim_missing` / `env.isaac_sim_version` / `env.isaac_sim_broken`).
 
 ```
 uv sync --all-extras
-claude mcp add sceneforge -- uv run --directory /path/to/sceneforge sceneforge-mcp
+claude mcp add worldc -- uv run --directory /path/to/worldc worldc-mcp
 ```
 
-Environment: `SCENEFORGE_WORKSPACE` (output root, default `./mcp_out` of the server's working directory), `ISAACSIM_PATH`,
-`SCENEFORGE_ISAAC_ASSET_ROOT`, `SCENEFORGE_CATALOG_INDEX`.
+Environment: `WORLDC_WORKSPACE` (output root, default `./mcp_out` of the server's working directory), `ISAACSIM_PATH`,
+`WORLDC_ISAAC_ASSET_ROOT`, `WORLDC_CATALOG_INDEX`.
 
 ## Result format
 

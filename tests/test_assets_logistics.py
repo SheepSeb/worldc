@@ -5,8 +5,8 @@ import pytest
 from pxr import Usd, UsdPhysics
 
 from conftest import build_asset
-from sceneforge.assets import Pose, describe, get
-from sceneforge.colliders import collect
+from worldc.assets import Pose, describe, get
+from worldc.colliders import collect
 
 
 @pytest.mark.parametrize("variant", ["boxes", "wrapped", "totes", "empty"])
@@ -48,7 +48,7 @@ def test_describe_json(scratch_ctx):
 
 
 def test_param_errors():
-    from sceneforge.assets.base import ParamError
+    from worldc.assets.base import ParamError
 
     with pytest.raises(ParamError) as e:
         get("pallet_load").params({"variant": "crates"})
