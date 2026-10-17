@@ -1,0 +1,1155 @@
+{
+ "source_commit": "f4daa5f",
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "structural_categories": [
+  "rack_row",
+  "building",
+  "floor",
+  "door_rollup",
+  "door_swing",
+  "gate_sliding",
+  "drawer",
+  "conveyor_belt",
+  "conveyor_roller",
+  "work_table",
+  "charger",
+  "dock_leveler",
+  "cage_fence",
+  "hazard",
+  "robot_spawn",
+  "camera"
+ ],
+ "count_ranges": {
+  "box": [
+   650,
+   795
+  ],
+  "building": [
+   15,
+   15
+  ],
+  "cage_fence": [
+   4,
+   4
+  ],
+  "camera": [
+   3,
+   3
+  ],
+  "charger": [
+   2,
+   2
+  ],
+  "clutter": [
+   6,
+   7
+  ],
+  "conveyor_belt": [
+   2,
+   2
+  ],
+  "conveyor_roller": [
+   1,
+   1
+  ],
+  "dock_leveler": [
+   3,
+   3
+  ],
+  "door_rollup": [
+   3,
+   3
+  ],
+  "door_swing": [
+   2,
+   2
+  ],
+  "drawer": [
+   2,
+   2
+  ],
+  "floor": [
+   3,
+   3
+  ],
+  "gate_sliding": [
+   1,
+   1
+  ],
+  "hazard": [
+   3,
+   3
+  ],
+  "pallet": [
+   185,
+   201
+  ],
+  "rack_row": [
+   12,
+   12
+  ],
+  "robot_spawn": [
+   1,
+   1
+  ],
+  "tote": [
+   54,
+   66
+  ],
+  "tote_item": [
+   327,
+   450
+  ],
+  "work_table": [
+   1,
+   1
+  ],
+  "n_dynamic_bodies": [
+   1282,
+   1463
+  ]
+ },
+ "per_seed": {
+  "0": {
+   "counts": {
+    "floor": 3,
+    "building": 15,
+    "rack_row": 12,
+    "hazard": 3,
+    "robot_spawn": 1,
+    "charger": 2,
+    "door_rollup": 3,
+    "dock_leveler": 3,
+    "door_swing": 2,
+    "cage_fence": 4,
+    "gate_sliding": 1,
+    "conveyor_belt": 2,
+    "conveyor_roller": 1,
+    "work_table": 1,
+    "drawer": 2,
+    "pallet": 200,
+    "box": 731,
+    "tote": 54,
+    "tote_item": 340,
+    "clutter": 6,
+    "camera": 3
+   },
+   "n_dynamic_bodies": 1339,
+   "lighting": "bright_day",
+   "building_size_m": [
+    40.0,
+    25.0,
+    8.0
+   ],
+   "articulations": [
+    [
+     "CageGate",
+     "prismatic",
+     0.0,
+     1.7,
+     "m"
+    ],
+    [
+     "Drawer_0",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "Drawer_1",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "RollUp_0",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_1",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_2",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "Swing_0",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ],
+    [
+     "Swing_1",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ]
+   ],
+   "conveyors": [
+    [
+     "BeltA",
+     "belt",
+     0.5
+    ],
+    [
+     "BeltB",
+     "belt",
+     0.5
+    ],
+    [
+     "RollerConveyor",
+     "roller",
+     0.5
+    ]
+   ],
+   "goals": [
+    [
+     "belt_A_infeed",
+     "packing"
+    ],
+    [
+     "belt_B_infeed",
+     "packing"
+    ],
+    [
+     "cage_gate",
+     "cage"
+    ],
+    [
+     "choke_before",
+     "chokepoint"
+    ],
+    [
+     "choke_beyond",
+     "chokepoint"
+    ],
+    [
+     "dock_bay_0",
+     "dock"
+    ],
+    [
+     "dock_bay_1",
+     "dock"
+    ],
+    [
+     "dock_bay_2",
+     "dock"
+    ],
+    [
+     "parking_0",
+     "parking"
+    ],
+    [
+     "parking_1",
+     "parking"
+    ],
+    [
+     "pick_3.4m_row2",
+     "pick_high"
+    ],
+    [
+     "pick_3.4m_row9",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row11",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row6",
+     "pick_high"
+    ],
+    [
+     "roller_end",
+     "packing"
+    ],
+    [
+     "staging_pickup",
+     "staging"
+    ],
+    [
+     "work_table",
+     "packing"
+    ]
+   ],
+   "hazards": [
+    [
+     "forklift_box",
+     "loop",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.9
+    ]
+   ],
+   "cameras": [
+    "aisle_level",
+    "overhead",
+    "robot"
+   ],
+   "chokepoint_clearance_m": 0.902,
+   "static": {
+    "spawn_interpenetrations": 0,
+    "floating_bodies": 0,
+    "hazard_path_conflicts": 0,
+    "all_reachable": true,
+    "passed": true
+   }
+  },
+  "1": {
+   "counts": {
+    "floor": 3,
+    "building": 15,
+    "rack_row": 12,
+    "hazard": 3,
+    "robot_spawn": 1,
+    "charger": 2,
+    "door_rollup": 3,
+    "dock_leveler": 3,
+    "door_swing": 2,
+    "cage_fence": 4,
+    "gate_sliding": 1,
+    "conveyor_belt": 2,
+    "conveyor_roller": 1,
+    "work_table": 1,
+    "drawer": 2,
+    "pallet": 185,
+    "tote": 58,
+    "tote_item": 335,
+    "box": 689,
+    "clutter": 7,
+    "camera": 3
+   },
+   "n_dynamic_bodies": 1282,
+   "lighting": "mixed_warm",
+   "building_size_m": [
+    40.0,
+    25.0,
+    8.0
+   ],
+   "articulations": [
+    [
+     "CageGate",
+     "prismatic",
+     0.0,
+     1.7,
+     "m"
+    ],
+    [
+     "Drawer_0",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "Drawer_1",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "RollUp_0",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_1",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_2",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "Swing_0",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ],
+    [
+     "Swing_1",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ]
+   ],
+   "conveyors": [
+    [
+     "BeltA",
+     "belt",
+     0.5
+    ],
+    [
+     "BeltB",
+     "belt",
+     0.5
+    ],
+    [
+     "RollerConveyor",
+     "roller",
+     0.5
+    ]
+   ],
+   "goals": [
+    [
+     "belt_A_infeed",
+     "packing"
+    ],
+    [
+     "belt_B_infeed",
+     "packing"
+    ],
+    [
+     "cage_gate",
+     "cage"
+    ],
+    [
+     "choke_before",
+     "chokepoint"
+    ],
+    [
+     "choke_beyond",
+     "chokepoint"
+    ],
+    [
+     "dock_bay_0",
+     "dock"
+    ],
+    [
+     "dock_bay_1",
+     "dock"
+    ],
+    [
+     "dock_bay_2",
+     "dock"
+    ],
+    [
+     "parking_0",
+     "parking"
+    ],
+    [
+     "parking_1",
+     "parking"
+    ],
+    [
+     "pick_3.4m_row2",
+     "pick_high"
+    ],
+    [
+     "pick_3.4m_row9",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row11",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row6",
+     "pick_high"
+    ],
+    [
+     "roller_end",
+     "packing"
+    ],
+    [
+     "staging_pickup",
+     "staging"
+    ],
+    [
+     "work_table",
+     "packing"
+    ]
+   ],
+   "hazards": [
+    [
+     "forklift_box",
+     "loop",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.9
+    ]
+   ],
+   "cameras": [
+    "aisle_level",
+    "overhead",
+    "robot"
+   ],
+   "chokepoint_clearance_m": 0.902,
+   "static": {
+    "spawn_interpenetrations": 0,
+    "floating_bodies": 0,
+    "hazard_path_conflicts": 0,
+    "all_reachable": true,
+    "passed": true
+   }
+  },
+  "2": {
+   "counts": {
+    "floor": 3,
+    "building": 15,
+    "rack_row": 12,
+    "hazard": 3,
+    "robot_spawn": 1,
+    "charger": 2,
+    "door_rollup": 3,
+    "dock_leveler": 3,
+    "door_swing": 2,
+    "cage_fence": 4,
+    "gate_sliding": 1,
+    "conveyor_belt": 2,
+    "conveyor_roller": 1,
+    "work_table": 1,
+    "drawer": 2,
+    "pallet": 201,
+    "box": 795,
+    "tote": 54,
+    "tote_item": 327,
+    "clutter": 6,
+    "camera": 3
+   },
+   "n_dynamic_bodies": 1391,
+   "lighting": "dim_night",
+   "building_size_m": [
+    40.0,
+    25.0,
+    8.0
+   ],
+   "articulations": [
+    [
+     "CageGate",
+     "prismatic",
+     0.0,
+     1.7,
+     "m"
+    ],
+    [
+     "Drawer_0",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "Drawer_1",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "RollUp_0",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_1",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_2",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "Swing_0",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ],
+    [
+     "Swing_1",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ]
+   ],
+   "conveyors": [
+    [
+     "BeltA",
+     "belt",
+     0.5
+    ],
+    [
+     "BeltB",
+     "belt",
+     0.5
+    ],
+    [
+     "RollerConveyor",
+     "roller",
+     0.5
+    ]
+   ],
+   "goals": [
+    [
+     "belt_A_infeed",
+     "packing"
+    ],
+    [
+     "belt_B_infeed",
+     "packing"
+    ],
+    [
+     "cage_gate",
+     "cage"
+    ],
+    [
+     "choke_before",
+     "chokepoint"
+    ],
+    [
+     "choke_beyond",
+     "chokepoint"
+    ],
+    [
+     "dock_bay_0",
+     "dock"
+    ],
+    [
+     "dock_bay_1",
+     "dock"
+    ],
+    [
+     "dock_bay_2",
+     "dock"
+    ],
+    [
+     "parking_0",
+     "parking"
+    ],
+    [
+     "parking_1",
+     "parking"
+    ],
+    [
+     "pick_3.4m_row2",
+     "pick_high"
+    ],
+    [
+     "pick_3.4m_row9",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row11",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row6",
+     "pick_high"
+    ],
+    [
+     "roller_end",
+     "packing"
+    ],
+    [
+     "staging_pickup",
+     "staging"
+    ],
+    [
+     "work_table",
+     "packing"
+    ]
+   ],
+   "hazards": [
+    [
+     "forklift_box",
+     "loop",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.9
+    ]
+   ],
+   "cameras": [
+    "aisle_level",
+    "overhead",
+    "robot"
+   ],
+   "chokepoint_clearance_m": 0.9,
+   "static": {
+    "spawn_interpenetrations": 0,
+    "floating_bodies": 0,
+    "hazard_path_conflicts": 0,
+    "all_reachable": true,
+    "passed": true
+   }
+  },
+  "3": {
+   "counts": {
+    "floor": 3,
+    "building": 15,
+    "rack_row": 12,
+    "hazard": 3,
+    "robot_spawn": 1,
+    "charger": 2,
+    "door_rollup": 3,
+    "dock_leveler": 3,
+    "door_swing": 2,
+    "cage_fence": 4,
+    "gate_sliding": 1,
+    "conveyor_belt": 2,
+    "conveyor_roller": 1,
+    "work_table": 1,
+    "drawer": 2,
+    "pallet": 194,
+    "box": 650,
+    "tote": 66,
+    "tote_item": 450,
+    "clutter": 6,
+    "camera": 3
+   },
+   "n_dynamic_bodies": 1374,
+   "lighting": "bright_day",
+   "building_size_m": [
+    40.0,
+    25.0,
+    8.0
+   ],
+   "articulations": [
+    [
+     "CageGate",
+     "prismatic",
+     0.0,
+     1.7,
+     "m"
+    ],
+    [
+     "Drawer_0",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "Drawer_1",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "RollUp_0",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_1",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_2",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "Swing_0",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ],
+    [
+     "Swing_1",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ]
+   ],
+   "conveyors": [
+    [
+     "BeltA",
+     "belt",
+     0.5
+    ],
+    [
+     "BeltB",
+     "belt",
+     0.5
+    ],
+    [
+     "RollerConveyor",
+     "roller",
+     0.5
+    ]
+   ],
+   "goals": [
+    [
+     "belt_A_infeed",
+     "packing"
+    ],
+    [
+     "belt_B_infeed",
+     "packing"
+    ],
+    [
+     "cage_gate",
+     "cage"
+    ],
+    [
+     "choke_before",
+     "chokepoint"
+    ],
+    [
+     "choke_beyond",
+     "chokepoint"
+    ],
+    [
+     "dock_bay_0",
+     "dock"
+    ],
+    [
+     "dock_bay_1",
+     "dock"
+    ],
+    [
+     "dock_bay_2",
+     "dock"
+    ],
+    [
+     "parking_0",
+     "parking"
+    ],
+    [
+     "parking_1",
+     "parking"
+    ],
+    [
+     "pick_3.4m_row2",
+     "pick_high"
+    ],
+    [
+     "pick_3.4m_row9",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row11",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row6",
+     "pick_high"
+    ],
+    [
+     "roller_end",
+     "packing"
+    ],
+    [
+     "staging_pickup",
+     "staging"
+    ],
+    [
+     "work_table",
+     "packing"
+    ]
+   ],
+   "hazards": [
+    [
+     "forklift_box",
+     "loop",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.9
+    ]
+   ],
+   "cameras": [
+    "aisle_level",
+    "overhead",
+    "robot"
+   ],
+   "chokepoint_clearance_m": 0.9,
+   "static": {
+    "spawn_interpenetrations": 0,
+    "floating_bodies": 0,
+    "hazard_path_conflicts": 0,
+    "all_reachable": true,
+    "passed": true
+   }
+  },
+  "4": {
+   "counts": {
+    "floor": 3,
+    "building": 15,
+    "rack_row": 12,
+    "hazard": 3,
+    "robot_spawn": 1,
+    "charger": 2,
+    "door_rollup": 3,
+    "dock_leveler": 3,
+    "door_swing": 2,
+    "cage_fence": 4,
+    "gate_sliding": 1,
+    "conveyor_belt": 2,
+    "conveyor_roller": 1,
+    "work_table": 1,
+    "drawer": 2,
+    "pallet": 185,
+    "box": 766,
+    "tote": 66,
+    "tote_item": 432,
+    "clutter": 6,
+    "camera": 3
+   },
+   "n_dynamic_bodies": 1463,
+   "lighting": "mixed_warm",
+   "building_size_m": [
+    40.0,
+    25.0,
+    8.0
+   ],
+   "articulations": [
+    [
+     "CageGate",
+     "prismatic",
+     0.0,
+     1.7,
+     "m"
+    ],
+    [
+     "Drawer_0",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "Drawer_1",
+     "prismatic",
+     0.0,
+     0.35,
+     "m"
+    ],
+    [
+     "RollUp_0",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_1",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "RollUp_2",
+     "prismatic",
+     0.0,
+     3.25,
+     "m"
+    ],
+    [
+     "Swing_0",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ],
+    [
+     "Swing_1",
+     "revolute",
+     0.0,
+     100.0,
+     "deg"
+    ]
+   ],
+   "conveyors": [
+    [
+     "BeltA",
+     "belt",
+     0.5
+    ],
+    [
+     "BeltB",
+     "belt",
+     0.5
+    ],
+    [
+     "RollerConveyor",
+     "roller",
+     0.5
+    ]
+   ],
+   "goals": [
+    [
+     "belt_A_infeed",
+     "packing"
+    ],
+    [
+     "belt_B_infeed",
+     "packing"
+    ],
+    [
+     "cage_gate",
+     "cage"
+    ],
+    [
+     "choke_before",
+     "chokepoint"
+    ],
+    [
+     "choke_beyond",
+     "chokepoint"
+    ],
+    [
+     "dock_bay_0",
+     "dock"
+    ],
+    [
+     "dock_bay_1",
+     "dock"
+    ],
+    [
+     "dock_bay_2",
+     "dock"
+    ],
+    [
+     "parking_0",
+     "parking"
+    ],
+    [
+     "parking_1",
+     "parking"
+    ],
+    [
+     "pick_3.4m_row2",
+     "pick_high"
+    ],
+    [
+     "pick_3.4m_row9",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row11",
+     "pick_high"
+    ],
+    [
+     "pick_5.0m_row6",
+     "pick_high"
+    ],
+    [
+     "roller_end",
+     "packing"
+    ],
+    [
+     "staging_pickup",
+     "staging"
+    ],
+    [
+     "work_table",
+     "packing"
+    ]
+   ],
+   "hazards": [
+    [
+     "forklift_box",
+     "loop",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.8
+    ],
+    [
+     "human_capsule",
+     "pingpong",
+     0.9
+    ]
+   ],
+   "cameras": [
+    "aisle_level",
+    "overhead",
+    "robot"
+   ],
+   "chokepoint_clearance_m": 0.9,
+   "static": {
+    "spawn_interpenetrations": 0,
+    "floating_bodies": 0,
+    "hazard_path_conflicts": 0,
+    "all_reachable": true,
+    "passed": true
+   }
+  }
+ }
+}
