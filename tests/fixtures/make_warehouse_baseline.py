@@ -11,7 +11,7 @@ import json
 import sys
 from pathlib import Path
 
-from claude_scene_generator import generate, static_validate
+from sceneforge import generate, static_validate
 
 SEEDS = (0, 1, 2, 3, 4)
 STRUCTURAL = ("rack_row", "building", "floor", "door_rollup", "door_swing", "gate_sliding", "drawer", "conveyor_belt",

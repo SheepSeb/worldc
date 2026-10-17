@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from claude_scene_generator import tools as T
-from claude_scene_generator.jsonpatch import PatchError, apply_patch, diff_summary
+from sceneforge import tools as T
+from sceneforge.jsonpatch import PatchError, apply_patch, diff_summary
 
 ROOT = Path(__file__).resolve().parents[1]
 LITE = str(ROOT / "examples" / "specs" / "warehouse_lite.yaml")
@@ -20,7 +20,7 @@ BLOCK = {"id": "gen/test_block", "description": "a steel block", "body": "dynami
 
 @pytest.fixture(autouse=True)
 def ws(tmp_path, monkeypatch):
-    monkeypatch.setenv("CSG_WORKSPACE", str(tmp_path / "ws"))
+    monkeypatch.setenv("SCENEFORGE_WORKSPACE", str(tmp_path / "ws"))
     return tmp_path / "ws"
 
 
@@ -173,7 +173,7 @@ def test_physics_check_reports_missing_isaac(ws, monkeypatch, tmp_path):
 
 
 def test_unexpected_exceptions_become_issues(monkeypatch):
-    import claude_scene_generator.assets as assets
+    import sceneforge.assets as assets
 
     monkeypatch.setattr(assets, "list_assets", lambda *a, **k: 1 / 0)
     r = T.list_assets()
@@ -185,7 +185,7 @@ def test_mcp_server_registers_and_serves():
     pytest.importorskip("mcp")
     from mcp.client import Client
 
-    from claude_scene_generator.mcp_server import build_server
+    from sceneforge.mcp_server import build_server
 
     async def run():
         async with Client(build_server()) as c:

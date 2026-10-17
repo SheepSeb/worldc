@@ -7,10 +7,10 @@ import pytest
 trimesh = pytest.importorskip("trimesh")
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
-from claude_scene_generator.assets import Pose, registry
-from claude_scene_generator.assets.mesh import file_asset as fa_mod
-from claude_scene_generator.assets.mesh import import_mesh as im
-from claude_scene_generator.assets.mesh import mesh_asset as ma
+from sceneforge.assets import Pose, registry
+from sceneforge.assets.mesh import file_asset as fa_mod
+from sceneforge.assets.mesh import import_mesh as im
+from sceneforge.assets.mesh import mesh_asset as ma
 from conftest import build_asset
 
 try:

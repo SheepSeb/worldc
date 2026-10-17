@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from claude_scene_generator.datagen import export as ex
-from claude_scene_generator.datagen import prompts
-from claude_scene_generator.datagen.records import RECORD_VERSION, load_records, split_of
-from claude_scene_generator.datagen.runner import claude_command, env_signature, generate
+from sceneforge.datagen import export as ex
+from sceneforge.datagen import prompts
+from sceneforge.datagen.records import RECORD_VERSION, load_records, split_of
+from sceneforge.datagen.runner import claude_command, env_signature, generate
 
 FAKE = Path(__file__).parent / "fixtures" / "fake_claude.py"
 
@@ -47,7 +47,7 @@ def test_trace_uses_the_data_traces_vocabulary(root, monkeypatch):
     ev = [json.loads(ln) for ln in (d / "trace.jsonl").read_text().splitlines()]
     assert [e["seq"] for e in ev] == list(range(len(ev))) and ev[0]["type"] == "user" and ev[-1]["type"] == "result"
     assert {e["type"] for e in ev} <= {"user", "init", "assistant", "thinking", "write", "tool_call", "tool_result", "result"}
-    assert ev[0]["prompt_id"] == prompts.SPEC_WRITER_ID and ev[1]["type"] == "init" and ev[1]["mcp_servers"] == {"csg": "connected"}
+    assert ev[0]["prompt_id"] == prompts.SPEC_WRITER_ID and ev[1]["type"] == "init" and ev[1]["mcp_servers"] == {"sceneforge": "connected"}
     calls = [e for e in ev if e["type"] == "tool_call"]
     results = [e for e in ev if e["type"] == "tool_result"]
     assert [c["tool"] for c in calls] == ["search_assets", "validate_spec", "validate_spec", "build_scene", "render"] == [r["tool"] for r in results]
@@ -132,13 +132,13 @@ def test_split_is_by_family_and_deterministic():
 def test_claude_command_is_isolated_and_capped(tmp_path):
     cmd = claude_command("claude", "hi", tmp_path / "m.json", model="opus", effort="high", max_budget_usd=2.5)
     j = lambda flag: cmd[cmd.index(flag) + 1]  # noqa: E731
-    assert j("--tools") == "" and j("--allowedTools") == "mcp__csg__*" and "--strict-mcp-config" in cmd
+    assert j("--tools") == "" and j("--allowedTools") == "mcp__sceneforge__*" and "--strict-mcp-config" in cmd
     assert j("--max-budget-usd") == "2.5" and j("--model") == "opus" and j("--effort") == "high" and j("--permission-mode") == "dontAsk"
-    assert "mcp__csg" not in j("--append-system-prompt") and "SPEC REFERENCE" in j("--append-system-prompt")
+    assert "mcp__sceneforge" not in j("--append-system-prompt") and "SPEC REFERENCE" in j("--append-system-prompt")
 
 
 def test_auto_cameras_frame_the_scene():
-    from claude_scene_generator.tools import auto_cameras
+    from sceneforge.tools import auto_cameras
 
     c = auto_cameras({"environment": {"x_range": [-10, 10], "y_range": [-7, 7]}})
     t, o = c["auto_topdown"], c["auto_overview"]
@@ -149,8 +149,8 @@ def test_auto_cameras_frame_the_scene():
 
 def test_final_renders_are_collected_and_shown(root, monkeypatch):
     """With final checks on, every camera + the auto cameras are rendered by Isaac RTX; here the Isaac calls are stubbed."""
-    from claude_scene_generator import tools as T
-    from claude_scene_generator.datagen import runner
+    from sceneforge import tools as T
+    from sceneforge.datagen import runner
 
     calls = []
 

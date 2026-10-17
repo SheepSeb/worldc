@@ -18,8 +18,8 @@ import numpy as np
 import pytest
 from pxr import Usd, UsdPhysics
 
-from claude_scene_generator.compile import compile_scene
-from claude_scene_generator.recipes import warehouse
+from sceneforge.compile import compile_scene
+from sceneforge.recipes import warehouse
 
 BASE = json.loads((Path(__file__).parent / "fixtures" / "warehouse_baseline.json").read_text())
 STOCHASTIC = ("pallet", "box", "tote", "tote_item", "clutter")
@@ -95,7 +95,7 @@ def test_recipe_matches_baseline_all_seeds(built):
 
 
 def test_recipe_spec_is_compact_and_valid():
-    from claude_scene_generator.spec.validate import semantic
+    from sceneforge.spec.validate import semantic
 
     spec = warehouse(3)
     assert not [i for i in semantic(spec) if i.severity == "error"]
@@ -104,7 +104,7 @@ def test_recipe_spec_is_compact_and_valid():
 
 
 def test_legacy_cli_through_pipeline(tmp_path):
-    from claude_scene_generator.generate import build
+    from sceneforge.generate import build
 
     d = build(0, tmp_path)
     assert (d / "warehouse.usd").exists() and (d / "scene_graph.json").exists() and (d / "resolved_spec.json").exists()

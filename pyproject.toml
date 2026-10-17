@@ -1,5 +1,5 @@
 [project]
-name = "claude-scene-generator"
+name = "sceneforge"
 version = "0.1.0"
 description = "Declarative, agent-usable scene generation for Isaac Sim (scene spec -> USD)"
 readme = "README.md"
@@ -17,10 +17,10 @@ dependencies = [
 ]
 
 [project.scripts]
-claude-scene-generator = "claude_scene_generator:main"
-csg = "claude_scene_generator.cli:main"
-csg-import-mesh = "claude_scene_generator.assets.mesh.import_mesh:main"
-csg-mcp = "claude_scene_generator.mcp_server:main"
+sceneforge-warehouse = "sceneforge:main"
+sceneforge = "sceneforge.cli:main"
+sceneforge-import-mesh = "sceneforge.assets.mesh.import_mesh:main"
+sceneforge-mcp = "sceneforge.mcp_server:main"
 
 [project.optional-dependencies]
 mesh = [

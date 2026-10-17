@@ -6,8 +6,8 @@ import pytest
 from pxr import UsdPhysics
 
 from conftest import build_asset
-from claude_scene_generator.assets import Pose, describe, get
-from claude_scene_generator.colliders import collect
+from sceneforge.assets import Pose, describe, get
+from sceneforge.colliders import collect
 
 IDS = ["building_shell", "slope_zone", "rack_row", "rollup_door", "swing_door", "cage", "conveyor_belt", "conveyor_roller",
        "work_table", "charging_station", "traffic_cone", "trash_bin", "human_proxy", "forklift_proxy", "robot_placeholder",

@@ -74,7 +74,7 @@
  "details": [
   {
    "seed": 0,
-   "dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_0",
+   "dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_0",
    "usdchecker": {
     "errors": [],
     "failed_checks": [],
@@ -227,7 +227,7 @@
     "passed": true
    },
    "isaac": {
-    "seed_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_0",
+    "seed_dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_0",
     "stages": {
      "load": {
       "opened": true,
@@ -508,7 +508,7 @@
   },
   {
    "seed": 1,
-   "dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_1",
+   "dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_1",
    "usdchecker": {
     "errors": [],
     "failed_checks": [],
@@ -661,7 +661,7 @@
     "passed": true
    },
    "isaac": {
-    "seed_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_1",
+    "seed_dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_1",
     "stages": {
      "load": {
       "opened": true,
@@ -942,7 +942,7 @@
   },
   {
    "seed": 2,
-   "dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_2",
+   "dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_2",
    "usdchecker": {
     "errors": [],
     "failed_checks": [],
@@ -1095,7 +1095,7 @@
     "passed": true
    },
    "isaac": {
-    "seed_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_2",
+    "seed_dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_2",
     "stages": {
      "load": {
       "opened": true,
@@ -1376,7 +1376,7 @@
   },
   {
    "seed": 3,
-   "dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_3",
+   "dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_3",
    "usdchecker": {
     "errors": [],
     "failed_checks": [],
@@ -1529,7 +1529,7 @@
     "passed": true
    },
    "isaac": {
-    "seed_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_3",
+    "seed_dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_3",
     "stages": {
      "load": {
       "opened": true,
@@ -1810,7 +1810,7 @@
   },
   {
    "seed": 4,
-   "dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_4",
+   "dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_4",
    "usdchecker": {
     "errors": [],
     "failed_checks": [],
@@ -1963,7 +1963,7 @@
     "passed": true
    },
    "isaac": {
-    "seed_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/warehouse_out/seed_4",
+    "seed_dir": "/home/sebnae/ws/ws_startup/sceneforge/warehouse_out/seed_4",
     "stages": {
      "load": {
       "opened": true,

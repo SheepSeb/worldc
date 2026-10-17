@@ -1,16 +1,16 @@
 # MCP server
 
-`csg-mcp` exposes the scene pipeline as 11 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
+`sceneforge-mcp` exposes the scene pipeline as 11 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
 can go from a description to a validated, rendered scene. It needs the `mcp` extra and a working Isaac Sim install; it
 refuses to start otherwise (`env.isaac_sim_missing` / `env.isaac_sim_version` / `env.isaac_sim_broken`).
 
 ```
 uv sync --all-extras
-claude mcp add csg -- uv run --directory /path/to/claude_scene_generator csg-mcp
+claude mcp add sceneforge -- uv run --directory /path/to/sceneforge sceneforge-mcp
 ```
 
-Environment: `CSG_WORKSPACE` (output root, default `./mcp_out` of the server's working directory), `ISAACSIM_PATH`,
-`CSG_ISAAC_ASSET_ROOT`, `CSG_CATALOG_INDEX`.
+Environment: `SCENEFORGE_WORKSPACE` (output root, default `./mcp_out` of the server's working directory), `ISAACSIM_PATH`,
+`SCENEFORGE_ISAAC_ASSET_ROOT`, `SCENEFORGE_CATALOG_INDEX`.
 
 ## Result format
 

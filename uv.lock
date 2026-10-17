@@ -123,50 +123,6 @@ wheels = [
 ]
 
 [[package]]
-name = "claude-scene-generator"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-    { name = "scipy" },
-    { name = "usd-core" },
-]
-
-[package.optional-dependencies]
-mcp = [
-    { name = "mcp" },
-]
-mesh = [
-    { name = "coacd" },
-    { name = "trimesh" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "coacd", marker = "extra == 'mesh'", specifier = ">=1.0.14" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0" },
-    { name = "numpy", specifier = ">=2.5.4" },
-    { name = "pillow", specifier = ">=12.3.0" },
-    { name = "pydantic", specifier = ">=2.9" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "scipy", specifier = ">=1.18.1" },
-    { name = "trimesh", marker = "extra == 'mesh'", specifier = ">=5.1.1" },
-    { name = "usd-core", specifier = "==24.11" },
-]
-provides-extras = ["mesh", "mcp"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.1.1" }]
-
-[[package]]
 name = "click"
 version = "8.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -930,6 +886,50 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/80/ef/3a9f8e4279c7920af561deed4cb7ebebed2794a8f608cf404d5eef14a105/rpds_py-2026.9.1-pp312-pypy312_pp80-macosx_10_12_x86_64.whl", hash = "sha256:56c6952a9b15047466d0c2347c446a761d4527f89976156341e68f0ce5cc08b0", size = 357108, upload-time = "2026-10-04T16:32:31.641Z" },
     { url = "https://files.pythonhosted.org/packages/b7/55/4b2fa381a583760aea5c92841e4e928a358e1c6511b129219e9c2826a226/rpds_py-2026.9.1-pp312-pypy312_pp80-macosx_11_0_arm64.whl", hash = "sha256:b242c27c8f836305a4a72df9cdd564386ac57b807bd252a063223331c9316b37", size = 346877, upload-time = "2026-10-04T16:32:34.061Z" },
 ]
+
+[[package]]
+name = "sceneforge"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "scipy" },
+    { name = "usd-core" },
+]
+
+[package.optional-dependencies]
+mcp = [
+    { name = "mcp" },
+]
+mesh = [
+    { name = "coacd" },
+    { name = "trimesh" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "coacd", marker = "extra == 'mesh'", specifier = ">=1.0.14" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.0" },
+    { name = "numpy", specifier = ">=2.5.4" },
+    { name = "pillow", specifier = ">=12.3.0" },
+    { name = "pydantic", specifier = ">=2.9" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "scipy", specifier = ">=1.18.1" },
+    { name = "trimesh", marker = "extra == 'mesh'", specifier = ">=5.1.1" },
+    { name = "usd-core", specifier = "==24.11" },
+]
+provides-extras = ["mesh", "mcp"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 
 [[package]]
 name = "scipy"

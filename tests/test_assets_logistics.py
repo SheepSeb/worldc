@@ -5,8 +5,8 @@ import pytest
 from pxr import Usd, UsdPhysics
 
 from conftest import build_asset
-from claude_scene_generator.assets import Pose, describe, get
-from claude_scene_generator.colliders import collect
+from sceneforge.assets import Pose, describe, get
+from sceneforge.colliders import collect
 
 
 @pytest.mark.parametrize("variant", ["boxes", "wrapped", "totes", "empty"])
@@ -48,7 +48,7 @@ def test_describe_json(scratch_ctx):
 
 
 def test_param_errors():
-    from claude_scene_generator.assets.base import ParamError
+    from sceneforge.assets.base import ParamError
 
     with pytest.raises(ParamError) as e:
         get("pallet_load").params({"variant": "crates"})

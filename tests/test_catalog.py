@@ -8,11 +8,11 @@ import json
 import pytest
 from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
-from claude_scene_generator.assets import catalog_index as ci
-from claude_scene_generator.assets import registry
-from claude_scene_generator.assets.resolve import AssetResolutionError, pin_catalog, resolve, search
-from claude_scene_generator.compile import compile_scene
-from claude_scene_generator.spec.validate import validate
+from sceneforge.assets import catalog_index as ci
+from sceneforge.assets import registry
+from sceneforge.assets.resolve import AssetResolutionError, pin_catalog, resolve, search
+from sceneforge.compile import compile_scene
+from sceneforge.spec.validate import validate
 
 
 def _make_usd(path, size, up="Z", mpu=1.0, rigid=True, label=None):
@@ -82,7 +82,7 @@ def test_search_ranks_and_synonyms(index_file):
 
 
 def test_resolve_query_threshold(index_file, monkeypatch):
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
     assert ci.resolve_query("pallet")["path"] == "Isaac/Props/Pallet/pallet.usda"
     assert ci.resolve_query("pallet jack hydraulic") is None  # only 1 of 3 words matches
     assert ci.resolve_query("wooden pallet") is None  # 1 of 2 is not enough either: a wrong pin is worse than an error
@@ -90,21 +90,21 @@ def test_resolve_query_threshold(index_file, monkeypatch):
 
 
 def test_pin_and_errors(index_file, monkeypatch):
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
     pinned = pin_catalog({"catalog": "omniverse", "query": "hand truck", "tags": ["dynamic"]})
     assert pinned["path"] == "Isaac/Props/Dolly/hand_truck.usda" and "query" not in pinned and pinned["tags"] == ["dynamic"]
     assert pin_catalog(pinned) == pinned  # already pinned: unchanged
     with pytest.raises(AssetResolutionError) as e:
         pin_catalog({"catalog": "omniverse", "query": "zzqx"})
     assert e.value.code == "asset.catalog_no_match"
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file.with_name("missing.jsonl")))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file.with_name("missing.jsonl")))
     with pytest.raises(AssetResolutionError) as e:
         pin_catalog({"catalog": "omniverse", "query": "pallet"})
     assert e.value.code == "asset.catalog_unavailable"
 
 
 def test_validate_catalog_refs(index_file, monkeypatch):
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
     base = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2, -2, 2, 2]}]}
 
     def codes(q):
@@ -116,14 +116,14 @@ def test_validate_catalog_refs(index_file, monkeypatch):
 
 
 def test_unified_search_prefers_registry(index_file, monkeypatch):
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
     hits = search("pallet")
     assert {h["source"] for h in hits} == {"registry", "omniverse"}
     assert hits[0]["source"] == "registry"  # equal relevance: existing registry asset first
 
 
 def test_checked_in_index_is_usable(monkeypatch):
-    monkeypatch.delenv("CSG_CATALOG_INDEX", raising=False)
+    monkeypatch.delenv("SCENEFORGE_CATALOG_INDEX", raising=False)
     idx = ci.load_index()
     assert idx is not None and idx.meta["n"] > 100 and idx.meta["root"].startswith("https://")
     assert "Pallet" in idx.search("pallet")[0]["path"] or "pallet" in idx.search("pallet")[0]["path"].lower()
@@ -134,9 +134,9 @@ def test_checked_in_index_is_usable(monkeypatch):
 def test_compile_scene_with_catalog_query(root, index_file, tmp_path, monkeypatch):
     pytest.importorskip("trimesh")
     pytest.importorskip("coacd")
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
-    monkeypatch.setenv("CSG_ISAAC_ASSET_ROOT", str(root))
-    monkeypatch.setattr("claude_scene_generator.assets.catalog.DEFAULT_CACHE", tmp_path / "cache")
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_ISAAC_ASSET_ROOT", str(root))
+    monkeypatch.setattr("sceneforge.assets.catalog.DEFAULT_CACHE", tmp_path / "cache")
     d = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
          "objects": [{"id": "truck", "asset": {"catalog": "omniverse", "query": "hand truck"}, "placement": {"inside": "z"}}]}
     r = compile_scene(d, 0, tmp_path / "out")
@@ -159,7 +159,7 @@ def test_compile_scene_with_catalog_query(root, index_file, tmp_path, monkeypatc
 
 
 def test_limited_use_license_warning(index_file, monkeypatch):
-    monkeypatch.setenv("CSG_CATALOG_INDEX", str(index_file))
+    monkeypatch.setenv("SCENEFORGE_CATALOG_INDEX", str(index_file))
     assert ci.license_of("Isaac/Environments/Office/Props/SM_Clock_B.usd") == "limited-use"
     assert ci.license_of("Isaac/Props/Pallet/pallet.usd") == "omniverse-content"
     d = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2, -2, 2, 2]}],
@@ -170,7 +170,7 @@ def test_limited_use_license_warning(index_file, monkeypatch):
 
 
 def test_generated_asset_with_catalog_match_warns(monkeypatch):
-    monkeypatch.delenv("CSG_CATALOG_INDEX", raising=False)
+    monkeypatch.delenv("SCENEFORGE_CATALOG_INDEX", raising=False)
     gen = lambda gid: {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2, -2, 2, 2]}],
                        "objects": [{"id": "o", "asset": {"generate": {"id": gid, "description": "x", "body": "dynamic", "mass_kg": 5,
                                     "parts": [{"name": "b", "shape": "box", "size": [0.4, 0.4, 0.4], "pos": [0, 0, 0.2]}]}},
@@ -180,7 +180,7 @@ def test_generated_asset_with_catalog_match_warns(monkeypatch):
 
 
 def test_real_index_phrase_synonyms_and_refusals(monkeypatch):
-    monkeypatch.delenv("CSG_CATALOG_INDEX", raising=False)
+    monkeypatch.delenv("SCENEFORGE_CATALOG_INDEX", raising=False)
     assert ci.resolve_query("hand truck")["path"] == "Isaac/Props/Dolly/dolly.usd"
     assert ci.resolve_query("tote bin")["path"].startswith("Isaac/Props/KLT_Bin/")
     assert ci.resolve_query("hand drill") is None  # shares only "hand" with the hand dryer
@@ -191,7 +191,7 @@ def test_wrapper_layer_assets_are_mirrored(tmp_path):
     """Many Isaac assets (e.g. KLT_Bin/small_KLT.usd) are thin wrappers that reference geometry in sibling layers."""
     pytest.importorskip("trimesh")
     pytest.importorskip("coacd")
-    from claude_scene_generator.assets.catalog import catalog_asset
+    from sceneforge.assets.catalog import catalog_asset
 
     r = tmp_path / "root"
     _make_usd(r / "Isaac" / "Props" / "Bins" / "parts" / "bin_geo.usda", (0.3, 0.2, 0.15))

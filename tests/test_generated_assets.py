@@ -7,13 +7,13 @@ import json
 import numpy as np
 import pytest
 
-from claude_scene_generator import texturegen
-from claude_scene_generator.assets import Pose
-from claude_scene_generator.assets.generated import (
+from sceneforge import texturegen
+from sceneforge.assets import Pose
+from sceneforge.assets.generated import (
     GeneratedAsset, GeneratedAssetError, GeneratedAssetSpec, load_promoted, promote, validate_generated,
 )
-from claude_scene_generator.colliders import collect
-from claude_scene_generator.spec.issues import has_errors
+from sceneforge.colliders import collect
+from sceneforge.spec.issues import has_errors
 
 
 # --------------------------------------------------------------------------- example specs
@@ -182,7 +182,7 @@ def test_describe_json_serialisable():
 
 
 def test_params_rejected():
-    from claude_scene_generator.assets.base import ParamError
+    from sceneforge.assets.base import ParamError
 
     with pytest.raises(ParamError):
         GeneratedAsset(shelf()).params({"x": 1})
@@ -210,7 +210,7 @@ def test_promote_and_load_roundtrip(tmp_path):
 
 
 def test_registry_loader_dir_exists():
-    from claude_scene_generator.assets import generated
+    from sceneforge.assets import generated
 
     assert generated.LIBRARY_GENERATED_DIR.is_dir()
 
