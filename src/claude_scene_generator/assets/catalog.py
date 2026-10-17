@@ -1,4 +1,4 @@
-"""Omniverse / Isaac Sim catalog assets pinned by path (PLAN.md §2.6, minimal: no search index yet).
+"""Omniverse / Isaac Sim catalog assets (PLAN.md §2.6): download, import and reference by URL.  Search lives in catalog_index.
 
 ``{catalog: omniverse, path: Isaac/Props/Pallet/pallet.usd}`` resolves against the Isaac Sim asset root
 (``CSG_ISAAC_ASSET_ROOT``, default: the 5.1 S3 root Isaac Sim itself uses).  The root USD is downloaded once into a
@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 from pxr import Usd
 
+from .catalog_index import _mirror
 from .mesh.import_mesh import ImportError_, import_mesh, load_parts, normalise
 from .mesh.mesh_asset import MeshAsset, VisualXform, read_sidecar, write_sidecar
 
@@ -71,8 +72,8 @@ def _physics_prims(stage) -> list[str]:
     return out
 
 
-def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | str = DEFAULT_CACHE,
-                  root: str | None = None) -> MeshAsset:
+def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None,
+                  root: str | None = None, rev: str | None = None) -> MeshAsset:
     url = catalog_url(path, root)
     ov = {k: v for k, v in (overrides or {}).items() if v not in (None, [], "")}
     unknown = set(ov) - META_KEYS
@@ -80,15 +81,17 @@ def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | st
         raise ValueError(f"unknown catalog overrides {sorted(unknown)}; allowed: {sorted(META_KEYS)}")
     stem = Path(url).stem
     asset_id = ov.get("id") or "isaac_" + "".join(c if c.isalnum() else "_" for c in stem).strip("_").lower()
-    key = hashlib.sha256((url + json.dumps(ov, sort_keys=True, default=str)).encode()).hexdigest()[:12]
-    d = Path(cache_dir) / key
+    key = hashlib.sha256((url + (rev or "") + json.dumps(ov, sort_keys=True, default=str)).encode()).hexdigest()[:12]
+    d = Path(cache_dir or DEFAULT_CACHE) / key
     sidecar = d / f"{asset_id}.asset.yaml"
     if not sidecar.is_file():
         tmp = d.with_name(d.name + ".tmp")
         shutil.rmtree(tmp, ignore_errors=True)
-        (tmp / "src").mkdir(parents=True)
-        src = tmp / "src" / Path(url).name
+        base, rel = url.rsplit("/", 1) if path.startswith(("http://", "https://")) else (root or asset_root(), path.lstrip("/"))
+        src = tmp / "src" / rel
+        src.parent.mkdir(parents=True)
         _fetch(url, src)
+        _mirror(base, rel, tmp / "src")  # many catalog assets are thin wrappers composing further layers: fetch those too
         stage = Usd.Stage.Open(str(src))
         if stage is None or not stage.GetDefaultPrim():
             raise CatalogError("asset.catalog_bad_usd", f"{url} has no default prim, so it cannot be referenced.")

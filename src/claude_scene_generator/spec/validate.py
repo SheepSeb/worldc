@@ -6,7 +6,10 @@
 Codes (all ``error`` unless noted):
   asset.unknown              registry id not found (hint: closest ids)
   asset.file_missing         FileAssetRef.file does not exist
-  asset.catalog_unavailable  catalog assets need the Omniverse index (phase 5b) -- not usable yet
+  asset.catalog_unavailable  a catalog query needs the Omniverse index, and none is installed
+  asset.catalog_no_match     no catalog asset matches the query well enough (the hint lists the closest paths)
+  asset.generated_but_match_exists (warning)  a generated asset's name closely matches a catalog asset
+  asset.catalog_limited_license (warning)  the catalog asset is Limited Use Content (Isaac/Environments)
   asset.generated_invalid    see the nested gen.* issues (re-pathed under /objects/i/asset/generate)
   param.invalid              asset param failed validation (unknown name, out of range, wrong type)
   id.duplicate               two things share an id (objects, zones, agents, goals, cameras share one namespace)
@@ -90,8 +93,16 @@ def _resolve_asset(c: _Ctx, ref, path) -> object | None:
             c.add(error("asset.file_missing", f"Asset file not found: {ref.file}", path + "/file", "Check the path (relative paths resolve against the spec file's folder)."))
         return None
     if hasattr(ref, "catalog"):
-        c.add(error("asset.catalog_unavailable", "Omniverse catalog assets are not available yet (catalog index not built).", path,
-                    "Use a registry asset id, a file, or a generated asset."))
+        from ..assets.catalog_index import license_of
+        from ..assets.resolve import AssetResolutionError, pin_catalog
+
+        try:  # no download here: the query is matched against the offline index only
+            pinned = pin_catalog(ref)
+            if license_of(pinned["path"]) == "limited-use":
+                c.add(warning("asset.catalog_limited_license", f"{pinned['path']} is NVIDIA Limited Use Content (use only, no modification, "
+                              "no redistribution grant).", path, "Fine for local generation; see docs/CATALOG.md before shipping it in a dataset."))
+        except AssetResolutionError as e:
+            c.add(error(e.code, str(e), path, e.hint))
         return None
     from ..assets.generated import GeneratedAsset, validate_generated
 
@@ -100,6 +111,13 @@ def _resolve_asset(c: _Ctx, ref, path) -> object | None:
         c.add(i.model_copy(update={"path": path + "/generate" + i.path}))
     if has_errors(sub):
         return None
+    from ..assets.catalog_index import resolve_query
+
+    gid = str(ref.generate["id"])
+    near = resolve_query(gid.rsplit("/", 1)[-1].replace("_", " "))
+    if near:
+        c.add(warning("asset.generated_but_match_exists", f"The catalog already has {near['path']} for {gid!r}.", path,
+                      "Prefer {catalog: omniverse, path: ...} over generating; generate only when nothing existing fits.", match=near["path"]))
     return GeneratedAsset(ref.generate)
 
 

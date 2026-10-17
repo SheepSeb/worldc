@@ -61,7 +61,7 @@ def test_resolve_order(tmp_path):
     a = resolve({"file": "crate.obj", "id": "my_crate", "mass_kg": 2.0}, base_dir=tmp_path, cache_dir=tmp_path / "cache")
     assert a.source == "mesh" and a.id == "my_crate" and get("my_crate") is a
     with pytest.raises(AssetResolutionError):
-        resolve({"catalog": "omniverse", "query": "cart"})
+        resolve({"catalog": "omniverse", "query": "zzqx nonexistent"})
     g = resolve({"generate": {"id": "gen/block", "description": "a block", "body": "static",
                               "parts": [{"name": "b", "shape": "box", "size": [1, 1, 1], "pos": [0, 0, 0.5]}]}})
     assert g.source == "generated"

@@ -223,6 +223,7 @@ class MeshAsset(Asset):
             vx = sc.visual_xform or VisualXform(translate=(0.0, 0.0, 0.0))
             vis.GetReferences().AddReference(sc.visual_url)
             xf = UsdGeom.Xformable(vis)
+            xf.ClearXformOpOrder()  # k.xform already added an identity translate
             xf.AddTranslateOp().Set(Gf.Vec3d(*(s * t for t in vx.translate)))
             if vx.rotate_x_deg:
                 xf.AddRotateXOp().Set(vx.rotate_x_deg)

@@ -19,7 +19,7 @@ Dynamic bodies use analytic or convex colliders only, with explicit mass and ine
 | mesh | `assets/library/**/<id>.asset.yaml` + `.usd` + `.collision.usd` | `csg-import-mesh in.glb --id cart_01 --tags cart,metal --mass 12` (CoACD convex decomposition; extra `mesh`) |
 | user file | anywhere, referenced as `asset: {file: ...}` | imported on first use into a content-addressed cache (`~/.cache/claude_scene_generator/mesh_assets`) |
 | generated | `asset: {generate: {...}}` in a spec; promoted ones in `assets/library/generated/` | declarative parts/links/anchors validated by `assets/generated.py` (`gen.*` issue codes) |
-| catalog | Omniverse / Isaac Sim asset index | phase 5b |
+| catalog | Omniverse / Isaac Sim asset index | `catalog: omniverse` + `query` or `path`; see [CATALOG.md](CATALOG.md) |
 
 Materials are named presets (`materials.py`: `VISUAL`, `PHYSICAL`). Procedural textures are either built-in (floor,
 cardboard) or declarative `TextureSpec`s (`texturegen.py`).

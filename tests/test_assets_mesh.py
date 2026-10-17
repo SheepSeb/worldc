@@ -134,4 +134,4 @@ def test_library_example_registered():
     d = registry.describe("example_crate")
     json.dumps(d)
     assert d["footprint_at_defaults"]["size"] == pytest.approx([0.6, 0.4, 0.3], abs=1e-3)
-    assert sum(f.stat().st_size for f in ma.DEFAULT_LIBRARY.rglob("*") if f.is_file()) < 200_000
+    assert sum(f.stat().st_size for f in ma.DEFAULT_LIBRARY.rglob("*") if f.is_file() and "catalog" not in f.parts) < 200_000

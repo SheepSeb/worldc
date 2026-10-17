@@ -21,6 +21,7 @@ from pxr import Gf, UsdGeom
 from . import __name__ as _pkg
 from .assets import registry
 from .assets.base import BuildContext, Environment, Pose, sample_value
+from .assets.resolve import pin_catalog
 from .assets.procedural.agents import look_at_quat
 from .geom import Q_IDENT, qmul, qyaw
 from .lighting import build_lights
@@ -398,6 +399,9 @@ def resolved_spec(sol: Solution) -> dict:
             o.pop("yaw", None)
         o["count"] = len(insts)
         objs.append(o)
+    for o in objs:  # catalog queries are pinned to the exact path + revision they resolved to
+        if isinstance(o["asset"], dict) and "catalog" in o["asset"]:
+            o["asset"] = pin_catalog(o["asset"])
     d["objects"] = objs
     d.setdefault("metadata", {})["resolved_from"] = spec_hash(sol.spec)
     return d

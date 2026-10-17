@@ -875,7 +875,7 @@
       }
      ],
      "default": null,
-     "description": "Exact catalog asset path (pinned)",
+     "description": "Exact catalog asset path relative to the asset root, e.g. Isaac/Props/Pallet/pallet.usd (pinned)",
      "title": "Path"
     },
     "query": {
@@ -890,6 +890,19 @@
      "default": null,
      "description": "Search text; resolved once and pinned in the resolved spec",
      "title": "Query"
+    },
+    "rev": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Content revision (ETag) of `path` from the catalog index; set when a query is pinned",
+     "title": "Rev"
     },
     "tags": {
      "items": {

@@ -51,7 +51,8 @@ class FileAssetRef(Strict):
 class CatalogAssetRef(Strict):
     catalog: Literal["omniverse"] = "omniverse"
     query: str | None = Field(None, description="Search text; resolved once and pinned in the resolved spec")
-    path: str | None = Field(None, description="Exact catalog asset path (pinned)")
+    path: str | None = Field(None, description="Exact catalog asset path relative to the asset root, e.g. Isaac/Props/Pallet/pallet.usd (pinned)")
+    rev: str | None = Field(None, description="Content revision (ETag) of `path` from the catalog index; set when a query is pinned")
     tags: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
