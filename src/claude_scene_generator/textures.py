@@ -1,4 +1,5 @@
-"""Procedural textures (numpy + PIL): worn concrete floor with painted markings, cardboard with labels."""
+"""Procedural textures (numpy + PIL): floors (worn concrete / concrete / asphalt / epoxy with painted markings, steel grating),
+cardboard with labels, concrete ground and equirect skies (the last three salvaged from the former plant generator)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,30 +17,40 @@ def _fbm(rng, h, w, octaves=5, base=4):
     for o in range(octaves):
         n = base * 2**o
         g = rng.random((max(2, int(n * h / w)) + 1, n + 1)).astype(np.float32)
-        out += amp * zoom(g, (h / g.shape[0], w / g.shape[1]), order=3)[:h, :w]
+        out += amp * zoom(g, (h / g.shape[0], w / g.shape[1]), order=1)[:h, :w]  # linear: 4x faster, same look for noise
         tot += amp
         amp *= 0.55
     return out / tot
 
 
-def make_floor_texture(path: Path, rng, W: float, D: float, markings: list[dict], wear: float, px_per_m=FLOOR_PX_PER_M):
+FLOOR_STYLES = {  # base rgb, expansion-joint grid (m, 0 = none), noise contrast
+    "concrete_worn": ((138, 136, 130), 5.0, 0.34),
+    "concrete": ((150, 148, 142), 5.0, 0.22),
+    "asphalt": ((62, 62, 64), 0.0, 0.30),
+    "epoxy": ((118, 132, 126), 0.0, 0.08),
+}
+
+
+def make_floor_texture(path: Path, rng, W: float, D: float, markings: list[dict], wear: float, px_per_m=FLOOR_PX_PER_M,
+                       style: str = "concrete_worn"):
     """Concrete + stains + tyre wear; markings are painted with wear-dependent flaking.
 
     World -> pixel: u=(x+W/2)/W, v=(D/2-y)/D (v=0 is the north edge). Markings are dicts:
     {"type": "rect"|"line"|"hatch"|"poly", "color": (r,g,b), ...} in world metres.
     """
     w, h = int(W * px_per_m), int(D * px_per_m)
-    base = np.array([138, 136, 130], np.float32)
+    base_rgb, grid, contrast = FLOOR_STYLES[style]
+    base = np.array(base_rgb, np.float32)
     n = _fbm(rng, h, w, 6, 6)
     fine = gaussian_filter(rng.standard_normal((h, w)).astype(np.float32), 0.8)
-    img = base[None, None, :] * (0.82 + 0.34 * n[..., None]) + fine[..., None] * 3.0
-    # expansion joints on a 5 m grid
-    for gx in np.arange(0, W + 0.01, 5.0):
-        x = int(gx * px_per_m)
-        img[:, max(0, x - 1) : x + 1, :] *= 0.55
-    for gy in np.arange(0, D + 0.01, 5.0):
-        y = int(gy * px_per_m)
-        img[max(0, y - 1) : y + 1, :, :] *= 0.55
+    img = base[None, None, :] * (1.0 - contrast / 2 + contrast * n[..., None]) + fine[..., None] * 3.0
+    if grid:  # expansion joints
+        for gx in np.arange(0, W + 0.01, grid):
+            x = int(gx * px_per_m)
+            img[:, max(0, x - 1) : x + 1, :] *= 0.55
+        for gy in np.arange(0, D + 0.01, grid):
+            y = int(gy * px_per_m)
+            img[max(0, y - 1) : y + 1, :, :] *= 0.55
     # wear: dark oil stains + polished tyre lanes
     stains = _fbm(rng, h, w, 4, 3)
     stains = np.clip((stains - 0.62) * 6.0, 0, 1) * wear
@@ -133,3 +144,84 @@ def make_cardboard_texture(path: Path, rng, variant: int, size=384):
         d.line([(int(s * 0.82), int(s * 0.85)), (int(s * 0.82), int(s * 0.62))], fill=(40, 30, 20), width=4)
         d.polygon([(int(s * 0.82), int(s * 0.56)), (int(s * 0.77), int(s * 0.64)), (int(s * 0.87), int(s * 0.64))], fill=(40, 30, 20))
     im.save(path, quality=90)
+
+
+def make_grating(path: Path, rng, W: float, D: float, dirt: float, ppm: int = 200, panel=(1.0, 0.8)):
+    """Galvanised grating: dark voids, bright bearing bars (pitch 40 mm) + cross rods (100 mm), patchwork panels with
+    alternating bar direction, banding bars at panel edges, seams, dirt/rust/oil. u=(x+W/2)/W, v=1-(y+D/2)/D."""
+    w, h = int(W * ppm), int(D * ppm)
+    xm = (np.arange(w) + 0.5) / ppm
+    ym = (np.arange(h) + 0.5) / ppm
+    X, Y = np.meshgrid(xm, ym)
+    pw, ph = panel
+    ix, iy = (X // pw).astype(int), (Y // ph).astype(int)
+    orient = ((ix + iy + (rng.random() < 0.5)) % 2 == 0)
+    # random flips for a patchwork look
+    flip = rng.random((iy.max() + 1, ix.max() + 1)) < 0.25
+    orient = orient ^ flip[iy, ix]
+    lx, ly = X - ix * pw, Y - iy * ph
+    pitch, bar = 0.040, 0.012
+    # bearing bars along x (orient True) vary with y; along y (orient False) vary with x
+    u_b = np.where(orient, ly, lx)
+    u_c = np.where(orient, lx, ly)
+    bars = (u_b % pitch) < bar
+    rods = (u_c % 0.1) < 0.008
+    edge = np.minimum.reduce([lx, pw - lx, ly, ph - ly]) < 0.022
+    seam = np.minimum.reduce([lx, pw - lx, ly, ph - ly]) < 0.004
+    solid = bars | rods | edge
+    tone = 0.86 + 0.1 * (rng.random((iy.max() + 1, ix.max() + 1)) - 0.5)[iy, ix]
+    n = _fbm(rng, h, w, 5, 5)
+    img = np.where(solid, tone, 0.26)[..., None] * np.array([0.93, 0.95, 1.0], np.float32)
+    img = img * (0.9 + 0.2 * n[..., None])
+    # dirt: dark grime, rust and oil patches
+    g = np.clip((_fbm(rng, h, w, 4, 3) - 0.5) * 3.0, 0, 1) * dirt
+    img = img * (1 - 0.55 * g[..., None])
+    rust = np.clip((_fbm(rng, h, w, 5, 6) - 0.62) * 5.0, 0, 1) * dirt * solid
+    img = img * (1 - rust[..., None]) + rust[..., None] * np.array([0.38, 0.18, 0.08], np.float32)
+    img[seam] *= 0.35
+    Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).save(path, quality=90)
+
+
+def make_concrete(path: Path, rng, dirt: float, size=(1024, 1024)):
+    h, w = size
+    n = _fbm(rng, h, w, 6, 6)
+    fine = gaussian_filter(rng.standard_normal((h, w)).astype(np.float32), 0.8)
+    base = np.array([0.50, 0.49, 0.46], np.float32)
+    img = base * (0.78 + 0.4 * n[..., None]) + fine[..., None] * 0.02
+    stains = np.clip((_fbm(rng, h, w, 4, 3) - 0.6) * 5, 0, 1) * dirt
+    img *= 1 - 0.5 * stains[..., None]
+    for k in range(0, w, w // 8):
+        img[:, max(0, k - 1) : k + 1] *= 0.6
+    for k in range(0, h, h // 8):
+        img[max(0, k - 1) : k + 1, :] *= 0.6
+    Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).save(path, quality=88)
+
+
+def make_sky(path: Path, rng, kind: str, size=(2048, 1024)):
+    """Equirect sky. kind: 'clear' (blue gradient + sun glow + light clouds) | 'overcast' (bright grey)."""
+    h, w = size
+    v = np.linspace(0, 1, h)[:, None]  # 0 = zenith, 1 = nadir
+    el = (0.5 - v) * np.pi  # +pi/2 zenith
+    s = np.clip(np.sin(el), 0, 1)
+    if kind == "clear":
+        zen = np.array([0.18, 0.40, 0.85])
+        hor = np.array([0.80, 0.88, 0.97])
+        sky = hor + (zen - hor) * (s ** 0.6)[..., None]
+    else:
+        zen = np.array([0.62, 0.65, 0.70])
+        hor = np.array([0.82, 0.84, 0.86])
+        sky = hor + (zen - hor) * (s ** 0.8)[..., None]
+    sky = np.broadcast_to(sky, (h, w, 3)).copy()
+    c = _fbm(rng, h, w, 6, 3)
+    cl = np.clip((c - (0.55 if kind == "clear" else 0.35)) * (3.0 if kind == "clear" else 2.0), 0, 1) * (el > -0.05)
+    cl_col = np.array([1.0, 1.0, 1.0]) if kind == "clear" else np.array([0.88, 0.89, 0.9])
+    sky = sky * (1 - cl[..., None] * 0.8) + cl_col * cl[..., None] * 0.8
+    # ground below horizon: warm grey
+    gnd = np.broadcast_to(el < 0, (h, w))
+    sky[gnd] = np.array([0.42, 0.41, 0.38]) * (0.8 + 0.3 * _fbm(rng, h, w, 4, 8)[gnd][:, None])
+    if kind == "clear":
+        phi = np.linspace(0, 2 * np.pi, w)[None, :]
+        sun_az = 0.9
+        d = np.arccos(np.clip(np.sin(el) * np.sin(0.8) + np.cos(el) * np.cos(0.8) * np.cos(phi - sun_az), -1, 1))
+        sky += np.exp(-(d / 0.05) ** 2)[..., None] * np.array([6.0, 5.5, 4.5]) * 0.3 + np.exp(-(d / 0.4) ** 2)[..., None] * np.array([0.25, 0.22, 0.15])
+    Image.fromarray((np.clip(sky, 0, 1) * 255).astype(np.uint8)).save(path, quality=90)

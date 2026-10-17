@@ -338,6 +338,8 @@ class Clearance(_C):
     axis: Literal["x", "y"] = Field("x", description="Gap measured along this axis; scanned along the other")
     span: Point2 | None = Field(None, description="Scan range along the other axis (default: zone extent)")
     target: float = Field(gt=0, description="Required narrowest free gap (m)")
+    side: Literal["any", "min", "max"] = Field("any", description="Which zone edge the free gap must touch: 'max' = the +axis edge (e.g. the "
+                                                               "opposite rack), 'min' = the -axis edge, 'any' = the largest gap anywhere")
     tolerance: float = Field(0.03, ge=0)
     adjust: list[Ref] = Field(min_length=1, description="Objects the solver may slide to hit the target")
 

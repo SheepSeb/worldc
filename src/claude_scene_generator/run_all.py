@@ -50,14 +50,14 @@ def kit_log_errors(since: float) -> dict:
 
 
 def run_seed(seed: int, out: Path, skip_isaac=False, sim_seconds=10.0, extra=()) -> dict:
-    from . import generate, static_validate
+    from . import generate
+    from .check import check_scene
 
     t0 = time.time()
     d = generate.build(seed, out)
     res = {"seed": seed, "dir": str(d)}
     res["usdchecker"] = usdchecker(d / "warehouse.usd")
-    res["static"] = static_validate.run(d)
-    (d / "static_validation.json").write_text(json.dumps(res["static"], indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o)))
+    res["static"] = check_scene(d)  # writes check.json + nav_occupancy.png
     if not skip_isaac:
         start = time.time()
         env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
@@ -83,10 +83,12 @@ def summarize(r: dict) -> dict:
     s["4_articulation_ok"] = bool(isa.get("articulation", {}).get("ok"))
     st = r["static"]
     s["5_nav_ok"] = bool(st["navigation"]["all_reachable"])
-    s["5_chokepoint_m"] = st["navigation"]["chokepoint_min_clearance_m"]
+    s["5_chokepoint_m"] = next((c["measured_m"] for c in st["clearance"] if c["id"] == "chokepoint"), None)
     s["6_render_ok"] = bool(isa.get("render", {}).get("ok"))
     s["static_clean"] = bool(not st["spawn_interpenetrations"] and not st["floating_bodies"] and not st["hazard_path_conflicts"])
-    s["all_pass"] = all(s[k] for k in ("1_usdchecker", "2_loads_headless", "3_physics_ok", "4_articulation_ok", "5_nav_ok", "6_render_ok", "static_clean"))
+    stages = ("1_usdchecker", "5_nav_ok", "static_clean") if "isaac" not in r else (
+        "1_usdchecker", "2_loads_headless", "3_physics_ok", "4_articulation_ok", "5_nav_ok", "6_render_ok", "static_clean")
+    s["all_pass"] = all(s[k] for k in stages)
     return s
 
 
@@ -103,7 +105,8 @@ def write_md(out: Path, summaries, results):
               f"- conveyor payload speeds (target 0.5 m/s): " + ", ".join(f"{v['mean_vy_mps']}" for v in ph.get('conveyor_payload_speeds', {}).values()),
               f"- articulations: " + ", ".join(f"{j['name']} ({'ok' if j['ok'] else 'FAIL'}, pen {j['max_interpenetration_mm']} mm)" for j in ar.get("joints", [])),
               f"- spawn interpenetrations >3 mm: {len(st['spawn_interpenetrations'])}; floating: {len(st['floating_bodies'])}; hazard-path conflicts: {len(st['hazard_path_conflicts'])}",
-              f"- navigation: {sum(g['reachable'] for g in st['navigation']['goals'])}/{st['navigation']['n_goals']} goals reachable on the 5 cm grid (robot radius {st['navigation']['robot_radius_m']} m); chokepoint clearance exact {st['navigation']['chokepoint_min_clearance_m']} m (grid-quantised {st['navigation']['chokepoint_min_clearance_grid_m']} m)",
+              f"- navigation: {sum(g['reachable'] for g in st['navigation']['goals'])}/{st['navigation']['n_goals']} goals reachable on the 5 cm grid (robot radius {st['navigation']['robot_radius_m']} m); chokepoint clearance exact "
+              + ", ".join(f"{c['id']} {c['measured_m']} m" for c in st["clearance"]),
               f"- kit log: {r.get('kit_log', {}).get('n_fatal')} fatal, {r.get('kit_log', {}).get('n_errors')} errors", ""]
     (out / "validation_report.md").write_text("\n".join(L))
 
@@ -128,7 +131,7 @@ def main(argv=None):
         print(json.dumps(sm), flush=True)
     (out / "validation_report.json").write_text(json.dumps({"summary": summaries, "details": results}, indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o)))
     write_md(out, summaries, results)
-    print("ALL PASS" if all(x["all_pass"] for x in summaries) else "SOME FAILED")
+    print(("ALL PASS" if all(x["all_pass"] for x in summaries) else "SOME FAILED") + (" (Isaac stages skipped)" if a.skip_isaac else ""))
 
 
 if __name__ == "__main__":

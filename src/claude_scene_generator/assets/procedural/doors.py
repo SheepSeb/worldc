@@ -182,7 +182,11 @@ class Cage(Asset):
     physics = PhysicsInfo("articulated", "steel", 0.6, 28.0, "primitives", "static fence + fixed-base gate articulation")
 
     def footprint(self, p):
-        return Footprint.rect(p.size[0] + 0.4, p.size[1] + 0.4, p.fence_height + 0.3)
+        """Hollow: four fence strips (posts included), so contents can be placed inside."""
+        sx, sy, h, t = p.size[0], p.size[1], p.fence_height + 0.2, 0.1
+        return Footprint.union([Footprint.rect(sx + t, t, h, 0, -sy / 2), Footprint.rect(sx + t, t, h, 0, sy / 2),
+                                Footprint.rect(t, sy + t, h, -sx / 2, 0), Footprint.rect(t, sy + t, h, sx / 2, 0),
+                                Footprint.rect(p.gate_width + 0.1, 0.08, h, p.gate_offset, -sy / 2 - 0.055)])
 
     def anchors(self, p):
         sx, sy = p.size

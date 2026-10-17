@@ -30,7 +30,7 @@ from .spec.issues import Issue, error, has_errors
 from .spec.models import SPEC_VERSION, SceneSpec
 from .spec.refs import parse_ref
 from .spec.validate import check as validate_check
-from .textures import make_floor_texture
+from .textures import make_floor_texture, make_grating, make_sky
 from .usdkit import Kit, T
 
 GENERATOR_VERSION = "2.0"
@@ -162,6 +162,62 @@ def _cameras(kit, spec: SceneSpec, sol: Solution, robot_prim: str | None) -> lis
     return out
 
 
+# --------------------------------------------------------------------------------------------------- clearance refinement
+def _exact_gap(stage, chk) -> float:
+    from .check.clearance import measure
+    from .colliders import collect
+    from .geom import footprint
+
+    polys, boxes = [], []
+    for c in collect(stage):
+        lo, hi = c.obb.aabb()
+        if c.is_mesh or c.category in ("hazard", "floor", "roof") or hi[2] < 0.10 or lo[2] > 1.80:
+            continue
+        P = footprint(c.obb)
+        polys.append(P)
+        boxes.append((P[:, 0].min(), P[:, 1].min(), P[:, 0].max(), P[:, 1].max()))
+    return measure(polys, boxes, chk)[0]
+
+
+def _refine_clearances(kit, sol: Solution, inst_info: dict, max_iter: int = 3) -> dict:
+    """Planning uses conservative footprints; measure the exact gap on the built colliders and translate the `adjust`
+    instances by the residual (a pure translation along the gap axis changes a side-anchored gap one-for-one)."""
+    from pxr import UsdPhysics
+
+    out = {}
+    cons = {(k.id or f"clearance_{i}"): k for i, k in enumerate(sol.spec.constraints) if k.type == "clearance"}
+    for c in sol.clearance:
+        k = cons.get(c["id"])
+        if k is None or not c.get("rect") or c.get("side", "any") == "any":
+            continue
+        adjust = {parse_ref(r).target for r in k.adjust}
+        roots = [v["root"] for v in inst_info.values() if v["spec_id"] in adjust]
+        chk = {"rect": c["rect"], "axis": c["axis"], "span": c["span"], "side": c["side"]}
+        total = 0.0
+        for _ in range(max_iter):
+            err = _exact_gap(kit.stage, chk) - c["target"]
+            if abs(err) <= min(0.005, c["tolerance"] / 3):
+                break
+            d = err if c["side"] == "max" else -err  # max: move toward the +edge to shrink the gap
+            off = (d, 0.0) if c["axis"] == "x" else (0.0, d)
+            for root in roots:
+                rp = kit.stage.GetPrimAtPath(root)
+                bodies = [rp] if rp.HasAPI(UsdPhysics.RigidBodyAPI) else [q for q in rp.GetChildren() if q.HasAPI(UsdPhysics.RigidBodyAPI)]
+                for b in bodies:
+                    op = UsdGeom.Xformable(b).GetOrderedXformOps()[0]
+                    v = op.Get()
+                    op.Set(Gf.Vec3d(v[0] + off[0], v[1] + off[1], v[2]))
+                for r_ in kit.records:
+                    if r_["path"] == root or r_["path"].startswith(root + "/"):
+                        r_["position"][0] = round(r_["position"][0] + off[0], 4)
+                        r_["position"][1] = round(r_["position"][1] + off[1], 4)
+            total += d
+        out[c["id"]] = round(total, 4)
+    if out:
+        kit.save()
+    return out
+
+
 # --------------------------------------------------------------------------------------------------- build
 def _group(obj_id: str) -> str:
     return f"/World/{obj_id}"
@@ -192,7 +248,11 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
     wear = float(sample_value(spec.environment.floor.wear, rng_for(seed, "floor", "wear")))
     marks = _markings(spec, sol)
     W, D = env.x_range[1] - env.x_range[0], env.y_range[1] - env.y_range[0]
-    floor_tex = tex.get("floor", lambda p, r: make_floor_texture(p, r, W, D, marks, wear), legacy_seed=seed + 1000)
+    fmat = spec.environment.floor.material
+    if fmat == "grating":
+        floor_tex = tex.get("floor", lambda p, r: make_grating(p, r, W, D, wear, ppm=100), legacy_seed=seed + 1000)
+    else:
+        floor_tex = tex.get("floor", lambda p, r: make_floor_texture(p, r, W, D, marks, wear, style=fmat), legacy_seed=seed + 1000)
     builts = {}
     if env.kind == "indoor":
         sp = env.shell.params({**env.shell_params.model_dump(), "floor_texture": floor_tex})
@@ -216,6 +276,7 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         sz.build(ctx, f"/World/SlopeZones/{zs.id}", Pose(((zs.rect[0] + zs.rect[2]) / 2, (zs.rect[1] + zs.rect[3]) / 2, 0)), p, rng_for(seed, zs.id, "build"))
     # ---- instances (solver order: parents before children)
     inst_info = {}
+    sol_keys = sol.by_key()
     for inst in sol.instances:
         pose = inst.pose
         if inst.parent and inst.anchor and inst.parent in builts:
@@ -228,7 +289,12 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         ctx.scope(group)
         path = f"{group}/{inst.obj_id}_{inst.index:04d}"
         zone = inst.zone_label or (inst.meta.get("zone")) or (builts and inst.parent and inst.parent.split(".")[0]) or inst.obj_id
-        ctx.meta = {"spec_id": inst.obj_id, "zone": zone, "record_extra": {"instance": inst.key}}
+        extra = {"instance": inst.key}
+        if "aisle" in inst.meta:
+            extra["faces_aisle"] = inst.meta["aisle"]
+        if inst.parent and inst.relation in ("on", "pose") and inst.parent in sol_keys and "conveyor" in sol_keys[inst.parent].asset.tags:
+            extra["on_conveyor"] = sol_keys[inst.parent].obj_id
+        ctx.meta = {"spec_id": inst.obj_id, "zone": zone, "record_extra": extra}
         b = inst.asset.build(ctx, path, pose, inst.params, rng_for(seed, inst.obj_id, inst.index, "build"))
         builts[inst.key] = b
         inst_info[inst.key] = {"spec_id": inst.obj_id, "index": inst.index, "asset": inst.asset.id, "source": inst.asset.source,
@@ -251,8 +317,14 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         robot = {"spawn": [round(r["pose"].pos[0], 3), round(r["pose"].pos[1], 3), round(r["pose"].yaw, 4)], "prim": "/World/Robot",
                  "camera": rb.info.get("camera"), "radius_m": r["radius"], "asset": r["asset"].id}
     cams = _cameras(kit, spec, sol, "/World/Robot" if robot else None)
+    for c in cams + ([{"path": robot["camera"], "position": robot["spawn"][:2] + [1.5]}] if robot and robot.get("camera") else []):
+        kit.record(c["path"], "camera", c["position"], Q_IDENT, "none")
+    sky = None
+    if spec.lighting.preset in ("sun", "overcast"):
+        kind = "clear" if spec.lighting.preset == "sun" else "overcast"
+        sky = tex.get(f"sky_{kind}", lambda p, r: make_sky(p, r, kind))
     lighting = build_lights(kit, rng_for(seed, "lights"), spec.lighting.preset, env.x_range, env.y_range, env.height if env.kind == "indoor" else None,
-                            spec.lighting.scale, spec.lighting.color_temperature)
+                            spec.lighting.scale, spec.lighting.color_temperature, sky_texture=sky)
     kit.stage.SetStartTimeCode(0)
     kit.stage.SetEndTimeCode(0)
     kit.stage.GetRootLayer().documentation = f"{spec.name} seed={seed} (claude_scene_generator {GENERATOR_VERSION}, spec {SPEC_VERSION})"
@@ -263,7 +335,9 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
     for r_ in recs:
         counts[r_["category"]] = counts.get(r_["category"], 0) + 1
     stats = ctx.scene["stats"]
-    clearance_checks = [{"id": c["id"], "rect": c["rect"], "axis": c["axis"], "span": c["span"], "target": c["target"], "tolerance": c["tolerance"],
+    refine = _refine_clearances(kit, sol, inst_info)
+    clearance_checks = [{"id": c["id"], "rect": c["rect"], "axis": c["axis"], "side": c.get("side", "any"), "span": c["span"], "target": c["target"],
+                         "tolerance": c["tolerance"], "refined_shift_m": refine.get(c["id"]),
                          "gap_center": c["gap_center"], "planned_m": c["planned_m"]} for c in sol.clearance if c.get("rect")]
     graph = {
         "seed": seed, "generator": "claude_scene_generator.compile", "generator_version": GENERATOR_VERSION, "spec_version": SPEC_VERSION,

@@ -56,7 +56,7 @@ graph = load_scene_graph(SEED_DIR / "scene_graph.json")
 # ------------------------------------------------------------------ 1. load
 ctx = omni.usd.get_context()
 log("opening stage")
-ok = ctx.open_stage(str(SEED_DIR / "warehouse.usd")); msg = ""
+ok = ctx.open_stage(str(SEED_DIR / graph.get("usd", "warehouse.usd"))); msg = ""
 while ctx.get_stage_loading_status()[2] > 0:
     app.update()
 for _ in range(10):

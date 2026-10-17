@@ -15,7 +15,7 @@ from typing import Literal
 import numpy as np
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from pxr import Gf, UsdGeom, UsdPhysics
+from pxr import Gf, Sdf, UsdGeom, UsdPhysics
 
 from ...geom import Part, Q_IDENT, qyaw
 from ...materials import PHYSICAL
@@ -75,6 +75,13 @@ class Provenance(_M):
     warnings: list[str] = Field(default_factory=list)
 
 
+class VisualXform(_M):
+    """Maps the referenced original asset onto the normalised frame: p_norm = translate + rotX(rotate_x_deg) * scale * p."""
+    translate: tuple[float, float, float]
+    rotate_x_deg: float = 0.0
+    scale: float = 1.0
+
+
 class MeshSidecar(_M):
     id: str
     description: str = ""
@@ -94,6 +101,10 @@ class MeshSidecar(_M):
     articulation: str | None = None
     thumbnail: str | None = None
     provenance: Provenance
+    # catalog assets: the scene references the original by URL instead of the normalised local copy
+    visual_url: str | None = None
+    visual_xform: VisualXform | None = None
+    disable_physics: list[str] = Field(default_factory=list)  # prims (relative to the default prim) whose own physics is switched off
 
     @field_validator("material")
     @classmethod
@@ -206,16 +217,31 @@ class MeshAsset(Asset):
             root = k.xform(path, pos, pose.quat)
         else:
             root = k.rigid_body(path, pos, pose.quat, parts=parts, mass=mass, kinematic=(body == "kinematic"))
-        # visual: USD reference to the normalised visual file
         vis = k.xform(f"{path}/Visual")
-        ref = self.visual_file
-        try:
-            asset_path = "./" + os.path.relpath(ref, Path(k.path).resolve().parent)
-        except ValueError:
-            asset_path = str(ref)
-        vis.GetReferences().AddReference(asset_path)
-        if s != 1.0:
-            UsdGeom.Xformable(vis).AddScaleOp(UsdGeom.XformOp.PrecisionFloat).Set(Gf.Vec3f(s, s, s))
+        if sc.visual_url:
+            # catalog asset: reference the original (its materials render in Isaac Sim), mapped onto the normalised frame
+            vx = sc.visual_xform or VisualXform(translate=(0.0, 0.0, 0.0))
+            vis.GetReferences().AddReference(sc.visual_url)
+            xf = UsdGeom.Xformable(vis)
+            xf.AddTranslateOp().Set(Gf.Vec3d(*(s * t for t in vx.translate)))
+            if vx.rotate_x_deg:
+                xf.AddRotateXOp().Set(vx.rotate_x_deg)
+            if s * vx.scale != 1.0:
+                xf.AddScaleOp(UsdGeom.XformOp.PrecisionFloat).Set(Gf.Vec3f(*(3 * [s * vx.scale])))
+            for rel in sc.disable_physics:  # our hulls are the only colliders; never nest the asset's own bodies
+                over = k.stage.OverridePrim(f"{path}/Visual/{rel}" if rel else f"{path}/Visual")
+                over.CreateAttribute("physics:collisionEnabled", Sdf.ValueTypeNames.Bool).Set(False)
+                over.CreateAttribute("physics:rigidBodyEnabled", Sdf.ValueTypeNames.Bool).Set(False)
+        else:
+            # visual: USD reference to the normalised visual file
+            ref = self.visual_file
+            try:
+                asset_path = "./" + os.path.relpath(ref, Path(k.path).resolve().parent)
+            except ValueError:
+                asset_path = str(ref)
+            vis.GetReferences().AddReference(asset_path)
+            if s != 1.0:
+                UsdGeom.Xformable(vis).AddScaleOp(UsdGeom.XformOp.PrecisionFloat).Set(Gf.Vec3f(s, s, s))
         # collision: precomputed convex hulls
         pmat = self._phys_material(ctx)
         k.scope(f"{path}/Collision")

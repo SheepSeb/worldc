@@ -213,31 +213,29 @@ def test_load_failed(tmp_path):
     assert codes(r) == ["check.load_failed"]
 
 
-# --------------------------------------------------------------------------- legacy warehouse (slow)
+# --------------------------------------------------------------------------- full warehouse (slow)
 @pytest.fixture(scope="session")
-def legacy_seed(tmp_path_factory):
+def warehouse_seed(tmp_path_factory):
     from claude_scene_generator.generate import build
 
-    return build(0, tmp_path_factory.mktemp("legacy"))
+    return build(0, tmp_path_factory.mktemp("warehouse"))
 
 
 @pytest.mark.slow
-def test_legacy_warehouse_matches_static_validate(legacy_seed):
-    from claude_scene_generator import static_validate as sv
+def test_warehouse_matches_baseline_validation(warehouse_seed):
+    """The recipe-built warehouse passes the same pre-flight the legacy validator reported for the original (fixture)."""
+    import json
+    from pathlib import Path
 
-    r = check_scene(legacy_seed)
+    base = json.loads((Path(__file__).parent / "fixtures" / "warehouse_baseline.json").read_text())["per_seed"]["0"]
+    r = check_scene(warehouse_seed)
     print("check_scene seconds:", r["seconds"], "colliders:", r["n_colliders"])
     assert r["passed"], r["issues"]
     assert r["seconds"] < 60
-    (ck,) = r["clearance"]
-    assert ck["id"] == "chokepoint" and abs(ck["measured_m"] - 0.90) <= 0.03
+    ck = next(c for c in r["clearance"] if c["id"] == "chokepoint")
+    assert abs(ck["measured_m"] - 0.90) <= 0.03
     nav = r["navigation"]
-    assert nav["all_reachable"] and nav["robot_radius_m"] == 0.38
-    old = sv.run(legacy_seed)
-    assert old["passed"]
-    assert nav["n_goals"] == old["navigation"]["n_goals"]
-    assert sum(g["reachable"] for g in nav["goals"]) == sum(g["reachable"] for g in old["navigation"]["goals"])
-    assert len(r["spawn_interpenetrations"]) == len(old["spawn_interpenetrations"])
-    assert len(r["floating_bodies"]) == len(old["floating_bodies"])
-    assert len(r["hazard_path_conflicts"]) == len(old["hazard_path_conflicts"])
-    assert abs(ck["measured_m"] - old["navigation"]["chokepoint_min_clearance_m"]) < 0.005
+    assert nav["all_reachable"] and nav["robot_radius_m"] == 0.38 and nav["n_goals"] == len(base["goals"])
+    assert len(r["spawn_interpenetrations"]) == base["static"]["spawn_interpenetrations"] == 0
+    assert len(r["floating_bodies"]) == base["static"]["floating_bodies"] == 0
+    assert len(r["hazard_path_conflicts"]) == base["static"]["hazard_path_conflicts"] == 0

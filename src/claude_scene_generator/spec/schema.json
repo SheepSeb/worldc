@@ -945,6 +945,17 @@
      "default": null,
      "title": "Id"
     },
+    "side": {
+     "default": "any",
+     "description": "Which zone edge the free gap must touch: 'max' = the +axis edge (e.g. the opposite rack), 'min' = the -axis edge, 'any' = the largest gap anywhere",
+     "enum": [
+      "any",
+      "min",
+      "max"
+     ],
+     "title": "Side",
+     "type": "string"
+    },
     "span": {
      "anyOf": [
       {

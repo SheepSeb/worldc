@@ -36,7 +36,7 @@ class Kit:
         self.world = UsdGeom.Xform.Define(self.stage, "/World")
         self.stage.SetDefaultPrim(self.world.GetPrim())
         self.records: list[dict] = []
-        self.ns = "warehouse"  # attribute namespace used by tag()
+        self.ns = "scene"  # attribute namespace used by tag() (specs may set output.namespace, e.g. "warehouse")
         self._mats: dict[str, UsdShade.Material] = {}
         self._pmats: dict[str, UsdShade.Material] = {}
         self._counters: dict[str, int] = {}

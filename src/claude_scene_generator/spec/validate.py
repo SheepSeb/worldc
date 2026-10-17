@@ -63,6 +63,15 @@ class _Ctx:
 
 
 def _max_count(o) -> int:
+    """Upper bound on the instances an object can produce (layouts and fills define their own counts)."""
+    pl = o.placement
+    if isinstance(pl, LayoutPlacement):
+        lay = pl.layout
+        return {"rack_aisles": lambda: 2 * lay.aisles, "grid": lambda: lay.rows * lay.cols}.get(lay.type, lambda: 10_000)()
+    if isinstance(pl, FillPlacement):
+        return pl.fill.max if pl.fill.max is not None else 10_000
+    if isinstance(pl, PosePlacement) and isinstance(pl.pose, list):
+        return len(pl.pose)
     return o.count[1] if isinstance(o.count, tuple) else o.count
 
 

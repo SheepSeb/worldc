@@ -45,14 +45,17 @@ class RackRow(Asset):
     example = {"id": "racks", "asset": "rack_row", "count": 12, "placement": {"layout": {"type": "rack_aisles", "aisles": 6, "aisle_width": 3.2}}}
 
     def footprint(self, p):
-        """Precise pieces: the two upright+beam strips of every segment and the end guards (pallets sit between)."""
+        """Precise pieces matching the colliders: beam strips per side, each upright, end guards (pallets sit between)."""
         half = p.depth / 2 - 0.05
-        outer, inner = half + POST / 2, half - 0.065 - BEAM_W / 2
+        beam_x = half - 0.065
         pieces = []
-        for ya, yb in p.segments:
-            yc, L = (ya + yb) / 2, (yb - ya) + POST
+        for s_, (ya, yb) in enumerate(p.segments):
+            fr = self._frames(p, ya)
+            y_lo, y_hi = fr[0] + POST / 2, fr[-1] - POST / 2
             for sx in (-1, 1):
-                pieces.append(Footprint.rect(outer - inner, L, p.upright_height, sx * (outer + inner) / 2, yc))
+                pieces.append(Footprint.rect(BEAM_W, y_hi - y_lo, max(p.levels), sx * beam_x, (y_lo + y_hi) / 2, z0=min(p.levels) - BEAM_H))
+                for yf in fr:
+                    pieces.append(Footprint.rect(POST, POST, p.upright_height, sx * half, yf))
             if p.guards:
                 for end_y in (ya - 0.2, yb + 0.2):
                     pieces.append(Footprint.rect(p.depth + 0.05, 0.12, 0.5, 0.0, end_y))

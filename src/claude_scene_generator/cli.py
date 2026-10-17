@@ -3,6 +3,7 @@
     csg validate spec.yaml [--json]       schema + semantic validation (exit 1 on errors)
     csg build spec.yaml --seed 3 --out out/scene_3 [--no-check] [--json]
     csg check out/scene_3                 post-build checks (overlap, floating, hazards, nav, clearance)
+    csg recipe warehouse --seed 3 [--out out/wh_3]   print the recipe's spec (JSON), or build it with --out
     csg render out/scene_3 --camera overhead [--map] [--width 960 --height 540]
     csg schema [--section ObjectSpec]     print the JSON schema (or one $defs section)
     csg assets [--tags door,dock] [--query valve]
@@ -30,6 +31,10 @@ def main(argv=None):
     b.add_argument("--out", required=True)
     b.add_argument("--no-check", action="store_true")
     b.add_argument("--json", action="store_true")
+    rc = sub.add_parser("recipe", help="print or build a recipe's spec")
+    rc.add_argument("name")
+    rc.add_argument("--seed", type=int, default=0)
+    rc.add_argument("--out", default=None)
     c = sub.add_parser("check", help="post-build checks of a scene directory")
     c.add_argument("scene")
     r = sub.add_parser("render", help="fast proxy render (no Isaac Sim)")
@@ -73,6 +78,19 @@ def main(argv=None):
             for x in res.issues:
                 print(x)
             print(f"{'OK' if res.ok else 'FAILED'}: {res.out_dir or '-'} ({res.seconds:.1f} s)")
+        sys.exit(0 if res.ok else 1)
+    if args.cmd == "recipe":
+        from .compile import compile_scene
+        from .recipes import RECIPES
+
+        if args.name not in RECIPES:
+            sys.exit(f"unknown recipe {args.name!r}; available: {', '.join(sorted(RECIPES))}")
+        spec = RECIPES[args.name](args.seed)
+        if not args.out:
+            print(json.dumps(spec.model_dump(mode="json", by_alias=True, exclude_defaults=True), indent=1))
+            return
+        res = compile_scene(spec, args.seed, args.out)
+        print(f"{'OK' if res.ok else 'FAILED'}: {res.out_dir} ({res.seconds:.1f} s)")
         sys.exit(0 if res.ok else 1)
     if args.cmd == "check":
         from .check import check_scene

@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from pxr import Gf, UsdLux
+from pxr import Gf, Sdf, UsdLux
 
 LIGHT_BASE = 30000.0  # RectLight intensity of a full-power ceiling panel
 PANEL_CFG = {
@@ -26,7 +26,8 @@ def _q_down_to(d):
     return qalign(-np.asarray(d, float))
 
 
-def build_lights(kit, rng, preset: str, x_range, y_range, height: float | None, scale: float = 1.0, color_temperature=None) -> dict:
+def build_lights(kit, rng, preset: str, x_range, y_range, height: float | None, scale: float = 1.0, color_temperature=None,
+                 sky_texture: str | None = None) -> dict:
     kit.scope("/World/Lights")
     info = {"setup_name": preset, "scale": scale}
     if preset in PANEL_CFG:
@@ -75,7 +76,11 @@ def build_lights(kit, rng, preset: str, x_range, y_range, height: float | None, 
     else:  # sun / overcast
         clear = preset == "sun"
         dome = UsdLux.DomeLight.Define(kit.stage, "/World/Lights/Sky")
-        dome.CreateColorAttr(Gf.Vec3f(*((0.62, 0.74, 0.95) if clear else (0.78, 0.8, 0.84))))
+        if sky_texture:
+            dome.CreateTextureFileAttr(Sdf.AssetPath(sky_texture))
+            dome.CreateTextureFormatAttr("latlong")
+        else:
+            dome.CreateColorAttr(Gf.Vec3f(*((0.62, 0.74, 0.95) if clear else (0.78, 0.8, 0.84))))
         dome.CreateIntensityAttr(float((1800.0 if clear else 1900.0) * rng.uniform(0.9, 1.1) * scale))
         sun = UsdLux.DistantLight.Define(kit.stage, "/World/Lights/Sun")
         az = float(rng.uniform(-2.5, -1.9))

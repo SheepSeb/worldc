@@ -408,8 +408,10 @@ class Solver:
             for attempt in range(K_SAMPLES if rel in ("inside", "near", "on", "against", "next_to") else 1):
                 cand = self._sample(o, rel, asset, p, irng, i, attempt)
                 if cand is None:
-                    reasons["no_candidate"] += 1
-                    break
+                    reasons["does_not_fit" if rel in ("inside", "on", "against") else "no_candidate"] += 1
+                    if rel in ("pose", "attach_to", "layout"):
+                        break
+                    continue
                 pose, parent, anchor, floor, meta = cand
                 good, hits, why = self._free(asset, p, pose, parent, floor)
                 if good:
@@ -867,6 +869,10 @@ class Solver:
 
     # ------------------------------------------------------------------ clearance
     def _clearances(self):
+        """Solve clearance constraints once every structural / fill / support placement exists (so nothing placed later
+        on the opposite side can narrow the gap) and all their adjust objects are placed."""
+        if not self._clearance_ready:
+            return
         for ci, k in enumerate(self.spec.constraints):
             if k.type != "clearance" or (k.id or f"clearance_{ci}") in self.clearance_done:
                 continue
@@ -927,17 +933,33 @@ class Solver:
         fixed_iv = [[iv for iv in (scan_x(P, y) for P in fixed) if iv] for y in ys]
         move_iv = [[iv for iv in (scan_x(P, y) for P in moving) if iv] for y in ys]
 
+        side = k.side  # after the swap the gap axis is x and "+y" maps to "+x", so the side names carry over
+
+        def run_at(j, dx):
+            """(free gap, gap centre x) at scanline j with the movers shifted by dx."""
+            real = sorted(fixed_iv[j] + [(a + dx, b + dx) for a, b in move_iv[j]])
+            if side == "any":
+                iv = sorted([(-1e9, zx0), (zx1, 1e9)] + real)
+                best, cur, at = 0.0, None, None
+                for a, b in iv:
+                    if cur is not None and a > cur and a - cur > best:
+                        best, at = a - cur, (cur + a) / 2
+                    cur = b if cur is None else max(cur, b)
+                return best, at
+            if side == "max":  # from the blockage's +x edge to the first obstacle beyond it (the opposite side)
+                edge = max([b for a, b in real if a < zx1 - 0.3], default=zx0)
+                opp = min([a for a, b in real if a >= edge - 1e-9 and a > zx1 - 0.3], default=zx1)  # zone edge only if nothing real
+                return opp - edge, (edge + opp) / 2
+            edge = min([a for a, b in real if b > zx0 + 0.3], default=zx1)
+            opp = max([b for a, b in real if b <= edge + 1e-9 and b < zx0 + 0.3], default=zx0)
+            return edge - opp, (edge + opp) / 2
+
         def narrowest(dx):
             worst, at = 1e9, None
             for j, y in enumerate(ys):
-                iv = sorted([(-1e9, zx0), (zx1, 1e9)] + fixed_iv[j] + [(a + dx, b + dx) for a, b in move_iv[j]])
-                best, cur, gap_at = 0.0, None, None
-                for a, b in iv:
-                    if cur is not None and a > cur and a - cur > best:
-                        best, gap_at = a - cur, (cur + a) / 2
-                    cur = b if cur is None else max(cur, b)
-                if best < worst:
-                    worst, at = best, (gap_at, y)
+                g, gx = run_at(j, dx)
+                if g < worst:
+                    worst, at = g, (gx, y)
             return worst, at
 
         all_m = np.concatenate(moving)
@@ -959,7 +981,7 @@ class Solver:
         gx, gy = at
         _, at_mid = narrowest(0.0)
         center = (gy, gx) if swap else (gx, (span[0] + span[1]) / 2)
-        res = {"id": cid, "zone": k.zone, "rect": list(r), "axis": k.axis, "span": list(span), "target": k.target, "tolerance": k.tolerance,
+        res = {"id": cid, "zone": k.zone, "rect": list(r), "axis": k.axis, "side": k.side, "span": list(span), "target": k.target, "tolerance": k.tolerance,
                "planned_m": round(g, 4), "shift_m": round(dx, 4), "gap_center": [round(center[0], 4), round(center[1], 4)], "ok": err <= k.tolerance}
         self.clearance_done[cid] = res
         if err > k.tolerance:
@@ -1013,13 +1035,15 @@ class Solver:
             for g in self.goals:
                 c = NV.nearest_free(free, grid.w2g(*g["base_pose"][:2]), 6)
                 cells[g["id"]] = c
-            cost = np.where(free, 1.0, np.inf)
-            dist, prev = NV.dijkstra(cost, start, [c for c in cells.values() if c])
-            unreachable = [g for g in self.goals if g["id"] in targets and (cells[g["id"]] is None or not np.isfinite(dist[cells[g["id"]]]))]
+            from scipy.ndimage import label as _label
+
+            comp, _ = _label(free, structure=np.ones((3, 3), int))  # reachability = same 8-connected component as the spawn
+            reach = lambda c: c is not None and comp[c] == comp[start]  # noqa: E731
+            unreachable = [g for g in self.goals if g["id"] in targets and not reach(cells[g["id"]])]
             for g in self.goals:
                 c = cells[g["id"]]
-                ok = c is not None and np.isfinite(dist[c])
-                result[g["id"]] = {"reachable": bool(ok), "path_length_m": round(float(dist[c] * grid.res), 2) if ok else None}
+                ok = reach(c)
+                result[g["id"]] = {"reachable": bool(ok)}
                 if ok and c != grid.w2g(*g["base_pose"][:2]):
                     x, y = grid.g2w(*c)
                     g["base_pose"][:2] = [round(x, 3), round(y, 3)]
@@ -1068,11 +1092,14 @@ class Solver:
     # ------------------------------------------------------------------ main
     def run(self) -> Solution:
         self._done_objects = set()
+        self._clearance_ready = False
         self._environment()
         objs = self._order()
         reserved = False
         for o in objs:
             if not reserved and PHASE[_relation(o)] >= 4:
+                self._clearance_ready = True
+                self._clearances()
                 self._agents()
                 self._robot()
                 self._goals()
@@ -1082,7 +1109,9 @@ class Solver:
             self._clearances()
             if reserved:
                 self._goals()
+        self._clearance_ready = True
         if not reserved:
+            self._clearances()
             self._agents()
             self._robot()
         self._clearances()

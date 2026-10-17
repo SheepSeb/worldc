@@ -1,6 +1,7 @@
 """Record the pre-refactor warehouse generator's metrics (seeds 0-4) -> tests/fixtures/warehouse_baseline.json.
 
-Run once, at commit f4daa5f (before the spec-pipeline refactor):
+Historical: it needs the pre-refactor modules (``generate.build`` of the old generator and ``static_validate``), which were
+removed in phase 5.  To regenerate the fixture, check out commit f4daa5f and run:
 
     uv run python tests/fixtures/make_warehouse_baseline.py /tmp/somewhere
 """

@@ -16,11 +16,14 @@ Seeds 0-4 are generated here; every seed folder holds
 
 ```bash
 uv sync
-uv run python -m claude_scene_generator.generate --seed 7 8 9 --out warehouse_out   # no Isaac needed
+uv run python -m claude_scene_generator.generate --seed 7 8 9 --out warehouse_out   # recipe -> spec -> compiler
 # optional: --lighting {0,1,2} (default seed % 3: bright / mixed warm / dim), --light-scale 1.5
 uv run python -m claude_scene_generator.run_all --seeds 0 1 2 3 4                   # generate + all 6 validations
 ```
-Generation takes ~15 s per seed and needs only `usd-core`, numpy, scipy, Pillow. Validation needs Isaac Sim
+The warehouse is the `warehouse` recipe (`src/claude_scene_generator/recipes/warehouse.py`): seed -> scene spec, compiled
+by the generic spec compiler. `uv run csg recipe warehouse --seed 7` prints the spec, and each seed folder also holds
+`resolved_spec.json` (exact replay) and `check.json`. Generation takes ~9 s per seed (plus ~3 s for the checks) and needs
+only `usd-core`, numpy, scipy, Pillow, pydantic and PyYAML (an Isaac Sim install is still required by policy). Validation needs Isaac Sim
 (`ISAACSIM_PATH`, default `~/isaacsim`), run headless. `usdchecker` is executed with Isaac's bundled USD because the
 pip `usd-core` wheel lacks the shader resources the checker needs.
 

@@ -325,11 +325,14 @@ class CardboardBox(Asset):
 class PalletLoadParams(Params):
     variant: Literal["boxes", "wrapped", "totes", "empty"] = Field("boxes", description="What sits on the pallet")
     box_size: Vec3 = Field((0.35, 0.3, 0.25), description="Carton size for boxes/wrapped loads (m), each 0.1-0.6")
+    box_size_scale: tuple[float, float] = Field((1.0, 1.0), description="Uniform random scale applied to box_size per load, e.g. [0.94, 1.06]")
+    min_box_dim: float = Field(0.1, ge=0.05, le=0.6, description="Scaled carton dims are clipped to [min_box_dim, 0.6]")
     max_load_height: float = Field(1.12, ge=0.1, le=2.0, description="Maximum load height above the deck (m)")
     max_boxes: int = Field(12, ge=1, le=48)
     full: bool = Field(False, description="Fill every layer up to max_load_height (else a random number of layers)")
     min_layers: int = Field(1, ge=1, le=6)
     tote_items: int | None = Field(None, ge=0, le=12, description="Items per tote (totes variant); default random 3-10")
+    footprint_pad: float = Field(0.03, ge=0.0, le=0.1, description="Planning footprint margin per side for carton overhang (max real overhang 0.03 m)")
 
 
 @register
@@ -346,7 +349,7 @@ class PalletLoad(Asset):
 
     def footprint(self, p):
         h = PAL_H + (0 if p.variant == "empty" else (TOTE[2] if p.variant == "totes" else p.max_load_height))
-        return Footprint.rect(PAL_L + 0.06, PAL_W + 0.06, h)
+        return Footprint.rect(PAL_L + 2 * p.footprint_pad, PAL_W + 2 * p.footprint_pad, h)
 
     def anchors(self, p):
         h = self.footprint(p).z1
@@ -357,6 +360,9 @@ class PalletLoad(Asset):
         if any(not 0.1 <= s <= 0.6 for s in p.box_size):
             raise ValueError(f"pallet_load box_size {p.box_size} outside 0.1-0.6 m")
         ctx.kit.xform(path)
+        if p.box_size_scale != (1.0, 1.0):
+            sc = float(rng.uniform(*p.box_size_scale))
+            p = p.model_copy(update={"box_size": tuple(float(np.clip(d * sc, p.min_box_dim, 0.6)) for d in p.box_size)})
         pos = (pose.pos[0], pose.pos[1], pose.pos[2] + PAL_EPS)
         yaw = pose.yaw
         bodies = []
@@ -462,8 +468,19 @@ class PalletJackTipped(Asset):
     tags = frozenset({"logistics", "clutter", "obstacle", "dynamic", "steel"})
     physics = PhysicsInfo("dynamic", "steel", 0.6, 72.0, "primitives")
 
+    @staticmethod
+    def _rest():
+        parts = [Part(pp.kind, pp.size, pp.pos) for pp in JACK_PARTS]
+        com, _, _, _ = composite_inertia(parts, 72.0)
+        return parts, stable_orientation(parts, com)
+
     def footprint(self, p):
-        return Footprint.rect(1.6, 1.6, 0.9)
+        """Exact bounding box of the jack in its resting pose (origin = body origin projected to the floor)."""
+        parts, (R, zmin, _) = self._rest()
+        pts = np.array([R @ (np.asarray(q.pos) + np.array([sx, sy, sz]) * np.asarray(q.size) / 2)
+                        for q in parts for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)])
+        lo, hi = pts.min(0), pts.max(0)
+        return Footprint.rect(hi[0] - lo[0] + 0.02, hi[1] - lo[1] + 0.02, hi[2] - zmin, (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2)
 
     def build(self, ctx, path, pose, p, rng):
         k = ctx.kit

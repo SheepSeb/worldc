@@ -1,6 +1,8 @@
 """Occupancy grid, robot-radius inflation, Dijkstra reachability and blocker diagnosis, with bounds from the scene graph."""
 from __future__ import annotations
 
+import heapq
+
 import math
 
 import numpy as np
@@ -9,7 +11,6 @@ from scipy.ndimage import distance_transform_edt
 
 from ..colliders import Collider
 from ..geom import footprint
-from ..static_validate import dijkstra  # noqa: F401  (re-exported)
 
 INFLATE_MARGIN = 0.02
 SS = 5  # supersample factor; a cell is occupied iff its centre is inside a footprint
@@ -134,3 +135,30 @@ def render_png(path, grid: Grid, start, goals_xy, paths, spawn_ok=True):
     r, c = start
     dr.ellipse([c - 6, r - 6, c + 6, r + 6], fill=(220, 0, 0) if spawn_ok else (255, 0, 255))
     im.save(path)
+
+
+def dijkstra(free: np.ndarray, start, goals):
+    H, W = free.shape
+    INF = 1e18
+    dist = np.full((H, W), INF)
+    prev = np.full((H, W, 2), -1, np.int32)
+    dist[start] = 0.0
+    pq = [(0.0, start)]
+    remaining = set(goals)
+    nb = [(-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0), (-1, -1, 1.414), (-1, 1, 1.414), (1, -1, 1.414), (1, 1, 1.414)]
+    while pq and remaining:
+        dd, (r, c) = heapq.heappop(pq)
+        if dd > dist[r, c]:
+            continue
+        remaining.discard((r, c))
+        for dr, dc, w in nb:
+            rr, cc = r + dr, c + dc
+            if 0 <= rr < H and 0 <= cc < W and free[rr, cc]:
+                if dr and dc and not (free[r, cc] and free[rr, c]):
+                    continue
+                nd = dd + w
+                if nd < dist[rr, cc]:
+                    dist[rr, cc] = nd
+                    prev[rr, cc] = (r, c)
+                    heapq.heappush(pq, (nd, (rr, cc)))
+    return dist, prev

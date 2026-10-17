@@ -1,7 +1,8 @@
 # Scene spec v1.0
 
-> Status: phase 3+4. Specs validate, solve, and compile to USD, `scene_graph.json`, `resolved_spec.json` and `check.json`.
-> Recipes (the warehouse as a spec) arrive in phase 5 and the MCP server in phase 6.
+> Status: phase 5. Specs validate, solve, and compile to USD, `scene_graph.json`, `resolved_spec.json` and `check.json`.
+> The original warehouse is now a recipe (`recipes/warehouse.py`, `csg recipe warehouse --seed 3`). The MCP server comes
+> in phase 6.
 
 A **scene spec** is a JSON/YAML document that describes a scene declaratively. The machine-readable contract is
 [`src/claude_scene_generator/spec/schema.json`](../src/claude_scene_generator/spec/schema.json) (generated from the
@@ -86,7 +87,10 @@ uv run csg describe rack_row                                 # params, footprint
 
 ## Constraints
 `no_overlap {between?, margin}`, `min_clearance {between, value}`,
-`clearance {zone, axis, span?, target, tolerance, adjust}` (an exact free gap, hit by sliding the `adjust` objects),
+`clearance {zone, axis, span?, side, target, tolerance, adjust}` (an exact free gap, hit by sliding the `adjust` objects).
+`side: max | min` anchors the gap to the zone's +/- edge, measured from the blockage to the first real obstacle beyond it
+(e.g. the opposite rack). `any` uses the largest gap. Clearances are solved after all structure, fill and support
+placements, then refined on the built colliders.
 `reachable {from, to, robot_radius?}`, `keep_clear {zone | path + width}`, `stable {objects}`,
 `count_at_least {object, n}`. Each takes an optional `id` and `hard` (default true).
 
