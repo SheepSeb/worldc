@@ -9,6 +9,8 @@ Codes (all ``error`` unless noted):
   asset.catalog_unavailable  a catalog query needs the Omniverse index, and none is installed
   asset.catalog_no_match     no catalog asset matches the query well enough (the hint lists the closest paths)
   asset.generated_but_match_exists (warning)  a generated asset's name closely matches a catalog asset
+  robot.unknown              the robot alias / path is not in the table of measured Isaac Sim robots
+  robot.not_isaac            the robot is a registry / generated / file asset, not a real Isaac Sim robot
   asset.catalog_limited_license (warning)  the catalog asset is Limited Use Content (Isaac/Environments)
   asset.generated_invalid    see the nested gen.* issues (re-pathed under /objects/i/asset/generate)
   param.invalid              asset param failed validation (unknown name, out of range, wrong type)
@@ -119,6 +121,25 @@ def _resolve_asset(c: _Ctx, ref, path) -> object | None:
         c.add(warning("asset.generated_but_match_exists", f"The catalog already has {near['path']} for {gid!r}.", path,
                       "Prefer {catalog: omniverse, path: ...} over generating; generate only when nothing existing fits.", match=near["path"]))
     return GeneratedAsset(ref.generate)
+
+
+def _check_robot(c: _Ctx, robot):
+    """The scene robot must be a real, measured Isaac Sim robot: an alias or an Isaac/Robots path, never generated or a file."""
+    from ..assets import robots
+
+    ref, path = robot.asset, "/robot/asset"
+    names = ", ".join(robots.aliases()) or "(none: build the table with `python -m worldc.assets.robots build`)"
+    hint = f"Use a real Isaac Sim robot: {names}. Find them with list_assets(tags=['robot'])."
+    if isinstance(ref, str):
+        if robots.table().get(ref) is None:
+            c.add(error("robot.not_isaac" if registry.exists(ref) else "robot.unknown",
+                        f"{ref!r} is not a real Isaac Sim robot." if registry.exists(ref) else f"Unknown robot {ref!r}.", path, hint))
+    elif hasattr(ref, "catalog"):
+        p = getattr(ref, "path", None)
+        if not p or robots.by_path(p) is None:
+            c.add(error("robot.unknown", f"{p or ref.query!r} is not a supported Isaac Sim robot path.", path, hint))
+    else:
+        c.add(error("robot.not_isaac", "A scene robot cannot be a generated or file asset.", path, hint))
 
 
 def _check_params(c: _Ctx, oid, asset, raw, path):
@@ -369,6 +390,7 @@ def semantic(spec: SceneSpec, base_dir: Path | None = None) -> list[Issue]:
                 if v != "*" and not v.startswith("*"):
                     _check_ref(c, v, f"{base}/{fld}/{j}", "any")
     if spec.robot:
+        _check_robot(c, spec.robot)
         goal_ids = {g.id for g in spec.robot.nav_goals}
         for i, k in enumerate(spec.constraints):
             if getattr(k, "type", "") == "reachable":

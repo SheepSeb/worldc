@@ -316,7 +316,8 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         ctx.meta = {"spec_id": "robot", "zone": "robot"}
         rb = r["asset"].build(ctx, "/World/Robot", r["pose"], r["params"], rng_for(seed, "robot", "build"))
         robot = {"spawn": [round(r["pose"].pos[0], 3), round(r["pose"].pos[1], 3), round(r["pose"].yaw, 4)], "prim": "/World/Robot",
-                 "camera": rb.info.get("camera"), "radius_m": r["radius"], "asset": r["asset"].id}
+                 "camera": rb.info.get("camera"), "radius_m": r["radius"], "asset": r["asset"].id,
+                 "isaac_path": rb.info.get("isaac_path"), "kind": rb.info.get("kind"), "needs_controller": bool(rb.info.get("needs_controller"))}
     cams = _cameras(kit, spec, sol, "/World/Robot" if robot else None)
     for c in cams + ([{"path": robot["camera"], "position": robot["spawn"][:2] + [1.5]}] if robot and robot.get("camera") else []):
         kit.record(c["path"], "camera", c["position"], Q_IDENT, "none")

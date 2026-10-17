@@ -257,7 +257,7 @@ def warehouse(seed: int = 0, lighting: int | None = None, light_scale: float = 1
             {"id": "human_1", "asset": "human_proxy", "params": {"mass_kg": 75.0, "outfit": "blue"},
              "path": {"waypoints": [[a3, -9.3], [a3, 10.9]], "mode": "pingpong", "speed": 0.8, "phase": 6.0}, "keep_clear_width": 1.4},
         ],
-        "robot": {"spawn": {"pose": {"xy": [12.4, -9.0], "yaw": 180}}, "footprint_radius": 0.38, "nav_goals": goals},
+        "robot": {"asset": "dingo", "spawn": {"pose": {"xy": [12.4, -9.0], "yaw": 180}}, "nav_goals": goals},  # real Isaac robot, measured radius 0.383 m
         "cameras": [
             {"id": "overhead", "mode": "top_down", "position": [0, 0, 23.0], "focal_mm": 10.5, "clip": [1.0, 200.0], "hide": ["roof"]},
             {"id": "aisle_level", "position": [a1, -8.0, 1.7], "look_at": [a1, 8.0, 2.6], "focal_mm": 14.0},

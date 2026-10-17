@@ -40,8 +40,27 @@ uv run worldc describe rack_row                                 # params, footpr
 | `objects` | groups of asset instances (below) |
 | `constraints` | scene-level constraints (below) |
 | `agents` | moving humans / forklifts with waypoint paths (kinematic, driven at runtime) |
-| `robot` | spawn placement, footprint radius, `nav_goals` |
+| `robot` | a real Isaac Sim robot (`asset`, default `nova_carter`), spawn placement, optional navigation radius, `nav_goals` (see Robots) |
 | `cameras`, `lighting`, `physics`, `output`, `metadata` | |
+
+## Robots
+The scene robot is always a **real Isaac Sim robot**, never a generated one. It is referenced by URL from the Isaac Sim asset root
+with its own articulation, joints, drives and sensors left on, and placed at the spawn pose with its base on the floor.
+
+```yaml
+robot:
+  asset: nova_carter                 # alias; or {catalog: omniverse, path: Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd}
+  spawn: {pose: {xy: [12.4, -9.0], yaw: 180}}
+  footprint_radius: 0.5              # optional navigation radius; default = the robot's measured footprint radius
+  nav_goals: [...]
+```
+Supported robots are the measured ones in `assets/library/robots/isaac_5.1_robots.json`; list them with `list_assets(tags=["robot"])`
+(`worldc assets --tags robot`). Wheeled AMRs (`nova_carter`, `carter_v1`, `iw_hub`, `jackal`, `dingo`, `turtlebot3_burger`, `kaya`,
+`o3dyn`), a mobile manipulator (`ridgeback_franka`), an arm (`franka`), and legged / humanoid robots (`spot`, `anymal_d`,
+`unitree_go1`, `unitree_h1`; these need a locomotion controller to stand and are not gated by the settle check). Anything else is
+rejected: `robot.unknown` for names / paths outside the table, `robot.not_isaac` for generated, file or non-robot assets. Navigation
+reachability uses the robot's real footprint. `check_scene` with physics runs the robot's articulation in Isaac Sim and reports
+whether it settled where it was spawned.
 
 ## Objects
 ```yaml
@@ -151,6 +170,8 @@ Every stage reports `Issue {severity, code, path, message, hint, data}`. `path` 
 | `solve.clearance` | the clearance target is not achievable (message gives the best achievable gap) |
 | `solve.unreachable` | a nav goal is unreachable for the robot footprint (names the blocking objects) |
 | `solve.robot_spawn_blocked`, `solve.goal_target`, `solve.count` | spawn / goal / count_at_least problems |
+| `robot.unknown`, `robot.not_isaac` | the robot is not one of the measured, real Isaac Sim robots |
+| `physics.robot_unstable` | the robot moved or sank while the scene settled in Isaac Sim |
 | `solve.agent_corridor_blocked` (warning) | an agent's corridor overlaps objects placed before it |
 | `check.interpenetration`, `check.floating`, `check.hazard_path_blocked` | post-build physics pre-flight (prim paths + spec ids in data) |
 | `check.spawn_blocked`, `check.goal_unreachable`, `check.clearance`, `check.no_goals`, `check.no_robot`, `check.load_failed` | post-build navigation and loading |

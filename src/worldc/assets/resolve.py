@@ -55,6 +55,14 @@ def _catalog(ref, get) -> Asset:
     from .catalog import CatalogError, catalog_asset
 
     d = pin_catalog(ref)
+    if d.get("path", "").lstrip("/").startswith("Isaac/Robots/"):  # robots are measured, curated assets (assets/robots.py)
+        from . import robots
+
+        info = robots.by_path(d["path"])
+        if info is None:
+            raise AssetResolutionError("robot.unknown", f"{d['path']} is not a supported robot.", "Use one of: " + ", ".join(robots.aliases()) + ".")
+        registry.get(info.alias)  # loads the robot assets
+        return registry.get(info.alias)
     try:
         asset = catalog_asset(d["path"], {"tags": d.get("tags") or []}, rev=d.get("rev"))
     except CatalogError as e:

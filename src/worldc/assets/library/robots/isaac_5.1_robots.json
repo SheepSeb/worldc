@@ -1,0 +1,198 @@
+{
+ "anymal_d": {
+  "path": "Isaac/Robots/ANYbotics/anymal_d/anymal_d.usd",
+  "kind": "legged",
+  "description": "ANYbotics ANYmal D quadruped (needs a locomotion controller).",
+  "size_m": [
+   1.0132,
+   0.6805,
+   0.9131
+  ],
+  "base_offset_z": 0.6815,
+  "footprint_radius_m": 0.61,
+  "articulation": true,
+  "n_joints": 16
+ },
+ "carter_v1": {
+  "path": "Isaac/Robots/NVIDIA/Carter/carter_v1.usd",
+  "kind": "wheeled_amr",
+  "description": "NVIDIA Carter v1 differential-drive mobile robot.",
+  "size_m": [
+   0.6715,
+   0.6263,
+   0.6628
+  ],
+  "base_offset_z": 0.2509,
+  "footprint_radius_m": 0.459,
+  "articulation": true,
+  "n_joints": 6
+ },
+ "dingo": {
+  "path": "Isaac/Robots/Clearpath/Dingo/dingo.usd",
+  "kind": "wheeled_amr",
+  "description": "Clearpath Dingo compact indoor differential-drive robot.",
+  "size_m": [
+   0.5645,
+   0.5172,
+   0.2509
+  ],
+  "base_offset_z": 0.0167,
+  "footprint_radius_m": 0.383,
+  "articulation": true,
+  "n_joints": 2
+ },
+ "franka": {
+  "path": "Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd",
+  "kind": "arm",
+  "description": "Franka Panda 7-DoF arm with gripper, fixed base.",
+  "size_m": [
+   0.3355,
+   0.2593,
+   1.1147
+  ],
+  "base_offset_z": -0.0,
+  "footprint_radius_m": 0.212,
+  "articulation": true,
+  "n_joints": 11
+ },
+ "iw_hub": {
+  "path": "Isaac/Robots/Idealworks/iwhub/iw_hub.usd",
+  "kind": "wheeled_amr",
+  "description": "idealworks iw.hub warehouse AMR / pallet mover.",
+  "size_m": [
+   1.4309,
+   0.6591,
+   0.2312
+  ],
+  "base_offset_z": 0.0811,
+  "footprint_radius_m": 0.788,
+  "articulation": true,
+  "n_joints": 7
+ },
+ "jackal": {
+  "path": "Isaac/Robots/Clearpath/Jackal/jackal.usd",
+  "kind": "wheeled_amr",
+  "description": "Clearpath Jackal small skid-steer outdoor/indoor robot.",
+  "size_m": [
+   0.5106,
+   0.43,
+   0.4349
+  ],
+  "base_offset_z": 0.0653,
+  "footprint_radius_m": 0.334,
+  "articulation": true,
+  "n_joints": 4
+ },
+ "kaya": {
+  "path": "Isaac/Robots/NVIDIA/Kaya/kaya.usd",
+  "kind": "wheeled_amr",
+  "description": "NVIDIA Kaya holonomic three-wheel robot.",
+  "size_m": [
+   0.2659,
+   0.2885,
+   0.252
+  ],
+  "base_offset_z": 0.0118,
+  "footprint_radius_m": 0.196,
+  "articulation": true,
+  "n_joints": 33
+ },
+ "nova_carter": {
+  "path": "Isaac/Robots/NVIDIA/NovaCarter/nova_carter.usd",
+  "kind": "wheeled_amr",
+  "description": "NVIDIA Nova Carter autonomous mobile robot: differential drive, lidar and stereo cameras. Default warehouse robot.",
+  "size_m": [
+   0.7284,
+   0.8958,
+   0.6945
+  ],
+  "base_offset_z": 0.1402,
+  "footprint_radius_m": 0.577,
+  "articulation": true,
+  "n_joints": 7
+ },
+ "o3dyn": {
+  "path": "Isaac/Robots/Fraunhofer/O3dyn/o3dyn.usd",
+  "kind": "wheeled_amr",
+  "description": "Fraunhofer O3dyn omnidirectional logistics platform.",
+  "size_m": [
+   2.0315,
+   1.446,
+   0.8848
+  ],
+  "base_offset_z": 0.1471,
+  "footprint_radius_m": 1.247,
+  "articulation": true,
+  "n_joints": 88
+ },
+ "ridgeback_franka": {
+  "path": "Isaac/Robots/Clearpath/RidgebackFranka/ridgeback_franka.usd",
+  "kind": "mobile_manipulator",
+  "description": "Clearpath Ridgeback omnidirectional base with a Franka Panda arm.",
+  "size_m": [
+   1.5435,
+   0.7932,
+   1.1339
+  ],
+  "base_offset_z": -0.0037,
+  "footprint_radius_m": 0.868,
+  "articulation": true,
+  "n_joints": 18
+ },
+ "spot": {
+  "path": "Isaac/Robots/BostonDynamics/spot/spot.usd",
+  "kind": "legged",
+  "description": "Boston Dynamics Spot quadruped (needs a locomotion controller to walk).",
+  "size_m": [
+   0.8728,
+   0.4364,
+   0.7846
+  ],
+  "base_offset_z": 0.6896,
+  "footprint_radius_m": 0.488,
+  "articulation": true,
+  "n_joints": 16
+ },
+ "turtlebot3_burger": {
+  "path": "Isaac/Robots/Turtlebot/Turtlebot3/turtlebot3_burger.usd",
+  "kind": "wheeled_amr",
+  "description": "TurtleBot3 Burger small research robot.",
+  "size_m": [
+   0.1375,
+   0.1783,
+   0.1911
+  ],
+  "base_offset_z": 0.0001,
+  "footprint_radius_m": 0.113,
+  "articulation": true,
+  "n_joints": 5
+ },
+ "unitree_go1": {
+  "path": "Isaac/Robots/Unitree/Go1/go1.usd",
+  "kind": "legged",
+  "description": "Unitree Go1 quadruped (needs a locomotion controller).",
+  "size_m": [
+   0.5355,
+   0.294,
+   0.5196
+  ],
+  "base_offset_z": 0.4483,
+  "footprint_radius_m": 0.305,
+  "articulation": true,
+  "n_joints": 16
+ },
+ "unitree_h1": {
+  "path": "Isaac/Robots/Unitree/H1/h1.usd",
+  "kind": "humanoid",
+  "description": "Unitree H1 humanoid (needs a balance controller).",
+  "size_m": [
+   0.391,
+   0.5558,
+   1.806
+  ],
+  "base_offset_z": 1.0442,
+  "footprint_radius_m": 0.34,
+  "articulation": true,
+  "n_joints": 24
+ }
+}

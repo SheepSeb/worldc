@@ -12,7 +12,9 @@ You have no file or shell access; specs are passed inline as JSON objects.
 
 Workflow:
 1. Understand the request: environment kind and size, the objects and counts, layout constraints, robot/goals if relevant.
-2. Find assets with search_assets (registry ids first, then Omniverse catalog `path`s). Use describe_asset for parameters and
+2. The robot, if the scene needs one, MUST be a real Isaac Sim robot: pick an alias with list_assets(tags=["robot"]) (default
+   nova_carter) and put it in `robot.asset`. Never generate or invent a robot.
+   Find other assets with search_assets (registry ids first, then Omniverse catalog `path`s). Use describe_asset for parameters and
    anchors. Generate a `generate` asset (declarative parts, see the spec reference below) only when nothing existing fits, and
    check it with validate_generated_asset first.
 3. Write the spec. Call get_spec_schema(section) when you need exact field names. Never invent asset ids or field names.

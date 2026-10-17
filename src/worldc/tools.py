@@ -375,7 +375,7 @@ def _physics(d: Path, sim_seconds: float, timeout_s: float) -> tuple[dict, list[
     if not f.is_file():
         return {"ok": False, "ran": False}, [error("physics.failed", "Isaac Sim produced no result.", hint=f"See {d / 'isaac_run.log'}.", returncode=p.returncode)]
     st = json.loads(f.read_text()).get("stages", {})
-    ph, load = st.get("physics", {}), st.get("load", {})
+    ph, load, rob = st.get("physics", {}), st.get("load", {}), st.get("robot", {})
     issues: list[Issue] = []
     if not load.get("ok"):
         issues.append(error("physics.load_failed", "Isaac Sim could not load the stage.", hint=str(load.get("message", ""))[:300]))
@@ -388,9 +388,14 @@ def _physics(d: Path, sim_seconds: float, timeout_s: float) -> tuple[dict, list[
     if ph.get("conveyor_payload_speeds") and not ph.get("conveyor_ok", True):
         issues.append(error("physics.conveyor_speed", "Cartons on a conveyor did not reach the belt speed.", hint="Run longer (sim_seconds >= 10) or check the "
                             "belt end; speeds: " + json.dumps(ph["conveyor_payload_speeds"])[:300]).model_copy(update={"severity": "warning"}))
+    if rob.get("present") and not rob.get("ok", True):
+        issues.append(error("physics.robot_unstable", rob.get("error") or f"The robot did not come to rest: drifted {rob.get('drift_xy_m')} m, rose {rob.get('max_rise_m')} m, final speed {rob.get('final_speed_mps')} m/s.",
+                            "/robot", "Spawn it on clear, flat floor away from objects; check the robot loaded (needs the Isaac asset root)."))
     settled = bool(ph) and ph.get("fraction_displacement_below_2cm", 0.0) >= ph.get("target", 0.95) and not ph.get("fell_through_floor") and not ph.get("faster_than_1mps")
     summary = {k: ph.get(k) for k in ("n_bodies_evaluated", "fraction_displacement_below_2cm", "max_displacement_m", "worst_movers", "fell_through_floor") if k in ph}
-    summary.update(ran=True, ok=bool(load.get("ok") and settled), result_file=str(f))
+    if rob.get("present"):
+        summary["robot"] = {k: rob.get(k) for k in ("asset", "kind", "ok", "settled", "drift_xy_m", "dz_m", "max_rise_m", "final_speed_mps", "n_dofs", "needs_controller", "error") if k in rob}
+    summary.update(ran=True, ok=bool(load.get("ok") and settled and rob.get("ok", True)), result_file=str(f))
     return summary, issues
 
 

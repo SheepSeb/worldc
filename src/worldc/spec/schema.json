@@ -3811,7 +3811,8 @@
    "additionalProperties": false,
    "properties": {
     "asset": {
-     "default": "robot_placeholder",
+     "default": "nova_carter",
+     "description": "A real Isaac Sim robot: an alias from list_assets(tags=['robot']) or {catalog: omniverse, path: Isaac/Robots/...}. Generated or file robots are not allowed.",
      "oneOf": [
       {
        "type": "string"
@@ -3829,11 +3830,19 @@
      "title": "Asset"
     },
     "footprint_radius": {
-     "default": 0.38,
-     "exclusiveMinimum": 0,
-     "maximum": 2,
-     "title": "Footprint Radius",
-     "type": "number"
+     "anyOf": [
+      {
+       "exclusiveMinimum": 0,
+       "maximum": 3,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Navigation radius in metres (default: the robot's measured footprint radius)",
+     "title": "Footprint Radius"
     },
     "nav_goals": {
      "items": {

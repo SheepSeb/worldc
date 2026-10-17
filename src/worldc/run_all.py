@@ -29,6 +29,14 @@ def usdchecker(usd: Path) -> dict:
     if not line:
         return {"errors": ["usdchecker failed to run: " + out.stderr[-500:]], "failed_checks": [], "warnings": [], "ok": False}
     r = json.loads(line[0][5:])
+    # usdchecker has no network resolver: references to NVIDIA's Isaac asset root (robots, catalog props) cannot be opened by it, while
+    # Isaac Sim loads them fine.  Set those aside (reported, not hidden); every other failure still counts.
+    from .assets.catalog import asset_root
+
+    host = asset_root().split("://", 1)[-1].split("/", 1)[0]
+    remote = [c for c in r["failed_checks"] if "MissingReferenceChecker" in c and host in c]
+    r["failed_checks"] = [c for c in r["failed_checks"] if c not in remote]
+    r["remote_references_not_checked"] = remote
     r["ok"] = not r["errors"] and not r["failed_checks"]
     return r
 

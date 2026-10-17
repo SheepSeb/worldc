@@ -144,6 +144,20 @@ class _NoBodies:  # a scene may have no dynamic bodies / no kinematic hazards
 
 dview = sv.create_rigid_body_view(dyn_paths) if dyn_paths else _NoBodies()
 kview = sv.create_rigid_body_view(kin_paths) if kin_paths else _NoBodies()
+
+# the scene robot is a real Isaac Sim robot with its own articulation: watch its root while the scene settles
+robot_info, robot_av, robot_root, robot_err, robot_p0, robot_zmax = graph.get("robot"), None, None, None, None, -1e9
+if robot_info and robot_info.get("prim"):
+    try:
+        for pr in Usd.PrimRange(stage.GetPrimAtPath(robot_info["prim"]), Usd.TraverseInstanceProxies()):
+            if pr.HasAPI(UsdPhysics.ArticulationRootAPI):
+                robot_root = str(pr.GetPath())
+                break
+        if robot_root:
+            robot_av = sv.create_articulation_view(robot_root)
+            robot_p0 = np.array(robot_av.get_root_transforms()[0, :3], float)
+    except Exception as e:  # noqa: BLE001
+        robot_err = repr(e)
 log("views", dview.count, "dynamic bodies;", kview.count, "kinematic hazards")
 OUT["stages"]["load"]["n_dynamic_bodies"] = int(dview.count)
 
@@ -172,6 +186,8 @@ for k in range(n_steps):
     t = k * DT
     drive_hazards(t)
     sim.step(render=False)
+    if robot_av is not None:
+        robot_zmax = max(robot_zmax, float(robot_av.get_root_transforms()[0, 2]))
     tr = dview.get_transforms()
     vel = dview.get_velocities()
     sp = np.linalg.norm(vel[:, :3], axis=1)
@@ -220,6 +236,29 @@ OUT["stages"]["physics"] = {
     "hazards_final": {p: [round(float(c), 2) for c in kview.get_transforms()[i, :3]] for i, p in enumerate(kin_paths)},
     "ok": bool(frac >= 0.95 and not fell and not fast and belt_ok),
 }
+ROBOT = {"present": bool(robot_info)}
+if robot_info:
+    ROBOT.update(asset=robot_info.get("asset"), isaac_path=robot_info.get("isaac_path"), kind=robot_info.get("kind"),
+                 needs_controller=bool(robot_info.get("needs_controller")), articulation_root=robot_root)
+    if robot_av is not None:
+        p1 = np.array(robot_av.get_root_transforms()[0, :3], float)
+        d = p1 - robot_p0
+        v1 = np.array(robot_av.get_root_velocities()[0, :3], float)
+        ROBOT.update(n_dofs=int(robot_av.max_dofs), drift_xy_m=round(float(np.hypot(d[0], d[1])), 4), dz_m=round(float(d[2]), 4),
+                     final_z_m=round(float(p1[2]), 4), max_rise_m=round(float(robot_zmax - robot_p0[2]), 4),
+                     final_speed_mps=round(float(np.linalg.norm(v1)), 4), finite=bool(np.isfinite(p1).all()))
+        # settled = at rest where it was spawned: no sliding, not ejected, not still moving.  A robot with passive suspension may
+        # legitimately sink a few cm / tens of cm onto its wheels, so a downward drop is reported but not a failure.
+        stable = (ROBOT["finite"] and ROBOT["drift_xy_m"] < 0.05 and ROBOT["max_rise_m"] < 0.1 and ROBOT["final_speed_mps"] < 0.1
+                  and ROBOT["dz_m"] > -0.4)
+        # legged / humanoid robots have no controller here and are expected to sag: reported, not gated
+        ROBOT["ok"] = bool(stable or ROBOT["needs_controller"])
+        ROBOT["settled"] = bool(stable)
+    else:
+        ROBOT["ok"] = False
+        ROBOT["error"] = robot_err or "no ArticulationRootAPI found under the robot prim (the Isaac robot did not load)"
+OUT["stages"]["robot"] = ROBOT
+log("robot", ROBOT)
 log("physics", {k: v for k, v in OUT["stages"]["physics"].items() if k not in ("worst_movers", "hazards_final")})
 save()
 

@@ -19,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
+from ..assets import robots
 from ..assets import registry
 from ..assets.base import Asset, Footprint, Pose
 from ..assets.procedural.building import BuildingShell, Opening, SlopeZone
@@ -746,10 +747,15 @@ class Solver:
         a = self._asset(r.asset, "/robot/asset")
         if a is None:
             return
-        p = a.params({**r.params, **({"footprint_radius": r.footprint_radius} if "footprint_radius" in a.Params.model_fields else {})})
+        if getattr(a, "source", "") != "isaac":
+            self.err("robot.not_isaac", f"Robot asset {a.id!r} is not a real Isaac Sim robot.", "/robot/asset",
+                     "Use one of: " + ", ".join(robots.aliases()) + " (list_assets tags=['robot']).")
+            return
+        p = a.params(r.params)
+        radius = self._robot_radius()
         rng = rng_for(self.seed, "robot", "spawn")
         pl = r.spawn
-        fp = Footprint.circle(r.footprint_radius + 0.05, 1.5)
+        fp = Footprint.circle(radius + 0.05, min(a.info.size_m[2], 2.0))
         pose = None
         for attempt in range(K_SAMPLES):
             if isinstance(pl, PosePlacement):
@@ -776,7 +782,15 @@ class Solver:
             self.err("solve.robot_spawn_blocked", "No free robot spawn found.", "/robot/spawn", "Use a larger zone or a free pose.")
             return
         self.index.add(Entry(transform(fp.polygon, pose.pos[0], pose.pos[1], 0), 0, 2.0, "", "spawn", "robot_spawn"))
-        self.robot = {"asset": a, "params": p, "pose": pose, "radius": r.footprint_radius}
+        self.robot = {"asset": a, "params": p, "pose": pose, "radius": radius}
+
+    def _robot_radius(self) -> float:
+        """Navigation radius: the spec's override, else the real robot's measured footprint radius."""
+        r = self.spec.robot
+        if r.footprint_radius:
+            return float(r.footprint_radius)
+        a = self._asset(r.asset, "/robot/asset")
+        return float(a.info.footprint_radius_m) if a is not None and hasattr(a, "info") else 0.4
 
     def _goal_pose(self, g, gi):
         """Stand pose for a nav goal -> dict or None (deferred)."""
@@ -864,7 +878,7 @@ class Solver:
             gd = {"id": g.id, "name": g.id, "type": g.type, "base_pose": [round(float(sx), 3), round(float(sy), 3), round(float(yaw), 4)],
                   "target": g.target if isinstance(g.target, str) else list(g.target), **res, **g.extra, "_gi": gi}
             self.goals.append(gd)
-            h = (self.spec.robot.footprint_radius + GOAL_HALF)
+            h = (self._robot_radius() + GOAL_HALF)
             self.index.add(Entry(rect_poly(sx - h, sy - h, sx + h, sy + h), 0, 2.0, "", "goal", f"goal:{g.id}"))
 
     # ------------------------------------------------------------------ clearance

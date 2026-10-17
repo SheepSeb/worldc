@@ -427,10 +427,11 @@ class NavGoalSpec(Strict):
 
 
 class RobotSpec(Strict):
-    asset: AssetRef = "robot_placeholder"
+    asset: AssetRef = Field("nova_carter", description="A real Isaac Sim robot: an alias from list_assets(tags=['robot']) or "
+                            "{catalog: omniverse, path: Isaac/Robots/...}. Generated or file robots are not allowed.")
     params: dict[str, Any] = Field(default_factory=dict)
     spawn: PosePlacement | InsidePlacement | NearPlacement
-    footprint_radius: float = Field(0.38, gt=0, le=2)
+    footprint_radius: float | None = Field(None, gt=0, le=3, description="Navigation radius in metres (default: the robot's measured footprint radius)")
     nav_goals: list[NavGoalSpec] = Field(default_factory=list)
 
 
