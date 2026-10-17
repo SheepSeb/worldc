@@ -1,0 +1,22 @@
+[project]
+name = "claude-scene-generator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sebastian Nae", email = "naesebi2000@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.4",
+    "pillow>=12.3.0",
+    "scipy>=1.18.1",
+    "usd-core==24.11",
+]
+
+[project.scripts]
+claude-scene-generator = "claude_scene_generator:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"

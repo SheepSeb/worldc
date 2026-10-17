@@ -1,0 +1,15 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Generated scenes (keep READMEs / reports only)
+*_out/seed_*/
+mcp_out/
+.pytest_cache/
