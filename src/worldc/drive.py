@@ -111,7 +111,7 @@ def _wide_camera(graph: dict) -> dict:
 
 
 def run_drive(scene, out_dir=None, *, goal_ids=None, n_goals: int = 3, video: bool = True, fps: int = 30, res=(1280, 720), speed: float = 1.0,
-              timeout_s: float = 1800.0, rt_subframes: int = 2, cameras=("chase", "wide")) -> dict:
+              timeout_s: float | None = None, rt_subframes: int = 2, cameras=("chase", "wide")) -> dict:
     """Plan, drive in Isaac Sim, return the result (and encode videos if ``video`` and ffmpeg is available)."""
     from .isaac_env import require_isaac_sim
 
@@ -127,6 +127,8 @@ def run_drive(scene, out_dir=None, *, goal_ids=None, n_goals: int = 3, video: bo
     (out / "route.json").write_text(json.dumps(route, indent=1))
     sim = require_isaac_sim()
     max_s = min(40.0 + 3.0 * route["length_m"] / max(speed, 0.1), 600.0)
+    if timeout_s is None:  # filming is slow (RTX per frame); scale the limit with the frames it may need
+        timeout_s = 900.0 + (max_s * fps * len(cameras) * 1.2 * (res[0] * res[1]) / (1920 * 1080) if video else max_s * 3.0)
     cmd = [str(sim.python), "-m", "worldc.render.isaac_drive", str(d), str(out), "--fps", str(fps), "--res", str(res[0]), str(res[1]),
            "--max-seconds", f"{max_s:.0f}", "--rt-subframes", str(rt_subframes)]
     env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[1]))

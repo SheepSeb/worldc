@@ -226,6 +226,10 @@ try:
         cam_state["p"] += (want_p - cam_state["p"]) * 0.12
         cam_state["t"] += (want_t - cam_state["t"]) * 0.2
         for name in VIDEO_CAMS:
+            if name != "chase" and frame_no % 2 and frame_no > 0:  # the static wide view only needs every other frame
+                prev = OUT / f"frames_{name}" / f"{frame_no - 1:05d}.png"
+                (OUT / f"frames_{name}" / f"{frame_no:05d}.png").write_bytes(prev.read_bytes())
+                continue
             if name == "chase":
                 cam.GetFocalLengthAttr().Set(16.0)
                 cam_op.Set(look_at(cam_state["p"], cam_state["t"]))
@@ -293,6 +297,8 @@ try:
                 arrivals.append({"goal": L["goal"], "reached": bool(math.hypot(gx - x, gy - y) < 0.4), "distance_m": round(math.hypot(gx - x, gy - y), 3),
                                  "yaw_error_rad": round(float(err), 3), "time_s": round(sim_t - t_start, 2)})
                 log("arrived", arrivals[-1])
+                RESULT["legs"] = arrivals  # saved as we go: an interrupted run keeps what it reached
+                save()
                 state, state_t = "pause", sim_t
         if state == "pause" and sim_t - state_t > 0.9:
             leg += 1
