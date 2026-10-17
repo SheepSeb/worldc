@@ -1,0 +1,50 @@
+spec_version: "1.0"
+name: outdoor_yard
+description: Outdoor storage yard with pallet stacks, concrete barriers (LLM-generated asset), bins and a forklift loop.
+environment:
+  kind: outdoor
+  footprint: {type: rect, size: [30, 20]}
+  floor: {material: asphalt, wear: 0.7}
+zones:
+  - {id: storage, rect: [-13, 2, 3, 9], tags: [storage], marking: outline}
+  - {id: bins, rect: [8, 5, 14, 9]}
+objects:
+  - id: loads
+    asset: pallet_load
+    count: [8, 14]
+    params: {variant: {choice: [boxes, wrapped]}, full: true, max_load_height: 1.0}
+    placement: {inside: storage, margin: 0.3}
+    yaw: {range: [-4, 4]}
+  - id: barriers
+    asset:
+      generate:
+        id: gen/jersey_barrier
+        description: Precast concrete jersey barrier, 2 m long
+        tags: [barrier, concrete, static]
+        body: static
+        parts:
+          - {name: base, shape: box, size: [2.0, 0.6, 0.35], pos: [0, 0, 0.175], material: wall}
+          - {name: neck, shape: box, size: [2.0, 0.25, 0.45], pos: [0, 0, 0.575], material: wall}
+          - {name: top, shape: box, size: [2.0, 0.18, 0.1], pos: [0, 0, 0.85], material: safety_yellow}
+    placement: {layout: {type: row, start: [-9, -3.0], direction: 0, spacing: 2.3}}
+    count: 5
+  - id: trash_bins
+    asset: trash_bin
+    count: 3
+    placement: {inside: bins}
+agents:
+  - id: forklift
+    asset: forklift_proxy
+    path: {waypoints: [[-13, -6], [10, -6], [10, 0], [-13, 0]], mode: loop, speed: 1.0}
+robot:
+  spawn: {inside: bins}
+  nav_goals:
+    - {id: storage_front, type: pick, target: [-5, 1.0], yaw: 90}
+    - {id: barrier_end, type: inspect, target: barriers.4, approach: front, distance: 1.0}
+constraints:
+  - {type: no_overlap, margin: 0.15}
+  - {type: reachable, to: ["*"]}
+cameras:
+  - {id: overhead, mode: top_down, focal_mm: 12}
+  - {id: yard, position: [14, -9, 6], look_at: [-2, 3, 0], focal_mm: 16}
+lighting: {preset: sun}

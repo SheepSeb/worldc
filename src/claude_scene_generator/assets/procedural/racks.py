@@ -45,8 +45,18 @@ class RackRow(Asset):
     example = {"id": "racks", "asset": "rack_row", "count": 12, "placement": {"layout": {"type": "rack_aisles", "aisles": 6, "aisle_width": 3.2}}}
 
     def footprint(self, p):
-        segs = [Footprint.rect(1.0, (yb - ya) + 0.7, p.upright_height, 0.0, (ya + yb) / 2) for ya, yb in p.segments]
-        return Footprint.union(segs) if len(segs) > 1 else segs[0]
+        """Precise pieces: the two upright+beam strips of every segment and the end guards (pallets sit between)."""
+        half = p.depth / 2 - 0.05
+        outer, inner = half + POST / 2, half - 0.065 - BEAM_W / 2
+        pieces = []
+        for ya, yb in p.segments:
+            yc, L = (ya + yb) / 2, (yb - ya) + POST
+            for sx in (-1, 1):
+                pieces.append(Footprint.rect(outer - inner, L, p.upright_height, sx * (outer + inner) / 2, yc))
+            if p.guards:
+                for end_y in (ya - 0.2, yb + 0.2):
+                    pieces.append(Footprint.rect(p.depth + 0.05, 0.12, 0.5, 0.0, end_y))
+        return Footprint.union(pieces)
 
     def _frames(self, p, ya):
         return [ya + i * p.bay_length for i in range(p.bays_per_segment + 1)]

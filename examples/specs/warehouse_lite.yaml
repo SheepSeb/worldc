@@ -8,8 +8,8 @@ environment:
   apron_depth: 4.0
   walls:
     openings:
-      - {id: dock_0, wall: south, center: -5, width: 3.0, height: 3.2, door: rollup_door}
-      - {id: side, wall: west, center: 3, width: 1.15, height: 2.24, door: swing_door}
+      - {id: dock_0, wall: south, center: 1.0, width: 3.0, height: 3.2, door: rollup_door}
+      - {id: side, wall: north, center: -3, width: 1.15, height: 2.24, door: swing_door}
 zones:
   - {id: staging, rect: [-9, -6.5, -1, -4], tags: [dock], marking: outline}
   - {id: packing, rect: [4, 1, 9.5, 6.5], tags: [packing], marking: outline}
@@ -57,7 +57,7 @@ objects:
   - id: cones
     asset: traffic_cone
     count: 2
-    placement: {near: {target: [-5.0, -5.0], radius: 1.5}}
+    placement: {near: {target: [-3.0, -5.5], radius: 1.5}}
 agents:
   - id: forklift
     asset: forklift_proxy

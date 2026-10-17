@@ -50,7 +50,7 @@ class RollupDoor(Asset):
         return [Keepout(_rect(0.0, 1.45, p.width + 0.6, 2.9), "dock_lane")]
 
     def anchors(self, p):
-        return [Anchor("inside", "port", (0.0, 1.5, 0.0), port_kind="approach", meta={"note": "robot approach point in front of the door"})]
+        return [Anchor("inside", "port", (0.0, 1.5, 0.0), qyaw(-math.pi / 2), port_kind="approach", meta={"note": "robot approach point in front of the door"})]
 
     def build(self, ctx, path, pose, p, rng):
         k, m = ctx.kit, ctx.mats
@@ -126,7 +126,7 @@ class SwingDoor(Asset):
 
     def anchors(self, p):
         return [Anchor("handle", "port", (0.33 - 0.47 + p.leaf_width / 2, 0.06, 1.0), port_kind="handle"),
-                Anchor("inside", "port", (0.0, 1.2, 0.0), port_kind="approach")]
+                Anchor("inside", "port", (0.0, 1.2, 0.0), qyaw(-math.pi / 2), port_kind="approach")]
 
     def build(self, ctx, path, pose, p, rng):
         k, m = ctx.kit, ctx.mats

@@ -31,6 +31,7 @@ class Pose:
 
     @staticmethod
     def xy_yaw(x: float, y: float, yaw: float = 0.0, z: float = 0.0) -> "Pose":
+        yaw = math.atan2(math.sin(yaw), math.cos(yaw))  # canonical (-pi, pi]: quaternion w >= 0, exact replay of resolved specs
         return Pose((float(x), float(y), float(z)), qyaw(yaw))
 
     @property

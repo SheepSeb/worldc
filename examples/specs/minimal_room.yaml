@@ -1,0 +1,31 @@
+spec_version: "1.0"
+name: minimal_room
+description: A small store room with a work table against the north wall, cartons on the table and a cone on the floor.
+environment:
+  footprint: {type: rect, size: [6, 5]}
+  height: 3.0
+  walls:
+    openings:
+      - {id: door, wall: south, center: 1.5, width: 1.15, height: 2.24, door: swing_door}
+objects:
+  - id: table
+    asset: work_table
+    placement: {against: "wall:north"}
+  - id: cartons
+    asset: cardboard_box
+    count: 2
+    params: {size: [0.3, 0.25, 0.2]}
+    placement: {on: table.top}
+  - id: cone
+    asset: traffic_cone
+    placement: {near: {target: [-2.0, -1.0], radius: 0.5}}
+robot:
+  spawn: {pose: {xy: [1.5, -1.0], yaw: 90}}
+  footprint_radius: 0.35
+  nav_goals:
+    - {id: at_table, type: inspect, target: table.front, approach: port}
+constraints:
+  - {type: reachable, to: ["*"]}
+cameras:
+  - {id: corner, position: [2.6, -2.1, 2.2], look_at: [-0.5, 1.5, 0.6], focal_mm: 14}
+lighting: {preset: bright_day, scale: 0.6}

@@ -161,6 +161,9 @@ class PoseSpec(Strict):
     z: float | None = Field(None, description="Default: support height (floor or slope zone) at xy")
     yaw: float | None = Field(None, description="Degrees; overrides the object's yaw rule")
     rpy: Point3 | None = Field(None, description="Roll, pitch, yaw in degrees (full orientation escape hatch)")
+    support: Ref | None = Field(None, description="Support anchor this pose rests on ('<object>.<i>.<anchor>'): collisions with it are "
+                                                  "ignored and z (if omitted) comes from the anchor's built height")
+    zone: str | None = Field(None, description="Semantic zone label recorded for this instance")
 
 
 class PosePlacement(Strict):
@@ -412,7 +415,8 @@ class AgentSpec(Strict):
 class NavGoalSpec(Strict):
     id: Id
     type: str = Field(description="Task label, e.g. pick, place, dock, parking, inspect, open_door, chokepoint")
-    target: Ref | Point2 = Field(description="Object / instance / anchor / port reference, or an [x, y] point")
+    target: Ref | Point2 = Field(description="Object / instance / anchor / port reference, 'clearance:<constraint id>' (the narrowest gap), or an [x, y] point")
+    offset: Point2 | None = Field(None, description="World-frame [dx, dy] added to the target point before choosing the stand pose")
     approach: Literal["front", "any", "port"] = Field("any", description="front: along the target's +y / anchor face; port: stand on the port")
     distance: float = Field(0.9, ge=0, le=5, description="Stand-off distance from the target (m)")
     yaw: float | None = Field(None, description="Degrees; default faces the target")

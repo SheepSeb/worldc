@@ -2753,6 +2753,29 @@
      "title": "Id",
      "type": "string"
     },
+    "offset": {
+     "anyOf": [
+      {
+       "maxItems": 2,
+       "minItems": 2,
+       "prefixItems": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "number"
+        }
+       ],
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "World-frame [dx, dy] added to the target point before choosing the stand pose",
+     "title": "Offset"
+    },
     "target": {
      "anyOf": [
       {
@@ -2774,7 +2797,7 @@
        "type": "array"
       }
      ],
-     "description": "Object / instance / anchor / port reference, or an [x, y] point",
+     "description": "Object / instance / anchor / port reference, 'clearance:<constraint id>' (the narrowest gap), or an [x, y] point",
      "title": "Target"
     },
     "type": {
@@ -3437,6 +3460,21 @@
      "description": "Roll, pitch, yaw in degrees (full orientation escape hatch)",
      "title": "Rpy"
     },
+    "support": {
+     "anyOf": [
+      {
+       "maxLength": 200,
+       "minLength": 1,
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Support anchor this pose rests on ('<object>.<i>.<anchor>'): collisions with it are ignored and z (if omitted) comes from the anchor's built height",
+     "title": "Support"
+    },
     "xy": {
      "maxItems": 2,
      "minItems": 2,
@@ -3476,6 +3514,19 @@
      "default": null,
      "description": "Default: support height (floor or slope zone) at xy",
      "title": "Z"
+    },
+    "zone": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Semantic zone label recorded for this instance",
+     "title": "Zone"
     }
    },
    "required": [

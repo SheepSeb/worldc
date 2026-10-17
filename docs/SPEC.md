@@ -1,16 +1,23 @@
 # Scene spec v1.0
 
-> Status: phase 1+2. The spec, its validator and the asset registry exist. The solver and compiler that turn a spec into
-> USD land in phase 3+4, so placement semantics below describe the contract the solver implements.
+> Status: phase 3+4. Specs validate, solve, and compile to USD, `scene_graph.json`, `resolved_spec.json` and `check.json`.
+> Recipes (the warehouse as a spec) arrive in phase 5 and the MCP server in phase 6.
 
 A **scene spec** is a JSON/YAML document that describes a scene declaratively. The machine-readable contract is
 [`src/claude_scene_generator/spec/schema.json`](../src/claude_scene_generator/spec/schema.json) (generated from the
 pydantic models in `spec/models.py`; `python -m claude_scene_generator.spec.schema` regenerates it).
 
-Full example: [`examples/specs/warehouse_lite.yaml`](../examples/specs/warehouse_lite.yaml).
+Examples (all compile and pass the post-build checks):
+- [`minimal_room.yaml`](../examples/specs/minimal_room.yaml)
+- [`warehouse_lite.yaml`](../examples/specs/warehouse_lite.yaml)
+- [`outdoor_yard.yaml`](../examples/specs/outdoor_yard.yaml) (uses an LLM-style `generate` asset)
+- [`industrial_deck.yaml`](../examples/specs/industrial_deck.yaml)
 
 ```bash
 uv run csg validate examples/specs/warehouse_lite.yaml       # schema + semantic validation
+uv run csg build examples/specs/warehouse_lite.yaml --seed 3 --out out/lite_3   # solve + USD + checks
+uv run csg render out/lite_3 --camera aisle                  # fast proxy render (+ --map for a semantic top-down map)
+uv run csg check out/lite_3                                  # re-run the post-build checks
 uv run csg schema --section ObjectSpec                       # one part of the schema
 uv run csg assets --tags door                                # find assets
 uv run csg describe rack_row                                 # params, footprint, anchors, joints
@@ -83,6 +90,34 @@ uv run csg describe rack_row                                 # params, footprint
 `reachable {from, to, robot_radius?}`, `keep_clear {zone | path + width}`, `stable {objects}`,
 `count_at_least {object, n}`. Each takes an optional `id` and `hard` (default true).
 
+## How a spec is solved
+The solver is deterministic in (spec, seed). Every random draw uses a generator keyed by (seed, object id, instance index,
+purpose), so editing one object leaves the others where they were. It places things in this order:
+1. Environment, walls, openings and their doors, slope zones, keep-clear zones.
+2. `layout` / `pose` / `against`, then `attach_to` / `fill` / `on`, then `next_to`.
+3. Agent corridors, robot spawn and nav-goal stand poses are reserved, so free-floor clutter cannot block them.
+4. `inside` / `near`.
+5. `clearance` constraints are solved as soon as their `adjust` objects exist.
+6. Reachability: optional instances that block a goal are dropped, up to 3 rounds; otherwise `solve.unreachable` names the
+   blockers.
+
+Collision is 2.5-D: convex footprint pieces with a z range. An object resting on a support is never tested against that
+support. Keep-outs (door swings, dock lanes, agent corridors, goals, keep-clear zones) only block floor-level objects.
+
+Nav goals: `target` may be an object, anchor, port, `clearance:<id>` (the narrowest-gap centre) or `[x, y]`, plus `offset`.
+- `approach: port`, or a port of kind approach/parking: the robot stands on the port.
+- Anchors with a `face` meta (rack slots): stand `distance` beyond the parent's footprint edge on the face side.
+- Otherwise: stand `distance` in front of the target (its +y).
+
+## Outputs (`csg build` / `compile_scene`)
+| file | |
+|---|---|
+| `<output.usd_name>` | the stage (Z-up, metres, kg, default prim `/World`) |
+| `scene_graph.json` | environment, zones, every record (pose, category, mass, articulation, `spec_id`, `instance`), instances (asset, params, pose, root, bodies), goals with reachability, hazards, conveyors, joints, cameras, lighting, clearance checks |
+| `resolved_spec.json` | the fully grounded spec: every instance explicit (pose, sampled params), seed pinned. Compiling it reproduces the scene record for record, which makes it the training target |
+| `check.json`, `nav_occupancy.png` | post-build checks |
+| `textures/` | floor (with markings derived from zones, aisles, agent paths, dock openings and parking) and cardboard |
+
 ## Issues
 Every stage reports `Issue {severity, code, path, message, hint, data}`. `path` is a JSON pointer into the spec, and
 `hint` proposes a concrete edit.
@@ -107,3 +142,12 @@ Every stage reports `Issue {severity, code, path, message, hint, data}`. `path` 
 | `env.outdoor_walls` (warning), `env.opening_outside`, `env.opening_overlap` | environment problems |
 | `agent.waypoint_outside` | agent waypoint outside the footprint |
 | `env.isaac_sim_missing`, `env.isaac_sim_version`, `env.isaac_sim_broken` | the Isaac Sim gate failed |
+| `solve.unsatisfiable.<relation>` | required instances could not be placed; message gives placed/required and the top blockers (objects, keep-outs such as `dock_lane`, `agent:<id>`, `goal:<id>`) |
+| `solve.unsatisfiable.layout` | a layout instance is blocked (names the blockers) |
+| `solve.clearance` | the clearance target is not achievable (message gives the best achievable gap) |
+| `solve.unreachable` | a nav goal is unreachable for the robot footprint (names the blocking objects) |
+| `solve.robot_spawn_blocked`, `solve.goal_target`, `solve.count` | spawn / goal / count_at_least problems |
+| `solve.agent_corridor_blocked` (warning) | an agent's corridor overlaps objects placed before it |
+| `check.interpenetration`, `check.floating`, `check.hazard_path_blocked` | post-build physics pre-flight (prim paths + spec ids in data) |
+| `check.spawn_blocked`, `check.goal_unreachable`, `check.clearance`, `check.no_goals`, `check.no_robot`, `check.load_failed` | post-build navigation and loading |
+| `build.failed` | an asset failed to build (generator bug or impossible param combination) |

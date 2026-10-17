@@ -8,7 +8,7 @@ import numpy as np
 from pxr import Gf
 from pydantic import Field
 
-from ...geom import Part, Q_IDENT, qaxis, qmat
+from ...geom import Part, Q_IDENT, qaxis, qmat, qyaw
 from ...usdkit import T
 from ..base import Anchor, Asset, Built, Footprint, Params, PhysicsInfo
 from ..registry import register
@@ -44,8 +44,8 @@ class _Conveyor(Asset):
         return Footprint.rect(p.width + 0.1, p.length, p.top_z + 0.16)
 
     def anchors(self, p):
-        return [_surface_anchor(p), Anchor("infeed", "port", (0, -p.length / 2 - 1.1, 0), port_kind="approach"),
-                Anchor("outfeed", "port", (0, p.length / 2 + 1.0, 0), port_kind="approach")]
+        return [_surface_anchor(p), Anchor("infeed", "port", (0, -p.length / 2 - 1.1, 0), qyaw(math.pi / 2), port_kind="approach"),
+                Anchor("outfeed", "port", (0, p.length / 2 + 1.0, 0), qyaw(-math.pi / 2), port_kind="approach")]
 
     def _register(self, ctx, path, pose, p, body_path, built_anchors, extra):
         R = qmat(pose.quat)

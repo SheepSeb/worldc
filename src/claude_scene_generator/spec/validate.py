@@ -139,6 +139,12 @@ def _check_ref(c: _Ctx, ref: str, path: str, want: str):
         return pr
     if pr.kind == "robot":
         return pr
+    if pr.kind == "clearance":
+        ids = {k.id for k in c.spec.constraints if getattr(k, "type", "") == "clearance" and k.id}
+        if pr.target not in ids:
+            c.add(error("ref.unknown", f"No clearance constraint with id {pr.target!r}.", path,
+                        "Known clearance constraints: " + (", ".join(sorted(ids)) or "none") + "."))
+        return pr
     if want == "zone" or (pr.anchor is None and pr.instance is None and pr.target in c.zones):
         if ref in c.zones or ref in c.layout_zones:
             return pr
@@ -182,6 +188,8 @@ def _deps(o) -> list[str]:
         refs = [pl.fill.anchors]
     elif isinstance(pl, NearPlacement) and isinstance(pl.near.target, str):
         refs = [pl.near.target]
+    elif isinstance(pl, PosePlacement):
+        refs = [ps.support for ps in (pl.pose if isinstance(pl.pose, list) else [pl.pose]) if ps.support]
     if o.yaw is not None and hasattr(o.yaw, "face"):
         refs.append(o.yaw.face)
     out = []
@@ -310,7 +318,11 @@ def semantic(spec: SceneSpec, base_dir: Path | None = None) -> list[Issue]:
                 _check_ref(c, f, base + f"/fill/force/{k}", "support")
         elif isinstance(pl, NearPlacement) and isinstance(pl.near.target, str):
             _check_ref(c, pl.near.target, base + "/near/target", "any")
-        elif isinstance(pl, PosePlacement) and isinstance(pl.pose, list):
+        if isinstance(pl, PosePlacement):
+            for k, ps in enumerate(pl.pose if isinstance(pl.pose, list) else [pl.pose]):
+                if ps.support:
+                    _check_ref(c, ps.support, base + (f"/pose/{k}" if isinstance(pl.pose, list) else "/pose") + "/support", "support")
+        if isinstance(pl, PosePlacement) and isinstance(pl.pose, list):
             if isinstance(o.count, int) and len(pl.pose) != o.count and o.count != 1:
                 c.add(error("count.pose_mismatch", f"{o.id!r}: {len(pl.pose)} poses for count {o.count}.", base + "/pose",
                             f"Give exactly {o.count} poses or set count to {len(pl.pose)}."))

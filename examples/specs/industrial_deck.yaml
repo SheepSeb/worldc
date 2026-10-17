@@ -1,0 +1,47 @@
+spec_version: "1.0"
+name: industrial_deck
+description: Indoor pump room with a pump set, an instrument panel and cabinets along the north wall, a gate valve and loose tools.
+environment:
+  footprint: {type: rect, size: [12, 8]}
+  height: 5.5
+  floor: {material: concrete, wear: 0.8}
+zones:
+  - {id: walkway, rect: [-6, -4, 6, -2.6], keep_clear: true}
+  - {id: tool_area, rect: [-5.5, -2.4, -1.5, -0.6]}
+objects:
+  - id: pump
+    asset: pump_set
+    placement: {pose: {xy: [2.0, 0.2], yaw: 0}}
+  - id: panel
+    asset: instrument_panel
+    placement: {against: "wall:north", along: -2.0}
+  - id: cabinets
+    asset: enclosure
+    count: 2
+    params: {size: [0.6, 0.4, 1.7], material: cab_blue, door: true, latch: true, category: cabinet}
+    placement: {against: "wall:north", along: [1.0, 5.0], gap: 0.05}
+  - id: station
+    asset: control_station
+    placement: {next_to: {target: pump, side: back, gap: 0.6}}
+  - id: valve
+    asset: gate_valve
+    params: {pipe_radius: 0.08, pipe_dir: x, wheel_diameter: 0.35}
+    placement: {pose: {xy: [-3.0, 0.5], z: 0.8, yaw: 0}}
+  - id: tools
+    asset: loose_tool
+    count: [3, 6]
+    params: {kind: {choice: [wrench, hammer, bucket, hardhat, toolbox, coil]}}
+    placement: {inside: tool_area}
+    yaw: random
+robot:
+  spawn: {pose: {xy: [-4.5, -3.3], yaw: 0}}
+  footprint_radius: 0.35
+  nav_goals:
+    - {id: open_cabinet, type: open_door, target: cabinets.0.door_handle, distance: 0.8}
+    - {id: turn_valve, type: turn_handwheel, target: valve.handwheel_rim, distance: 0.75}
+    - {id: panel_front, type: inspect, target: panel.front, approach: front, distance: 0.9}
+constraints:
+  - {type: reachable, to: ["*"]}
+cameras:
+  - {id: overview, position: [-5.5, -3.8, 2.4], look_at: [1.0, 1.5, 0.8], focal_mm: 14}
+lighting: {preset: indoor_industrial}
