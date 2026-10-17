@@ -1,6 +1,6 @@
 # MCP server
 
-`worldc-mcp` exposes the scene pipeline as 11 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
+`worldc-mcp` exposes the scene pipeline as 14 tools over stdio, so an agent (Claude Code, Claude Desktop, your own client)
 can go from a description to a validated, rendered scene. It needs the `mcp` extra and a working Isaac Sim install; it
 refuses to start otherwise (`env.isaac_sim_missing` / `env.isaac_sim_version` / `env.isaac_sim_broken`).
 
@@ -32,6 +32,7 @@ or a file path. `render` additionally returns the image as MCP image content.
 | `validate_spec(spec, seed?)` | schema + semantic checks, then a dry-run solve (no USD) with per-object placed counts |
 | `build_scene(spec, seed?, out_dir?, run_check?)` | compile to USD + `scene_graph.json` + `resolved_spec.json`; output under the workspace (`<spec_hash>_<seed>` by default) |
 | `check_scene(path, physics?, sim_seconds?)` | overlap / floating / hazard / reachability / clearance checks, plus an Isaac Sim physics settle in a subprocess |
+| `drive_robot(path, goals?, n_goals?, video?)` | drive the real Isaac Sim robot to its goals in Isaac Sim physics (wheel commands only) and report whether it got there; optionally film it |
 | `render(path, camera?, width?, height?, engine?)` | `rtx` (Isaac ray tracing, ~20 s) or `proxy` (fast flat shading); a scene-graph camera name, `"topdown_map"`, or `{"position", "look_at", "focal_mm"}` |
 | `edit_scene(spec, json_patch)` | apply an RFC 6902 patch, validate, return the new spec + a diff; a bad op is reported by index and nothing is applied |
 

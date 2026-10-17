@@ -9,6 +9,7 @@
     worldc assets [--tags door,dock] [--query valve]
     worldc describe rack_row
     worldc isaac-check [--deep]
+    worldc drive out/scene_3 [--n-goals 3] [--video]              drive the real robot to its goals in Isaac Sim (+ chase / wide videos)
     worldc generate "prompt" [--model opus] [--max-budget-usd 3]    prompt -> built scene via your Claude Code; saved as a dataset record
     worldc generate --prompts-file prompts.txt                      one prompt per line, run in sequence
     worldc dataset stats | export [--format prompt_spec,sft,records,stats] | show RUN_ID | list
@@ -54,6 +55,15 @@ def main(argv=None):
     a.add_argument("--query", default=None)
     d = sub.add_parser("describe", help="describe one asset")
     d.add_argument("asset_id")
+    dr = sub.add_parser("drive", help="drive the scene's Isaac Sim robot to its goals in Isaac Sim physics")
+    dr.add_argument("scene")
+    dr.add_argument("--goals", default="", help="comma-separated goal ids (default: the first reachable, separated goals)")
+    dr.add_argument("--n-goals", type=int, default=3)
+    dr.add_argument("--video", action="store_true", help="also write chase and wide camera videos")
+    dr.add_argument("--fps", type=int, default=30)
+    dr.add_argument("--res", type=int, nargs=2, default=[1280, 720])
+    dr.add_argument("--speed", type=float, default=1.0)
+    dr.add_argument("--out", default=None)
     i = sub.add_parser("isaac-check", help="check the Isaac Sim install")
     i.add_argument("--deep", action="store_true")
     g = sub.add_parser("generate", help="prompt -> scene through Claude Code (headless) + the worldc MCP server; collected as a dataset record")
@@ -100,6 +110,16 @@ def main(argv=None):
                 print(f"{k}: {p}")
         return
     gate_or_exit(deep=getattr(args, "deep", False))
+    if args.cmd == "drive":
+        from .drive import run_drive
+
+        res = run_drive(args.scene, args.out, goal_ids=[g for g in args.goals.split(",") if g] or None, n_goals=args.n_goals, video=args.video,
+                        fps=args.fps, res=tuple(args.res), speed=args.speed)
+        for leg in res["legs"]:
+            print(f"{'reached' if leg['reached'] else 'MISSED '} {leg['goal']}: {leg['distance_m']} m from the goal at t={leg['time_s']} s")
+        print(f"{'OK' if res['ok'] else 'FAILED'}: {len(res['legs'])}/{res.get('planned_legs')} goals in {res['time_s']} s, max tilt {res['max_tilt_deg']} deg"
+              + "".join(f"\n  video: {v}" for v in res["videos"].values()))
+        sys.exit(0 if res["ok"] else 1)
     if args.cmd == "generate":
         from .datagen.records import dataset_root
         from .datagen.runner import generate
@@ -149,7 +169,7 @@ def main(argv=None):
             sys.exit(f"unknown recipe {args.name!r}; available: {', '.join(sorted(RECIPES))}")
         spec = RECIPES[args.name](args.seed)
         if not args.out:
-            print(json.dumps(spec.model_dump(mode="json", by_alias=True, exclude_defaults=True), indent=1))
+            print(json.dumps(spec.model_dump(mode="json", by_alias=True, exclude_unset=True), indent=1))
             return
         res = compile_scene(spec, args.seed, args.out)
         print(f"{'OK' if res.ok else 'FAILED'}: {res.out_dir} ({res.seconds:.1f} s)")

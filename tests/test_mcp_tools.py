@@ -190,7 +190,7 @@ def test_mcp_server_registers_and_serves():
     async def run():
         async with Client(build_server()) as c:
             names = {t.name for t in (await c.list_tools()).tools}
-            assert names == set(T.TOOLS) and len(names) == 11
+            assert names == set(T.TOOLS) and len(names) == 14
             schema = {t.name: t.input_schema for t in (await c.list_tools()).tools}
             assert "spec" in schema["validate_spec"]["properties"] and "json_patch" in schema["edit_scene"]["properties"]
             res = await c.call_tool("describe_asset", {"id": "pallet"})
@@ -205,3 +205,19 @@ def test_mcp_server_registers_and_serves():
             assert not json.loads(res.content[0].text)["ok"]
 
     asyncio.run(run())
+
+
+def test_recipe_tools():
+    names = [r["name"] for r in T.list_recipes()["result"]["recipes"]]
+    assert "warehouse" in names
+    r = T.get_recipe("warehouse", 3)
+    assert r["ok"] and r["result"]["spec"]["environment"]["footprint"]["size"] == [40.0, 25.0] and r["result"]["spec"]["robot"]["asset"] == "dingo"
+    assert T.get_recipe("warehouse", 3)["result"]["spec"] != T.get_recipe("warehouse", 4)["result"]["spec"]
+    assert codes(T.get_recipe("nope")) == ["recipe.unknown"]
+    e = T.edit_scene(r["result"]["spec"], [{"op": "replace", "path": "/robot/asset", "value": "jackal"}])  # a recipe is a normal spec
+    assert e["result"]["valid"]
+
+
+def test_recipe_spec_round_trips_and_builds():
+    spec = T.get_recipe("warehouse", 1)["result"]["spec"]
+    assert T.validate_spec(spec)["ok"]  # the dumped spec parses back (discriminator fields kept)

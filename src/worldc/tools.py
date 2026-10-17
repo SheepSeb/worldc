@@ -253,6 +253,26 @@ def get_spec_schema(section: str | None = None) -> dict:
                     result={"sections": names})
 
 
+@tool
+def list_recipes() -> dict:
+    """Parameterised starting points (whole scenes as specs) you can fetch with get_recipe and adapt with edit_scene."""
+    from .recipes import DESCRIPTIONS, list_recipes as _names
+
+    return _out(True, {"recipes": [{"name": n, "description": DESCRIPTIONS.get(n, "")} for n in _names()]})
+
+
+@tool
+def get_recipe(name: str, seed: int = 0) -> dict:
+    """The spec of a recipe scene for ``seed`` (different seeds vary sizes, palettes, lighting and clutter).  It is a complete valid spec:
+    build it as is, or change it with edit_scene (swap assets, resize the footprint, move zones, add or remove objects) to match the request."""
+    from .recipes import DESCRIPTIONS, RECIPES
+
+    if name not in RECIPES:
+        return _out(False, issues=[error("recipe.unknown", f"Unknown recipe {name!r}.", hint="Available: " + ", ".join(sorted(RECIPES)) + ".")])
+    spec = RECIPES[name](int(seed)).model_dump(mode="json", by_alias=True, exclude_unset=True)
+    return _out(True, {"name": name, "seed": int(seed), "description": DESCRIPTIONS.get(name, ""), "spec": spec})
+
+
 def _solve_summary(sol) -> dict:
     per_obj = Counter(p.obj_id for p in sol.instances)
     return {"placed_instances": len(sol.instances), "instances_by_object": dict(sorted(per_obj.items())),
@@ -355,6 +375,37 @@ def check_scene(path: str, physics: bool = True, sim_seconds: float = 6.0, timeo
         issues += extra
         ok = ok and bool(phys.get("ok"))
     return _out(ok, result, issues)
+
+
+@tool
+def drive_robot(path: str, goals: list[str] | None = None, n_goals: int = 3, video: bool = False, speed: float = 1.0) -> dict:
+    """Drive the scene's real Isaac Sim robot to its goals in Isaac Sim physics (wheel velocity commands only; forklifts and people keep
+    moving) and report whether it reached them: the strongest check that the scene is navigable.  ``goals``: goal ids (default: the first
+    ``n_goals`` reachable, well separated goals).  With ``video`` it also writes chase and wide camera videos (slower)."""
+    from .drive import run_drive
+    from .isaac_env import IsaacSimUnavailable
+
+    d = _scene_dir(path)
+    try:
+        _isaac()
+        res = run_drive(d, goal_ids=goals, n_goals=int(n_goals), video=bool(video), speed=float(speed))
+    except IsaacSimUnavailable as e:
+        return _out(False, issues=[Issue(**e.issue)])
+    except ValueError as e:
+        return _out(False, issues=[error("drive.cannot_plan", str(e), hint="Check robot.spawn, the goals and that the robot is a supported wheeled robot.")])
+    issues = []
+    for leg in res["legs"]:
+        if not leg["reached"]:
+            issues.append(error("drive.goal_not_reached", f"The robot stopped {leg['distance_m']} m from goal {leg['goal']!r}.", f"/robot/nav_goals",
+                                "Widen the passage or move obstacles near the goal."))
+    if len(res["legs"]) < res.get("planned_legs", 0):
+        issues.append(error("drive.incomplete", f"Only {len(res['legs'])} of {res['planned_legs']} goals were reached before the time limit or a failure.",
+                            hint=str(res.get("error", ""))[-300:]))
+    if not res.get("upright", True):
+        issues.append(error("drive.tipped", f"The robot tilted {res['max_tilt_deg']} degrees while driving.", hint="Check the floor and obstacles on its route."))
+    summary = {k: res.get(k) for k in ("ok", "time_s", "legs", "max_tilt_deg", "videos", "calibration") if k in res}
+    summary["route_length_m"] = res["route"]["length_m"]
+    return _out(res["ok"], summary, issues)
 
 
 def _physics(d: Path, sim_seconds: float, timeout_s: float) -> tuple[dict, list[Issue]]:
@@ -466,5 +517,5 @@ def render(path: str, camera: Any = "overview", width: int = 960, height: int = 
 
 
 TOOLS: dict[str, Callable] = {f.__name__: f for f in (
-    list_assets, search_assets, import_asset, validate_generated_asset, describe_asset, get_spec_schema, validate_spec, build_scene,
-    check_scene, render, edit_scene)}
+    list_assets, search_assets, import_asset, validate_generated_asset, describe_asset, get_spec_schema, list_recipes, get_recipe,
+    validate_spec, build_scene, check_scene, drive_robot, render, edit_scene)}

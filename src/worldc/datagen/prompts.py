@@ -17,7 +17,8 @@ Workflow:
    Find other assets with search_assets (registry ids first, then Omniverse catalog `path`s). Use describe_asset for parameters and
    anchors. Generate a `generate` asset (declarative parts, see the spec reference below) only when nothing existing fits, and
    check it with validate_generated_asset first.
-3. Write the spec. Call get_spec_schema(section) when you need exact field names. Never invent asset ids or field names.
+3. If the request resembles a recipe (list_recipes, e.g. a warehouse), start from get_recipe and adapt it with edit_scene instead of
+   writing everything from scratch: it is a complete, valid, richly detailed scene. Otherwise write the spec yourself. Call get_spec_schema(section) when you need exact field names. Never invent asset ids or field names.
 4. validate_spec and fix every issue using its `path` and `hint` (edit_scene with a JSON Patch is cheaper than resending the spec).
    A clean validate_spec includes a dry-run solve: check `instances_by_object` against the counts the request asked for.
 5. build_scene (seed 0 unless asked otherwise), then check_scene with physics=false, then render with engine="proxy": once

@@ -43,6 +43,16 @@ CURATED: dict[str, tuple[str, str, str]] = {
 }
 NEEDS_CONTROLLER = {"legged", "humanoid"}
 
+# Differential-drive wheel joints (velocity-driven in the robot's USD) of the wheeled robots we can drive with ``worldc drive``.
+# Wheel radius and track are not hard-coded: the driver calibrates them by moving the robot (render/isaac_drive.py).
+DIFF_DRIVE = {
+    "nova_carter": {"left": ["joint_wheel_left"], "right": ["joint_wheel_right"]},
+    "carter_v1": {"left": ["left_wheel"], "right": ["right_wheel"]},
+    "dingo": {"left": ["left_wheel_joint"], "right": ["right_wheel_joint"]},
+    "iw_hub": {"left": ["left_wheel_joint"], "right": ["right_wheel_joint"]},
+    "jackal": {"left": ["front_left_wheel_joint", "rear_left_wheel_joint"], "right": ["front_right_wheel_joint", "rear_right_wheel_joint"]},
+}
+
 
 @dataclass
 class RobotInfo:
