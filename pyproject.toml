@@ -20,11 +20,15 @@ dependencies = [
 claude-scene-generator = "claude_scene_generator:main"
 csg = "claude_scene_generator.cli:main"
 csg-import-mesh = "claude_scene_generator.assets.mesh.import_mesh:main"
+csg-mcp = "claude_scene_generator.mcp_server:main"
 
 [project.optional-dependencies]
 mesh = [
     "coacd>=1.0.14",
     "trimesh>=5.1.1",
+]
+mcp = [
+    "mcp>=2.0",
 ]
 
 [build-system]

@@ -23,6 +23,7 @@ ap.add_argument("seed_dir")
 ap.add_argument("--sim-seconds", type=float, default=10.0)
 ap.add_argument("--skip-render", action="store_true")
 ap.add_argument("--skip-art", action="store_true")
+ap.add_argument("--render-warmup", type=int, default=40, help="app updates before each camera capture")
 ap.add_argument("--res", type=int, nargs=2, default=[1280, 720])
 args = ap.parse_args()
 
@@ -56,7 +57,7 @@ graph = load_scene_graph(SEED_DIR / "scene_graph.json")
 # ------------------------------------------------------------------ 1. load
 ctx = omni.usd.get_context()
 log("opening stage")
-ok = ctx.open_stage(str(SEED_DIR / graph.get("usd", "warehouse.usd"))); msg = ""
+ok = ctx.open_stage(str(SEED_DIR / graph.get("usd", "scene.usd"))); msg = ""
 while ctx.get_stage_loading_status()[2] > 0:
     app.update()
 for _ in range(10):
@@ -69,23 +70,34 @@ log("loaded", n_prims, "prims")
 # ------------------------------------------------------------------ 2. schema check (raw attrs are understood by PhysxSchema)
 sch = {"ok": True, "checked": []}
 try:
-    rb = stage.GetPrimAtPath(graph["objects"][[o["category"] for o in graph["objects"]].index("box")]["path"])
-    pr = PhysxSchema.PhysxRigidBodyAPI(rb)
-    sch["rigid_body_api_applied"] = rb.HasAPI(PhysxSchema.PhysxRigidBodyAPI)
-    sch["solver_position_iterations"] = pr.GetSolverPositionIterationCountAttr().Get()
-    belt = stage.GetPrimAtPath(graph["conveyors"][0]["belt_path"])
-    sv = PhysxSchema.PhysxSurfaceVelocityAPI(belt)
-    sch["surface_velocity_api_applied"] = belt.HasAPI(PhysxSchema.PhysxSurfaceVelocityAPI)
-    sch["belt_surface_velocity"] = list(sv.GetSurfaceVelocityAttr().Get())
+    ok_all = True
+
+    def need(name, cond):
+        global ok_all
+        sch[name] = bool(cond)
+        sch["checked"].append(name)
+        ok_all &= bool(cond)
+
     scn = stage.GetPrimAtPath("/World/PhysicsScene")
     ps = PhysxSchema.PhysxSceneAPI(scn)
-    sch["scene_api_applied"] = scn.HasAPI(PhysxSchema.PhysxSceneAPI)
+    need("scene_api_applied", scn.HasAPI(PhysxSchema.PhysxSceneAPI))
     sch["solver_type"] = ps.GetSolverTypeAttr().Get()
     sch["steps_per_second"] = ps.GetTimeStepsPerSecondAttr().Get()
-    art = graph["articulations"][0]
-    sch["articulation_root_api"] = stage.GetPrimAtPath(art["root"]).HasAPI(UsdPhysics.ArticulationRootAPI)
-    sch["ok"] = bool(sch["rigid_body_api_applied"] and sch["surface_velocity_api_applied"] and sch["scene_api_applied"] and sch["articulation_root_api"]
-                     and abs(sch["belt_surface_velocity"][1] - 0.5) < 1e-6 and sch["solver_type"] == "TGS")
+    need("solver_is_tgs", sch["solver_type"] == "TGS")
+    dyn_objs = [o for o in graph["objects"] if o["body_type"] == "dynamic"]
+    if dyn_objs:
+        rb = stage.GetPrimAtPath(dyn_objs[0]["path"])
+        pr = PhysxSchema.PhysxRigidBodyAPI(rb)
+        need("rigid_body_api_applied", rb.HasAPI(PhysxSchema.PhysxRigidBodyAPI))
+        sch["solver_position_iterations"] = pr.GetSolverPositionIterationCountAttr().Get()
+    if graph["conveyors"]:
+        belt = stage.GetPrimAtPath(graph["conveyors"][0]["belt_path"])
+        need("surface_velocity_api_applied", belt.HasAPI(PhysxSchema.PhysxSurfaceVelocityAPI))
+        sch["belt_surface_velocity"] = list(PhysxSchema.PhysxSurfaceVelocityAPI(belt).GetSurfaceVelocityAttr().Get())
+        need("belt_velocity_matches", abs(sch["belt_surface_velocity"][1] - graph["conveyors"][0].get("speed_mps", 0.5)) < 1e-6)
+    if graph["articulations"]:
+        need("articulation_root_api", stage.GetPrimAtPath(graph["articulations"][0]["root"]).HasAPI(UsdPhysics.ArticulationRootAPI))
+    sch["ok"] = ok_all
 except Exception as e:  # noqa: BLE001
     sch["ok"] = False
     sch["error"] = repr(e)
@@ -115,8 +127,23 @@ conv_payload = {o["path"] for o in dyn if o.get("on_conveyor")}
 art_roots = {a["link"] for a in graph["articulations"]}
 dyn_paths = [o["path"] for o in dyn]
 kin_paths = [h["path"] for h in graph["hazards"]]
-dview = sv.create_rigid_body_view(dyn_paths)
-kview = sv.create_rigid_body_view(kin_paths)
+
+
+class _NoBodies:  # a scene may have no dynamic bodies / no kinematic hazards
+    count = 0
+
+    def get_transforms(self):
+        return np.zeros((0, 7), np.float32)
+
+    def get_velocities(self):
+        return np.zeros((0, 6), np.float32)
+
+    def set_kinematic_targets(self, *a):
+        pass
+
+
+dview = sv.create_rigid_body_view(dyn_paths) if dyn_paths else _NoBodies()
+kview = sv.create_rigid_body_view(kin_paths) if kin_paths else _NoBodies()
 log("views", dview.count, "dynamic bodies;", kview.count, "kinematic hazards")
 OUT["stages"]["load"]["n_dynamic_bodies"] = int(dview.count)
 
@@ -156,14 +183,14 @@ for k in range(n_steps):
     if k == n_steps // 2:
         snap["mid"] = tr[:, :3].copy()
     if k % 240 == 0:
-        log(f"  t={t:5.2f}s  max|v|={sp.max():.3f}")
+        log(f"  t={t:5.2f}s  max|v|={(sp.max() if len(sp) else 0.0):.3f}")
 tr = dview.get_transforms()
 pF = tr[:, :3]
 disp = np.linalg.norm(pF - p0, axis=1)
 disp_late = np.linalg.norm(pF - snap["mid"], axis=1)
 mask = np.array([p not in conv_payload for p in dyn_paths])
-frac = float((disp[mask] < 0.02).mean())
-frac_late = float((disp_late[mask] < 0.02).mean())
+frac = float((disp[mask] < 0.02).mean()) if mask.any() else 1.0
+frac_late = float((disp_late[mask] < 0.02).mean()) if mask.any() else 1.0
 fell = [dyn_paths[i] for i in range(len(dyn_paths)) if z_min[i] < min(p0[i, 2], 0.0) - 0.05 or pF[i, 2] < p0[i, 2] - 0.3]
 fast = [{"body": dyn_paths[i], "max_speed_mps": round(float(v_max[i]), 3)} for i in range(len(dyn_paths)) if v_max[i] > 1.0 and mask[i]]
 moved = [{"body": dyn_paths[i], "displacement_m": round(float(disp[i]), 3)} for i in np.argsort(-disp) if disp[i] >= 0.02 and mask[i]][:25]
@@ -174,7 +201,7 @@ for i, tl in payload_track.items():
     if seg:
         speeds[dyn_paths[i]] = {"mean_vy_mps": round(float(np.mean([s[2] for s in seg])), 3),
                                 "mean_vx_mps": round(float(np.mean([s[1] for s in seg])), 3)}
-belt_ok = all(abs(v["mean_vy_mps"] - 0.5) <= 0.05 and abs(v["mean_vx_mps"]) <= 0.05 for v in speeds.values()) and len(speeds) > 0
+belt_ok = not conv_payload or (all(abs(v["mean_vy_mps"] - 0.5) <= 0.05 and abs(v["mean_vx_mps"]) <= 0.05 for v in speeds.values()) and len(speeds) > 0)
 OUT["stages"]["physics"] = {
     "sim_seconds": args.sim_seconds,
     "physics_dt": DT,
@@ -183,8 +210,8 @@ OUT["stages"]["physics"] = {
     "fraction_displacement_below_2cm": round(frac, 4),
     "fraction_late_drift_below_2cm_t5_to_t10": round(frac_late, 4),
     "target": 0.95,
-    "max_displacement_m": round(float(disp[mask].max()), 4),
-    "median_displacement_m": round(float(np.median(disp[mask])), 5),
+    "max_displacement_m": round(float(disp[mask].max()), 4) if mask.any() else 0.0,
+    "median_displacement_m": round(float(np.median(disp[mask])), 5) if mask.any() else 0.0,
     "fell_through_floor": fell,
     "faster_than_1mps": fast,
     "worst_movers": moved,
@@ -207,17 +234,19 @@ if not args.skip_render:
         roof = UsdGeom.Imageable(stage.GetPrimAtPath("/World/Building/Roof"))
         for cam in graph["cameras"]:
             name = cam["name"]
-            if name == "overhead":
+            if name == "overhead" and roof:
                 roof.MakeInvisible()
             rp = rep.create.render_product(cam["path"], tuple(args.res))
             ann = rep.AnnotatorRegistry.get_annotator("rgb")
             ann.attach([rp])
-            for _ in range(40):
+            for _ in range(args.render_warmup):
                 app.update()
             for _ in range(3):
                 rep.orchestrator.step(rt_subframes=32, delta_time=0.0, pause_timeline=False)
             data = ann.get_data()
             img = np.asarray(data)[..., :3].astype(np.uint8)
+            ann.detach()  # one live render product at a time: every product renders on every orchestrator step
+            rp.destroy()
             out = SEED_DIR / "renders" / f"{name}.png"
             Image.fromarray(img).save(out)
             lum = img.astype(np.float32).mean(axis=2)
@@ -228,7 +257,7 @@ if not args.skip_render:
             st["ok"] = bool(st["mean_luminance"] > 10 and st["std_luminance"] > 8 and st["frac_black"] < 0.6 and st["frac_saturated"] < 0.35 and magenta < 0.001)
             RENDER["images"].append(st)
             RENDER["ok"] &= st["ok"]
-            if name == "overhead":
+            if name == "overhead" and roof:
                 roof.MakeVisible()
             log("rendered", name, st)
     except Exception as e:  # noqa: BLE001

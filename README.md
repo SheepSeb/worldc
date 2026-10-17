@@ -34,5 +34,6 @@ uv run pytest                                          # 400 tests; -m slow for 
 ## Docs
 - [docs/SPEC.md](docs/SPEC.md): spec reference, relations, constraints, outputs, issue codes
 - [docs/ASSETS.md](docs/ASSETS.md): asset contract and sources (procedural, mesh, user file, generated)
+- [docs/MCP.md](docs/MCP.md): the `csg-mcp` server (11 tools: assets, validate, build, check, render, edit) and how to register it
 - [docs/CATALOG.md](docs/CATALOG.md): Isaac Sim asset catalog (offline index, search, query pinning) and its license findings
 - [warehouse_out/README.md](warehouse_out/README.md): the warehouse scenes and how to load them in Isaac Sim / Isaac Lab
