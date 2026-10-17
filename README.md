@@ -3,7 +3,7 @@
 Declarative, agent-usable scene generation for Isaac Sim. A **scene spec** (JSON/YAML) describes the environment, zones,
 objects and their relations, constraints, moving agents, the robot and its nav goals, cameras and lighting. The compiler
 solves it into a physically valid USD scene and a scene graph. The goal is to train an LLM to write specs from natural
-language; see [docs/PLAN.md](docs/PLAN.md).
+language; the spec format is in [docs/SPEC.md](docs/SPEC.md).
 
 > Work in progress on branch `refactor/spec-pipeline`. Done: spec, assets, solver, compiler, checks, proxy and RTX rendering,
 > the warehouse recipe, the Omniverse catalog, the MCP server, and prompt-to-scene generation with dataset collection
