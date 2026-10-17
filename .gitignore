@@ -17,3 +17,4 @@ mcp_out/
 # generated data
 /dataset/
 /mcp_out/
+/warehouse_out/
