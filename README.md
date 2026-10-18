@@ -1,7 +1,7 @@
-[![worldc: one prompt compiled into a warehouse, then nine worlds running in Isaac Sim](docs/worldc_worlds_poster.png)](docs/worldc_worlds.mp4)
+[![worldc: a warehouse compiled from one prompt, its robot driving in Isaac Sim, then nine compiled worlds](docs/worldc_preview.gif)](docs/worldc_worlds.mp4)
 
-*The video (75 s): a prompt for a 40 x 25 m warehouse goes through the agent and every worldc check, the warehouse is assembled
-from the floor up, its Nova Carter drives in Isaac Sim physics, and then nine compiled worlds play side by side.*
+*Click for the full video (75 s): a prompt for a 40 x 25 m warehouse goes through the agent and every worldc check, the
+warehouse is assembled from the floor up, its Nova Carter drives in Isaac Sim physics, and then nine compiled worlds play side by side.*
 
 <p align="center">
   <img src="docs/worldc_logo.svg" width="150" alt="worldc logo: a gear framing a small room with a robot in it">
