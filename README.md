@@ -1,13 +1,20 @@
-# worldc
+<p align="center">
+  <img src="docs/worldc_logo.svg" width="150" alt="worldc logo: a gear framing a small room with a robot in it">
+</p>
 
-**A compiler for physical worlds.** Describe a place; get a simulation-ready environment you can verify.
+<h1 align="center">worldc</h1>
+
+<p align="center"><b>A compiler for physical worlds.</b> Describe a place; get a simulation-ready environment you can verify.</p>
 
 worldc lets an LLM agent build [Isaac Sim](https://developer.nvidia.com/isaac/sim) environments from a plain-language request,
 and proves the result is correct. The agent writes a short declarative *scene spec*; worldc validates it, solves the layout,
 builds the USD scene, checks geometry, navigation and physics, and renders it in Isaac Sim. When something is wrong, the agent gets a
 precise, actionable error instead of a silent mistake, so it fixes the scene instead of guessing.
 
-[![worldc demo](docs/media/worldc_demo_poster.png)](docs/media/worldc_demo.mp4)
+[![worldc: one prompt compiled into a warehouse, then nine worlds running in Isaac Sim](docs/worldc_worlds_poster.png)](docs/worldc_worlds.mp4)
+
+*The video (75 s): a prompt for a 40 x 25 m warehouse goes through the agent and every worldc check, the warehouse is assembled
+from the floor up, its Nova Carter drives in Isaac Sim physics, and then nine compiled worlds play side by side.*
 
 ## What you get
 
@@ -70,6 +77,20 @@ A validation error looks like this, and is what the agent sees:
   meshes (imported with collision hulls), a searchable offline index of 1,500 NVIDIA Omniverse assets, and declarative generated
   assets for gaps. Search and resolution prefer an existing asset over generating a new one.
 
+## Example worlds
+
+Each of these builds in a few seconds (the warehouse in about 12) and passes the post-build checks. The specs are in
+[examples/specs](examples/specs).
+
+| spec | world | robot |
+|---|---|---|
+| [`minimal_room`](examples/specs/minimal_room.yaml) | 6 x 5 m store room: a work table against the north wall, cartons on it, a cone | Nova Carter |
+| [`kitchen`](examples/specs/kitchen.yaml) | 4 x 3.5 m kitchen: L-shaped counter with drawers (one open), fridge, island, tableware, a window | TurtleBot3 Burger |
+| [`industrial_deck`](examples/specs/industrial_deck.yaml) | 12 x 8 m pump room: pump set, instrument panel, cabinets, a gate valve, loose tools | Nova Carter |
+| [`warehouse_lite`](examples/specs/warehouse_lite.yaml) | 20 x 14 m warehouse: two rack rows, a packing belt, a forklift loop, loose cartons | Nova Carter |
+| [`outdoor_yard`](examples/specs/outdoor_yard.yaml) | 30 x 20 m outdoor yard: pallet stacks, concrete barriers, bins, a forklift loop | Nova Carter |
+| recipe `warehouse` | 40 x 25 m fulfillment warehouse: six rack aisles, three dock bays, conveyors and a packing table, a charging area, a forklift and two people | Dingo (set any robot in the spec) |
+
 ## Quickstart
 
 **Requirements:** Python 3.12, [uv](https://docs.astral.sh/uv/), and **Isaac Sim 5.0 or newer** (`ISAACSIM_PATH`, default
@@ -84,6 +105,8 @@ uv run worldc build examples/specs/warehouse_lite.yaml --seed 3 --out out/lite_3
 uv run worldc check out/lite_3                       # the verification report again
 uv run worldc render out/lite_3 --camera aisle       # fast preview render
 uv run worldc drive out/lite_3 --video               # drive the robot to its goals in Isaac Sim, with chase and wide videos
+
+uv run worldc recipe warehouse --seed 1 --out out/warehouse   # the 40 x 25 m fulfillment warehouse
 ```
 
 More: `worldc assets --tags robot`, `worldc describe rack_row`, `worldc schema --section ObjectSpec`,
@@ -144,7 +167,7 @@ constraints:
 ## Development
 
 ```bash
-uv run pytest            # about 490 tests
+uv run pytest            # about 510 tests
 uv run pytest -m slow    # the longer end-to-end ones
 ```
 
