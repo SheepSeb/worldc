@@ -24,7 +24,7 @@ from .mesh.mesh_asset import MeshAsset, VisualXform, read_sidecar, write_sidecar
 
 ASSET_ROOT = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1"
 DEFAULT_CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "worldc" / "catalog"
-META_KEYS = {"id", "mass_kg", "tags", "body", "material", "description", "collision"}
+META_KEYS = {"id", "mass_kg", "tags", "body", "material", "description", "collision", "up_axis"}
 
 
 class CatalogError(RuntimeError):
@@ -98,11 +98,12 @@ def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | st
         try:
             sc_path = import_mesh(src, tmp, asset_id, ov.get("tags", ()), ov.get("mass_kg"), description=ov.get("description"),
                                   material=ov.get("material", "plastic"), body=ov.get("body", "dynamic"),
-                                  collision=ov.get("collision", "auto"), thumbnail=False)
+                                  collision=ov.get("collision", "auto"), up=ov.get("up_axis"), thumbnail=False)
         except ImportError_ as e:
             raise CatalogError("asset.catalog_bad_usd", f"{url}: {e}") from e
         # the same normalisation import_mesh applied, as a transform on the referenced original
         parts, up, mpu = load_parts(src)
+        up = ov.get("up_axis") or up
         p0 = parts[0][0][0] * mpu
         if up.upper() == "Y":
             p0 = np.array([p0[0], -p0[2], p0[1]])

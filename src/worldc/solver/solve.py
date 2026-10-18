@@ -24,7 +24,7 @@ from ..assets import registry
 from ..assets.base import Asset, Footprint, Pose
 from ..assets.procedural.building import BuildingShell, Opening, SlopeZone
 from ..assets.resolve import AssetResolutionError, resolve
-from ..geom import Q_IDENT, qyaw, qrpy
+from ..geom import Q_IDENT, qyaw, qrpy, qmat
 from ..spec.issues import Issue, error, pointer, warning
 from ..spec.models import (AgainstPlacement, AttachPlacement, FillPlacement, FillProbability, InsidePlacement, LayoutPlacement,
                            NearPlacement, NextToPlacement, OnPlacement, PosePlacement, SceneSpec, YawFace, YawRange)
@@ -186,7 +186,8 @@ class Solver:
         """(ok, blockers, reason) for a candidate pose."""
         pieces = self._pieces(asset, p, pose)
         if interior and self.env.kind == "indoor" and floor:
-            if not all(contains(self.env.interior, poly, FLOOR_PAD) for poly, _, _ in pieces):
+            pad = -1e-4 if asset.flush_walls else FLOOR_PAD
+            if not all(contains(self.env.interior, poly, pad) for poly, _, _ in pieces):
                 return False, [], "outside_building"
         ignore = self._ancestors(parent) | set(owner_ok) if parent else set(owner_ok)
         hits = self.index.collisions(pieces, ignore, self.margin, keepouts=floor)
@@ -262,7 +263,7 @@ class Solver:
         if env.kind == "indoor":
             shell = registry.get("building_shell")
             sp = shell.params({"size": (W, D), "height": env.height or 8.0, "wall_thickness": env.walls.thickness,
-                               "openings": [Opening(id=o.id, wall=o.wall, center=o.center, width=o.width, height=o.height) for o in env.walls.openings],
+                               "openings": [Opening(id=o.id, wall=o.wall, center=o.center, width=o.width, height=o.height, sill=o.sill) for o in env.walls.openings],
                                "roof": env.roof, "apron_depth": env.apron_depth, "wall_material": env.walls.material})
             for a in shell.anchors(sp):
                 if a.kind == "port":
@@ -293,6 +294,8 @@ class Solver:
                 continue
             port = ports[f"opening_{o.id}"]
             raw = {**({"width": o.width, "height": o.height} if "width" in a.Params.model_fields else {}), **o.door_params}
+            if "sill" in a.Params.model_fields:
+                raw.setdefault("sill", o.sill)
             if "wall_thickness" in a.Params.model_fields:
                 raw.setdefault("wall_thickness", env.walls.thickness)
             if a.id == "swing_door":
@@ -462,8 +465,18 @@ class Solver:
                     return None
                 inst, a = hits[0]
                 yaw = math.radians(ps.yaw) if ps.yaw is not None else 0.0
-                return (Pose.xy_yaw(x, y, yaw, ps.z if ps.z is not None else a.pos[2]), inst.key if inst else None, a.name, False,
-                        {"support": ps.support, **({"zone": ps.zone} if ps.zone else {})})
+                meta = {"support": ps.support, **({"zone": ps.zone} if ps.zone else {})}
+                if ps.rpy is not None:  # tilted (e.g. a mug on its side): rest the rotated bounding box's lowest point on the support
+                    q = qrpy(*[math.radians(v) for v in ps.rpy])
+                    fp, R = asset.footprint(p), qmat(q)
+                    xy = np.asarray(fp.polygon, float)
+                    lift = -min((R @ np.array([cx, cy, cz]))[2] for cx in (xy[:, 0].min(), xy[:, 0].max())
+                                for cy in (xy[:, 1].min(), xy[:, 1].max()) for cz in (fp.z0, fp.z1))
+                    meta.update(lift=float(lift), rpy=[float(v) for v in ps.rpy])
+                    pose = Pose((x, y, ps.z if ps.z is not None else a.pos[2] + lift), q)
+                else:
+                    pose = Pose.xy_yaw(x, y, yaw, ps.z if ps.z is not None else a.pos[2])
+                return (pose, inst.key if inst else None, a.name, False, meta)
             if ps.rpy is not None:
                 q = qrpy(*[math.radians(v) for v in ps.rpy])
                 return Pose((x, y, ps.z if ps.z is not None else fz(x, y)), q), None, None, ps.z is None, {}
@@ -562,7 +575,7 @@ class Solver:
             k = 0 if axis == "x" else 1
             lo, hi = fp[:, k].min(), fp[:, k].max()
             if pl.along is None:
-                rng_a = (a0 + FLOOR_PAD - lo, a1 - FLOOR_PAD - hi)
+                rng_a = (a0 + (0.0 if asset.flush_walls else FLOOR_PAD) - lo, a1 - (0.0 if asset.flush_walls else FLOOR_PAD) - hi)
             elif isinstance(pl.along, (int, float)):
                 rng_a = (pl.along, pl.along)
             else:
@@ -571,7 +584,7 @@ class Solver:
                 return None
             t = float(rng.uniform(*rng_a)) if rng_a[0] < rng_a[1] else rng_a[0]
             # place the footprint's wall-side extreme (min along the inward normal, m) at line + pad + gap
-            off = (FLOOR_PAD if ref.startswith("wall:") else 0.0) + pl.gap - m
+            off = (0.0 if asset.flush_walls else FLOOR_PAD if ref.startswith("wall:") else 0.0) + pl.gap - m
             if axis == "x":
                 x, y = t, line + n[1] * off
             else:
@@ -760,7 +773,8 @@ class Solver:
         for attempt in range(K_SAMPLES):
             if isinstance(pl, PosePlacement):
                 ps = pl.pose[0] if isinstance(pl.pose, list) else pl.pose
-                cand = Pose.xy_yaw(ps.xy[0], ps.xy[1], math.radians(ps.yaw or 0.0))
+                mounted = ps.z is not None  # explicit z: the base is mounted (e.g. an arm on a table), not standing on the floor
+                cand = Pose.xy_yaw(ps.xy[0], ps.xy[1], math.radians(ps.yaw or 0.0), ps.z or 0.0)
             elif isinstance(pl, InsidePlacement):
                 zs = pl.inside if isinstance(pl.inside, list) else [pl.inside]
                 x0, y0, x1, y1 = self.zones[zs[int(rng.integers(len(zs)))]]
@@ -770,7 +784,8 @@ class Solver:
                 rr, ang = pl.near.radius * math.sqrt(rng.random()), rng.uniform(0, 2 * math.pi)
                 cand = Pose.xy_yaw(c[0] + rr * math.cos(ang), c[1] + rr * math.sin(ang), rng.uniform(0, 2 * math.pi))
             poly = transform(fp.polygon, cand.pos[0], cand.pos[1], 0)
-            hits = [h for h in self.index.collisions([(poly, 0.1, 1.5)], margin=0.0, keepouts=False) if h.kind == "object"]
+            hits = [] if isinstance(pl, PosePlacement) and mounted else \
+                [h for h in self.index.collisions([(poly, 0.1, 1.5)], margin=0.0, keepouts=False) if h.kind == "object"]
             if not hits:
                 pose = cand
                 break
@@ -781,8 +796,10 @@ class Solver:
         if pose is None:
             self.err("solve.robot_spawn_blocked", "No free robot spawn found.", "/robot/spawn", "Use a larger zone or a free pose.")
             return
-        self.index.add(Entry(transform(fp.polygon, pose.pos[0], pose.pos[1], 0), 0, 2.0, "", "spawn", "robot_spawn"))
-        self.robot = {"asset": a, "params": p, "pose": pose, "radius": radius}
+        mounted = isinstance(pl, PosePlacement) and (pl.pose[0] if isinstance(pl.pose, list) else pl.pose).z is not None
+        if not mounted:
+            self.index.add(Entry(transform(fp.polygon, pose.pos[0], pose.pos[1], 0), 0, 2.0, "", "spawn", "robot_spawn"))
+        self.robot = {"asset": a, "params": p, "pose": pose, "radius": radius, "mounted": mounted}
 
     def _robot_radius(self) -> float:
         """Navigation radius: the spec's override, else the real robot's measured footprint radius."""

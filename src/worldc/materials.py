@@ -107,6 +107,19 @@ VISUAL: dict[str, tuple] = {
     "wheel_white": ((0.85, 0.85, 0.84), 0.5, 0.1),
     "wheel_red": ((0.65, 0.07, 0.06), 0.5, 0.1),
     "tank_white": ((0.78, 0.8, 0.82), 0.6, 0.1),
+    # --- kitchen
+    "oak_laminate": ((0.74, 0.58, 0.38), 0.45, 0.0),
+    "sage_matte": ((0.56, 0.66, 0.55), 0.85, 0.0),
+    "quartz_white": ((0.93, 0.93, 0.91), 0.22, 0.0),
+    "butcher_block": ((0.68, 0.48, 0.27), 0.6, 0.0),
+    "brushed_steel": ((0.72, 0.73, 0.74), 0.35, 0.9),
+    "stainless_fridge": ((0.74, 0.75, 0.76), 0.3, 0.95),
+    "ceramic_white": ((0.95, 0.95, 0.93), 0.18, 0.0),
+    "ceramic_red": ((0.62, 0.07, 0.06), 0.2, 0.0),
+    "glass": ((0.86, 0.93, 0.95), 0.05, 0.0, 0.22),
+    "apple_green": ((0.47, 0.66, 0.13), 0.35, 0.0),
+    "window_frame": ((0.93, 0.93, 0.91), 0.5, 0.0),
+    "kitchen_wall": ((0.90, 0.88, 0.82), 0.9, 0.0),
 }
 
 # name: (friction (static = dynamic), restitution)
@@ -118,10 +131,13 @@ PHYSICAL: dict[str, tuple] = {
     "wood": (0.5, 0.05),
     "plastic": (0.4, 0.05),
     "grating": (0.7, 0.05),
+    "ceramic": (0.45, 0.05),
+    "glass": (0.35, 0.05),
+    "fruit": (0.6, 0.05),
 }
 
 # materials that keep their colour under weathering (people, signals, cables)
-_NO_WEATHER = ("coverall", "skin", "glove", "hardhat", "btn_", "cable", "gauge", "charger_led", "human_", "robot_")
+_NO_WEATHER = ("oak_", "sage_", "quartz_", "butcher_", "brushed_", "stainless_", "ceramic_", "glass", "apple_", "window_", "kitchen_", "coverall", "skin", "glove", "hardhat", "btn_", "cable", "gauge", "charger_led", "human_", "robot_")
 
 
 def _usd_name(s: str) -> str:

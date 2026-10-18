@@ -26,7 +26,8 @@ class Opening(BaseModel):
     wall: Literal["south", "north", "east", "west"]
     center: float = Field(description="Coordinate along the wall axis (x for south/north walls, y for east/west), local frame")
     width: float = Field(gt=0.3, le=20)
-    height: float = Field(gt=0.5, le=20)
+    height: float = Field(gt=0.5, le=20, description="Top edge of the opening above the floor")
+    sill: float = Field(0.0, ge=0, le=3, description="Bottom edge of the opening above the floor (windows)")
 
 
 class ShellParams(Params):
@@ -91,7 +92,7 @@ class BuildingShell(Asset):
         for o in p.openings:
             xy, yaw = opening_frame(o, p.size)
             out.append(Anchor(f"opening_{o.id}", "port", (xy[0], xy[1], 0.0), qyaw(yaw), port_kind="opening",
-                              meta={"wall": o.wall, "width": o.width, "height": o.height, "center": o.center}))
+                              meta={"wall": o.wall, "width": o.width, "height": o.height, "sill": o.sill, "center": o.center}))
         return out
 
     def build(self, ctx, path, pose, p, rng):
@@ -121,7 +122,7 @@ class BuildingShell(Asset):
         # walls
         k.scope(f"{path}/Walls")
         for name in WALLS:
-            ops = [(_along(o.wall, p.size, o.center), o.width, o.height) for o in p.openings if o.wall == name]
+            ops = [(_along(o.wall, p.size, o.center), o.width, o.height, o.sill) for o in p.openings if o.wall == name]
             self._wall(ctx, path, name, p, ops, rec)
         # roof slab (hidden for overhead renders) + visual trusses
         if p.roof:
@@ -130,7 +131,7 @@ class BuildingShell(Asset):
                           m.get(p.roof_material), m.phys("steel"), collide=True)
             k.tag(roof, "roof")
             rec("Roof/Slab", "building", (0, 0, p.height + 0.15), Q_IDENT, size=(W + 2 * T_, D + 2 * T_, 0.3), friction=0.6, subtype="roof")
-            for i, x in enumerate(np.arange(X0 + p.truss_spacing / 2, X1, p.truss_spacing)):
+            for i, x in enumerate(np.arange(X0 + p.truss_spacing / 2, X1, p.truss_spacing) if p.height >= 4.0 else []):  # no trusses under a domestic ceiling
                 k.cube(f"{path}/Roof/Truss_{i}", (0.25, D, 0.45), (x, 0, p.height - 0.225), Q_IDENT, m.get("truss"))
         anchors = [a.to_world(pose) for a in self.anchors(p)]
         return Built(path, anchors, info={"interior_bbox_local": [X0, Y0, X1, Y1], "roof_path": f"{path}/Roof" if p.roof else None})
@@ -146,9 +147,11 @@ class BuildingShell(Asset):
         yaw = math.atan2(t[1], t[0])
         base = np.array(p0, float) - np.array(n_in, float) * (T_ / 2)
         cur, pieces = -T_, []
-        for s, w, h in sorted(openings):
+        for s, w, h, sill in sorted(openings):
             pieces.append((cur, s - w / 2, 0.0, p.height))
             pieces.append((s - w / 2, s + w / 2, h, p.height))
+            if sill > 0:
+                pieces.append((s - w / 2, s + w / 2, 0.0, sill))
             cur = s + w / 2
         pieces.append((cur, L + T_, 0.0, p.height))
         for j, (s0, s1, z0, z1) in enumerate(pieces):

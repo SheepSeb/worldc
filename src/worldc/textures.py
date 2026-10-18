@@ -31,6 +31,35 @@ FLOOR_STYLES = {  # base rgb, expansion-joint grid (m, 0 = none), noise contrast
 }
 
 
+def make_oak_laminate(path: Path, rng, W: float, D: float, px_per_m=FLOOR_PX_PER_M):
+    """Light oak laminate: 19 cm x 1.2 m planks laid along x in a staggered bond, per-plank tone and grain, dark seams."""
+    w, h = int(W * px_per_m), int(D * px_per_m)
+    base = np.array([236, 204, 160], np.float32)
+    img = np.empty((h, w, 3), np.float32)
+    grain = gaussian_filter(rng.standard_normal((h, w)).astype(np.float32), (0.7, 14.0))
+    grain /= max(float(np.abs(grain).max()), 1e-6)
+    pw, pl = 0.19, 1.2
+    rows = int(np.ceil(D / pw)) + 1
+    for r in range(rows):
+        y0, y1 = int(r * pw * px_per_m), min(h, int((r + 1) * pw * px_per_m))
+        if y0 >= h:
+            break
+        off = float(rng.uniform(0, pl))
+        x = -off
+        while x < W:
+            x0, x1 = max(0, int(x * px_per_m)), min(w, int((x + pl) * px_per_m))
+            if x1 > x0:
+                tone = float(rng.uniform(0.9, 1.08))
+                img[y0:y1, x0:x1] = base * tone
+                img[y0:y1, x0:max(x0 + 1, x0 + 1)] *= 0.62  # butt joint
+            x += pl
+        img[y0:max(y0 + 1, y0 + 1)] = img[y0:y0 + 1] * 0.62  # long seam
+    img *= 1.0 + 0.07 * grain[..., None]
+    img += gaussian_filter(rng.standard_normal((h, w)).astype(np.float32), 0.6)[..., None] * 1.5
+    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path, quality=90)
+    return w, h
+
+
 def make_floor_texture(path: Path, rng, W: float, D: float, markings: list[dict], wear: float, px_per_m=FLOOR_PX_PER_M,
                        style: str = "concrete_worn"):
     """Concrete + stains + tyre wear; markings are painted with wear-dependent flaking.
@@ -38,6 +67,8 @@ def make_floor_texture(path: Path, rng, W: float, D: float, markings: list[dict]
     World -> pixel: u=(x+W/2)/W, v=(D/2-y)/D (v=0 is the north edge). Markings are dicts:
     {"type": "rect"|"line"|"hatch"|"poly", "color": (r,g,b), ...} in world metres.
     """
+    if style == "oak_laminate":
+        return make_oak_laminate(path, rng, W, D, px_per_m)
     w, h = int(W * px_per_m), int(D * px_per_m)
     base_rgb, grid, contrast = FLOOR_STYLES[style]
     base = np.array(base_rgb, np.float32)

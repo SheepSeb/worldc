@@ -200,6 +200,9 @@ for k in range(n_steps):
         snap["mid"] = tr[:, :3].copy()
     if k % 240 == 0:
         log(f"  t={t:5.2f}s  max|v|={(sp.max() if len(sp) else 0.0):.3f}")
+        if __import__("os").environ.get("WORLDC_DEBUG_POSES"):
+            for i, pth in enumerate(dyn_paths):
+                log("   pose", pth.split("/")[-1], np.round(tr[i], 4).tolist())
 tr = dview.get_transforms()
 pF = tr[:, :3]
 disp = np.linalg.norm(pF - p0, axis=1)
@@ -323,8 +326,11 @@ if not args.skip_art:
             rv = sv.create_rigid_body_view(root)
             n_dof = int(av.max_dofs)
             lim = np.array([a["lower"], a["upper"]], float)
+            q_init = float(a.get("initial", a["lower"]))
             if a["unit"] == "deg":
                 lim = np.deg2rad(lim)
+                q_init = float(np.deg2rad(q_init))
+            t_settle = 1.0 if q_init > lim[0] + 1e-6 else 0.0  # a part that starts open is excused while its drive pulls it to the sweep start
             sweep = ArticulationSweep(lim[0], lim[1], t_open=3.0, t_hold=0.5)
             # moving colliders relative to root body initial pose
             Tinit = rv.get_transforms()[0]
@@ -349,7 +355,8 @@ if not args.skip_art:
                 if k % 12 == 0:
                     q = float(av.get_dof_positions()[0, 0])
                     q_hist.append((tt, q, tgt))
-                    max_err = max(max_err, abs(q - tgt))
+                    if tt >= t_settle:
+                        max_err = max(max_err, abs(q - tgt))
                     Tn = rv.get_transforms()[0]
                     Rn, pn = qmat((Tn[6], Tn[3], Tn[4], Tn[5])), Tn[:3].astype(float)
                     for ci, pr, Rr, h in movers:

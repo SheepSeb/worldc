@@ -293,6 +293,7 @@ class Asset(ABC):
     physics: ClassVar[PhysicsInfo] = PhysicsInfo("static")
     source: ClassVar[str] = "procedural"
     example: ClassVar[dict | None] = None  # one example spec object using this asset
+    flush_walls: ClassVar[bool] = False  # built-in furniture may touch the walls (no floor padding against them)
 
     # -- params
     def params(self, raw: dict | BaseModel | None = None, rng: np.random.Generator | None = None) -> BaseModel:

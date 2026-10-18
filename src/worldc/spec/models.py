@@ -54,6 +54,11 @@ class CatalogAssetRef(Strict):
     path: str | None = Field(None, description="Exact catalog asset path relative to the asset root, e.g. Isaac/Props/Pallet/pallet.usd (pinned)")
     rev: str | None = Field(None, description="Content revision (ETag) of `path` from the catalog index; set when a query is pinned")
     tags: list[str] = Field(default_factory=list)
+    body: Literal["static", "dynamic", "kinematic"] | None = Field(None, description="Physics body type (default dynamic). Use static for furniture, "
+                                                                    "desks, tables and anything that must not move or tip over")
+    mass_kg: float | None = Field(None, gt=0, description="Mass; default is estimated from the collision hull volume")
+    up_axis: Literal["Y", "Z"] | None = Field(None, description="Override the up axis when the file declares it wrongly (the YCB props are authored "
+                                                                "Z-up but modelled Y-up: use Y)")
 
     @model_validator(mode="after")
     def _one(self):
@@ -107,7 +112,7 @@ class MarkingSpec(Strict):
 
 
 class FloorSpec(Strict):
-    material: Literal["concrete_worn", "concrete", "asphalt", "grating", "epoxy"] = "concrete_worn"
+    material: Literal["concrete_worn", "concrete", "asphalt", "grating", "epoxy", "oak_laminate"] = "concrete_worn"
     wear: float | dict = Field({"uniform": [0.3, 1.0]}, description="0 = new, 1 = heavily worn (or a distribution)")
     markings: Literal["auto", "none"] | list[MarkingSpec] = Field(
         "auto", description="auto: derive lane/zone/dock/agent-path markings from zones, openings and agents")
@@ -120,8 +125,9 @@ class OpeningSpec(Strict):
     wall: Literal["south", "north", "east", "west"]
     center: float = Field(description="Coordinate along the wall (x for south/north, y for east/west), metres")
     width: float = Field(gt=0.3, le=20)
-    height: float = Field(gt=0.5, le=20)
-    door: AssetRef | None = Field(None, description="Door asset auto-attached to this opening (e.g. rollup_door, swing_door)")
+    height: float = Field(gt=0.5, le=20, description="Height of the opening's top edge above the floor, metres")
+    sill: float = Field(0.0, ge=0, le=3, description="Height of the opening's bottom edge (windows); 0 for doors")
+    door: AssetRef | None = Field(None, description="Asset auto-attached to this opening (door: rollup_door, swing_door; window: window)")
     door_params: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -452,6 +458,8 @@ class LightingSpec(Strict):
     preset: Literal["bright_day", "mixed_warm", "dim_night", "sun", "overcast", "indoor_industrial"] = "bright_day"
     scale: float = Field(1.0, gt=0, le=20)
     color_temperature: float | None = Field(None, ge=1500, le=12000)
+    sun_azimuth_deg: float | None = Field(None, ge=-360, le=360, description="sun/overcast only: direction the sun is in, degrees CCW from +x (0 = east, 90 = north); default random")
+    sun_elevation_deg: float | None = Field(None, ge=5, le=90, description="sun only: sun height above the horizon, degrees")
 
 
 class PhysicsSpec(Strict):

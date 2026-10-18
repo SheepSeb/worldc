@@ -23,7 +23,7 @@ from .assets import registry
 from .assets.base import BuildContext, Environment, Pose, sample_value
 from .assets.resolve import pin_catalog
 from .assets.procedural.agents import look_at_quat
-from .geom import Q_IDENT, qmul, qyaw
+from .geom import Q_IDENT, qmat, qmul, qyaw
 from .lighting import build_lights
 from .materials import Materials, TextureCache
 from .solver.solve import Solution, rng_for, solve
@@ -283,7 +283,7 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         if inst.parent and inst.anchor and inst.parent in builts:
             try:
                 a = builts[inst.parent].anchor(inst.anchor)
-                pose = Pose((pose.pos[0], pose.pos[1], a.pos[2]), pose.quat)  # actual (post-build) support height
+                pose = Pose((pose.pos[0], pose.pos[1], a.pos[2] + inst.meta.get("lift", 0.0)), pose.quat)  # actual (post-build) support height
             except KeyError:
                 pass
         group = _group(inst.obj_id)
@@ -316,7 +316,7 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         ctx.meta = {"spec_id": "robot", "zone": "robot"}
         rb = r["asset"].build(ctx, "/World/Robot", r["pose"], r["params"], rng_for(seed, "robot", "build"))
         robot = {"spawn": [round(r["pose"].pos[0], 3), round(r["pose"].pos[1], 3), round(r["pose"].yaw, 4)], "prim": "/World/Robot",
-                 "camera": rb.info.get("camera"), "radius_m": r["radius"], "asset": r["asset"].id,
+                 "camera": rb.info.get("camera"), "radius_m": r["radius"], "mounted": bool(r.get("mounted")), "z": round(float(r["pose"].pos[2]), 4), "asset": r["asset"].id,
                  "isaac_path": rb.info.get("isaac_path"), "kind": rb.info.get("kind"), "needs_controller": bool(rb.info.get("needs_controller"))}
     cams = _cameras(kit, spec, sol, "/World/Robot" if robot else None)
     for c in cams + ([{"path": robot["camera"], "position": robot["spawn"][:2] + [1.5]}] if robot and robot.get("camera") else []):
@@ -325,8 +325,17 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
     if spec.lighting.preset in ("sun", "overcast"):
         kind = "clear" if spec.lighting.preset == "sun" else "overcast"
         sky = tex.get(f"sky_{kind}", lambda p, r: make_sky(p, r, kind))
+    windows = []
+    if env.kind == "indoor" and spec.lighting.preset in ("sun", "overcast"):
+        for o in spec.environment.walls.openings:
+            port = sol.env.ports.get(f"opening_{o.id}")
+            if port is None or o.sill <= 0:
+                continue
+            nx, ny = (float(c) for c in qmat(port.quat)[:2, 1])  # port local +y = into the building
+            windows.append(((port.pos[0] + 0.1 * nx, port.pos[1] + 0.1 * ny, (o.sill + o.height) / 2), (nx, ny), o.width, o.height - o.sill))
     lighting = build_lights(kit, rng_for(seed, "lights"), spec.lighting.preset, env.x_range, env.y_range, env.height if env.kind == "indoor" else None,
-                            spec.lighting.scale, spec.lighting.color_temperature, sky_texture=sky)
+                            spec.lighting.scale, spec.lighting.color_temperature, sky_texture=sky,
+                            sun_azimuth_deg=spec.lighting.sun_azimuth_deg, sun_elevation_deg=spec.lighting.sun_elevation_deg, windows=windows)
     kit.stage.SetStartTimeCode(0)
     kit.stage.SetEndTimeCode(float(ctx.scene.get("animation_end_time_code", 0.0)))  # extended only when something animates (walking people)
     kit.stage.GetRootLayer().documentation = f"{spec.name} seed={seed} (worldc {GENERATOR_VERSION}, spec {SPEC_VERSION})"
@@ -389,6 +398,8 @@ def resolved_spec(sol: Solution) -> dict:
             poses = []
             for i in insts:
                 ps = {"xy": [float(i.pose.pos[0]), float(i.pose.pos[1])], "yaw": math.degrees(i.pose.yaw)}  # full precision: exact replay
+                if i.meta.get("rpy"):
+                    ps["rpy"], ps["yaw"] = i.meta["rpy"], None
                 if i.parent and i.anchor:
                     ps["support"] = f"{i.parent}.{i.anchor}" if not i.parent.startswith("door_") else None
                 elif i.relation == "attach_to":

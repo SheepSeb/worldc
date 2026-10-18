@@ -10,6 +10,7 @@ pydantic models in `spec/models.py`; `python -m worldc.spec.schema` regenerates 
 
 Examples (all compile and pass the post-build checks):
 - [`minimal_room.yaml`](../examples/specs/minimal_room.yaml)
+- [`kitchen.yaml`](../examples/specs/kitchen.yaml) (domestic interior: oak laminate floor, window opening with `sill`, east daylight via `lighting.sun_azimuth_deg`)
 - [`warehouse_lite.yaml`](../examples/specs/warehouse_lite.yaml)
 - [`outdoor_yard.yaml`](../examples/specs/outdoor_yard.yaml) (uses an LLM-style `generate` asset)
 - [`industrial_deck.yaml`](../examples/specs/industrial_deck.yaml)
@@ -35,7 +36,7 @@ uv run worldc describe rack_row                                 # params, footpr
 
 | field | |
 |---|---|
-| `environment` | **required**. `kind` indoor/outdoor, `footprint {size: [x, y]}`, `height`, `floor` (material, wear, markings, slope_zones), `walls` (thickness, openings with optional `door`), `roof`, `apron_depth` |
+| `environment` | **required**. `kind` indoor/outdoor, `footprint {size: [x, y]}`, `height`, `floor` (material incl. `oak_laminate`, wear, markings, slope_zones), `walls` (thickness, openings with optional `sill` and `door`; a window is an opening with a `sill` and `door: window`), `roof`, `apron_depth` |
 | `zones` | named rectangles `[x0, y0, x1, y1]` that relations target. `keep_clear: true` makes a no-placement corridor |
 | `objects` | groups of asset instances (below) |
 | `constraints` | scene-level constraints (below) |
@@ -77,7 +78,7 @@ whether it settled where it was spawned.
 **Asset sources**, in priority order:
 1. A user-provided `file` is always used when given.
 2. Otherwise a registry asset.
-3. Otherwise an Omniverse catalog match (catalog arrives in phase 5b).
+3. Otherwise an Omniverse catalog match. Catalog refs also take `body: static|dynamic|kinematic` (default dynamic: set `static` for furniture, which otherwise tips over), `mass_kg`, and `up_axis: Y|Z` for files whose declared up axis is wrong (the YCB props are Y-up).
 4. Only then a `generate` asset: declarative parts, links and anchors. No code is executed.
 
 ## References

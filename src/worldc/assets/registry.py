@@ -18,7 +18,7 @@ _loaded = False
 
 # procedural modules imported on first access (each registers its assets)
 PROCEDURAL_MODULES = (
-    "building", "racks", "doors", "conveyors", "furniture", "logistics", "clutter", "agents", "industrial",
+    "building", "racks", "doors", "conveyors", "furniture", "logistics", "clutter", "agents", "industrial", "kitchen",
 )
 # modules that only add loaders (mesh library sidecars, promoted generated assets)
 LOADER_MODULES = ("mesh.mesh_asset", "generated", "robots", "vehicles", "people")

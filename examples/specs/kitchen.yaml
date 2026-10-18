@@ -1,0 +1,61 @@
+spec_version: "1.0"
+name: kitchen
+description: >
+  A 4 x 3.5 m kitchen with a light oak laminate floor. An L-shaped sage-green counter (0.9 m high, 0.6 m deep, white quartz top)
+  with six base cabinets and four drawers, a stainless fridge in the north-east corner, a butcher-block island, tableware on the
+  counter, one drawer 15 cm open, and daylight through a window in the east wall.
+environment:
+  footprint: {type: rect, size: [4, 3.5]}
+  height: 2.6
+  floor: {material: oak_laminate, wear: 0.0, markings: none}
+  walls:
+    material: kitchen_wall
+    openings:
+      - {id: window, wall: east, center: 0.0, width: 1.4, height: 2.0, sill: 0.9, door: window, door_params: {mullions: 1}}
+zones:
+  - {id: counter_front, rect: [-2.0, 0.2, 1.0, 1.15]}
+objects:
+  - id: counter
+    asset: kitchen_counter_l
+    params: {cabinets_along_wall: 4, cabinets_return: 2, drawers: 4, open_drawer: 1, open_amount: 0.15}
+    placement: {pose: {xy: [-0.5, 1.75], yaw: 180}}
+  - id: fridge
+    asset: fridge
+    params: {width: 0.6, depth: 0.65, height: 1.8, hinge: right}
+    placement: {pose: {xy: [1.7, 1.75], yaw: 180}}
+  - id: island
+    asset: kitchen_island
+    params: {size: [1.2, 0.8]}
+    placement: {pose: {xy: [0.4, -0.3], yaw: 0}}
+  - id: board
+    asset: cutting_board
+    placement: {on: counter.top_main}
+    yaw: 0
+  - id: plates
+    asset: plate
+    count: 2
+    placement: {on: counter.top_main}
+    yaw: random
+  - id: mug
+    asset: mug
+    placement: {on: counter.top_main}
+    yaw: random
+  - id: bowl
+    asset: fruit_bowl
+    params: {apples: 3}
+    placement: {on: counter.top_return}
+robot:
+  asset: turtlebot3_burger
+  spawn: {pose: {xy: [-0.9, -0.9], yaw: 90}}
+  nav_goals:
+    - {id: at_counter, type: inspect, target: counter.front, approach: port}
+    - {id: at_island, type: inspect, target: island.front, approach: port}
+constraints:
+  - {type: reachable, to: ["*"]}
+  - {type: no_overlap, margin: 0.02}
+  - {type: min_clearance, between: [island, counter], value: 0.85}
+cameras:
+  - {id: overview, position: [1.7, -1.5, 2.0], look_at: [-0.6, 1.0, 0.7], focal_mm: 14}
+  - {id: counter_close, position: [0.2, -0.2, 1.5], look_at: [-0.6, 1.6, 0.9], focal_mm: 18}
+  - {id: window_view, position: [-1.6, -1.4, 1.5], look_at: [2.0, 0.1, 1.1], focal_mm: 14}
+lighting: {preset: sun, scale: 1.4, sun_azimuth_deg: 10, sun_elevation_deg: 35}

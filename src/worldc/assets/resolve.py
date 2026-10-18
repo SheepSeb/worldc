@@ -64,7 +64,8 @@ def _catalog(ref, get) -> Asset:
         registry.get(info.alias)  # loads the robot assets
         return registry.get(info.alias)
     try:
-        asset = catalog_asset(d["path"], {"tags": d.get("tags") or []}, rev=d.get("rev"))
+        asset = catalog_asset(d["path"], {"tags": d.get("tags") or [], "up_axis": d.get("up_axis"),
+                                          "body": d.get("body"), "mass_kg": d.get("mass_kg")}, rev=d.get("rev"))
     except CatalogError as e:
         raise AssetResolutionError(e.code, str(e), e.hint) from e
     if not registry.exists(asset.id):

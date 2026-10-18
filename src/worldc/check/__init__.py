@@ -125,6 +125,8 @@ def check_scene(path, *, write: bool = True, nav_png: bool = True) -> dict:
         issues.append(warning("check.no_robot", "scene_graph.json has no robot spawn; navigation was not checked.",
                               hint="Add robot.spawn=[x, y, yaw] (and robot.radius_m) to the scene."))
         navres.update(spawn_free=True, all_reachable=True)
+    elif robot.get("mounted"):  # fixed base on a surface: nothing to navigate
+        navres.update(spawn_free=True, all_reachable=True)
     else:
         sx, sy = robot["spawn"][:2]
         start = grid.clamp(grid.cell(sx, sy))
@@ -152,7 +154,7 @@ def check_scene(path, *, write: bool = True, nav_png: bool = True) -> dict:
             elif navres["spawn_free"]:
                 issues.append(_goal_issue(sd, g, grid, blockers, cols, (sx, sy), gf, rr))
         navres["all_reachable"] = bool(navres["spawn_free"] and all(g["reachable"] for g in navres["goals"]))
-    if not goals:
+    if not goals and not (robot or {}).get("mounted"):
         issues.append(warning("check.no_goals", "The scene defines no goals, so reachability was not tested.",
                               hint="Add at least one goal (manipulation target with a base_pose) to the spec."))
     res["navigation"] = navres

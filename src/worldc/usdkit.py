@@ -309,7 +309,7 @@ class Kit:
         self.bind(prim, pmat, "physics")
 
     def joint(self, path, kind, body0, body1, pos0, pos1, axis="Z", lower=0.0, upper=1.0,
-              target=0.0, stiffness=1e4, damping=1e3, max_force=1e6, rot0=Q_IDENT, rot1=Q_IDENT, friction=0.0):
+              target=0.0, stiffness=1e4, damping=1e3, max_force=1e6, rot0=Q_IDENT, rot1=Q_IDENT, friction=0.0, init=0.0):
         """Revolute (degrees) or prismatic (metres) joint with a position drive; body0 may be a static prim."""
         if kind == "revolute":
             j = UsdPhysics.RevoluteJoint.Define(self.stage, path)
@@ -335,6 +335,11 @@ class Kit:
         d.CreateMaxForceAttr(float(max_force))
         a = {"physxJoint:jointFriction": (T.Float, float(friction))}
         self.physx(j.GetPrim(), "PhysxJointAPI", **a)
+        if init:  # start the articulation at this joint position instead of 0 (no settle-time snap)
+            inst = "linear" if kind == "prismatic" else "angular"
+            j.GetPrim().AddAppliedSchema(f"PhysicsJointStateAPI:{inst}")
+            j.GetPrim().CreateAttribute(f"state:{inst}:physics:position", T.Float, False).Set(float(init))
+            j.GetPrim().CreateAttribute(f"state:{inst}:physics:velocity", T.Float, False).Set(0.0)
         return j.GetPrim()
 
     def fixed_base(self, path, world_pos, world_quat):

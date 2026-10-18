@@ -859,11 +859,43 @@
   "CatalogAssetRef": {
    "additionalProperties": false,
    "properties": {
+    "body": {
+     "anyOf": [
+      {
+       "enum": [
+        "static",
+        "dynamic",
+        "kinematic"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Physics body type (default dynamic). Use static for furniture, desks, tables and anything that must not move or tip over",
+     "title": "Body"
+    },
     "catalog": {
      "const": "omniverse",
      "default": "omniverse",
      "title": "Catalog",
      "type": "string"
+    },
+    "mass_kg": {
+     "anyOf": [
+      {
+       "exclusiveMinimum": 0,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Mass; default is estimated from the collision hull volume",
+     "title": "Mass Kg"
     },
     "path": {
      "anyOf": [
@@ -910,6 +942,23 @@
      },
      "title": "Tags",
      "type": "array"
+    },
+    "up_axis": {
+     "anyOf": [
+      {
+       "enum": [
+        "Y",
+        "Z"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Override the up axis when the file declares it wrongly (the YCB props are authored Z-up but modelled Y-up: use Y)",
+     "title": "Up Axis"
     }
    },
    "title": "CatalogAssetRef",
@@ -1771,7 +1820,8 @@
       "concrete",
       "asphalt",
       "grating",
-      "epoxy"
+      "epoxy",
+      "oak_laminate"
      ],
      "title": "Material",
      "type": "string"
@@ -2492,6 +2542,36 @@
      "maximum": 20,
      "title": "Scale",
      "type": "number"
+    },
+    "sun_azimuth_deg": {
+     "anyOf": [
+      {
+       "maximum": 360,
+       "minimum": -360,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "sun/overcast only: direction the sun is in, degrees CCW from +x (0 = east, 90 = north); default random",
+     "title": "Sun Azimuth Deg"
+    },
+    "sun_elevation_deg": {
+     "anyOf": [
+      {
+       "maximum": 90,
+       "minimum": 5,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "sun only: sun height above the horizon, degrees",
+     "title": "Sun Elevation Deg"
     }
    },
    "title": "LightingSpec",
@@ -3333,7 +3413,7 @@
       }
      ],
      "default": null,
-     "description": "Door asset auto-attached to this opening (e.g. rollup_door, swing_door)",
+     "description": "Asset auto-attached to this opening (door: rollup_door, swing_door; window: window)",
      "title": "Door"
     },
     "door_params": {
@@ -3342,6 +3422,7 @@
      "type": "object"
     },
     "height": {
+     "description": "Height of the opening's top edge above the floor, metres",
      "exclusiveMinimum": 0.5,
      "maximum": 20,
      "title": "Height",
@@ -3352,6 +3433,14 @@
      "pattern": "^[a-z][a-z0-9_]*$",
      "title": "Id",
      "type": "string"
+    },
+    "sill": {
+     "default": 0.0,
+     "description": "Height of the opening's bottom edge (windows); 0 for doors",
+     "maximum": 3,
+     "minimum": 0,
+     "title": "Sill",
+     "type": "number"
     },
     "wall": {
      "enum": [

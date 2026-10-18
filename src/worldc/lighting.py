@@ -26,8 +26,16 @@ def _q_down_to(d):
     return qalign(-np.asarray(d, float))
 
 
+def _q_face(n):
+    """Quaternion turning a RectLight's emission axis (-Z) towards the horizontal direction n."""
+    from .assets.procedural._assembly import qalign
+
+    return qalign(-np.asarray([n[0], n[1], 0.0], float))
+
+
 def build_lights(kit, rng, preset: str, x_range, y_range, height: float | None, scale: float = 1.0, color_temperature=None,
-                 sky_texture: str | None = None) -> dict:
+                 sky_texture: str | None = None, sun_azimuth_deg: float | None = None, sun_elevation_deg: float | None = None,
+                 windows: list | None = None) -> dict:
     kit.scope("/World/Lights")
     info = {"setup_name": preset, "scale": scale}
     if preset in PANEL_CFG:
@@ -85,12 +93,24 @@ def build_lights(kit, rng, preset: str, x_range, y_range, height: float | None, 
         sun = UsdLux.DistantLight.Define(kit.stage, "/World/Lights/Sun")
         az = float(rng.uniform(-2.5, -1.9))
         el = float(rng.uniform(0.7, 0.95)) if clear else 1.2
+        if sun_azimuth_deg is not None:
+            az = math.radians(sun_azimuth_deg)
+        if sun_elevation_deg is not None:
+            el = math.radians(sun_elevation_deg)
         d = -np.array([math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)])
         kit.set_pose(sun.GetPrim(), (0, 0, 10), _q_down_to(d))
         sun.CreateAngleAttr(1.0 if clear else 6.0)
         sun.CreateIntensityAttr(float((4200.0 if clear else 500.0) * scale))
         sun.CreateColorTemperatureAttr(float(color_temperature or (5900.0 if clear else 6800.0)))
         sun.CreateEnableColorTemperatureAttr(True)
+        for i, (c, n, ww, wh) in enumerate(windows or []):  # skylight portal: soft area light in each window plane, facing in
+            L = UsdLux.RectLight.Define(kit.stage, f"/World/Lights/Window_{i}")
+            L.CreateWidthAttr(float(ww))
+            L.CreateHeightAttr(float(wh))
+            L.CreateIntensityAttr(float(9000.0 * scale))
+            L.CreateColorTemperatureAttr(6500.0)
+            L.CreateEnableColorTemperatureAttr(True)
+            kit.set_pose(L.GetPrim(), tuple(c), _q_face(n))
         info.update(dome_intensity=dome.GetIntensityAttr().Get(), sun_intensity=sun.GetIntensityAttr().Get(),
                     sun_dir=[round(float(c), 3) for c in d])
     return info
