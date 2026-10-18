@@ -1,3 +1,8 @@
+[![worldc: one prompt compiled into a warehouse, then nine worlds running in Isaac Sim](docs/worldc_worlds_poster.png)](docs/worldc_worlds.mp4)
+
+*The video (75 s): a prompt for a 40 x 25 m warehouse goes through the agent and every worldc check, the warehouse is assembled
+from the floor up, its Nova Carter drives in Isaac Sim physics, and then nine compiled worlds play side by side.*
+
 <p align="center">
   <img src="docs/worldc_logo.svg" width="150" alt="worldc logo: a gear framing a small room with a robot in it">
 </p>
@@ -10,11 +15,6 @@ worldc lets an LLM agent build [Isaac Sim](https://developer.nvidia.com/isaac/si
 and proves the result is correct. The agent writes a short declarative *scene spec*; worldc validates it, solves the layout,
 builds the USD scene, checks geometry, navigation and physics, and renders it in Isaac Sim. When something is wrong, the agent gets a
 precise, actionable error instead of a silent mistake, so it fixes the scene instead of guessing.
-
-[![worldc: one prompt compiled into a warehouse, then nine worlds running in Isaac Sim](docs/worldc_worlds_poster.png)](docs/worldc_worlds.mp4)
-
-*The video (75 s): a prompt for a 40 x 25 m warehouse goes through the agent and every worldc check, the warehouse is assembled
-from the floor up, its Nova Carter drives in Isaac Sim physics, and then nine compiled worlds play side by side.*
 
 ## What you get
 
