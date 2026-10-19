@@ -1,4 +1,5 @@
-[![worldc trailer: a warehouse compiled from one prompt, its robot driving in Isaac Sim, then nine compiled worlds. Click to play.](docs/worldc_worlds_poster.png)](docs/worldc_worlds_small.mp4)
+
+https://github.com/user-attachments/assets/b0a8029d-2aae-4e21-bd06-7f8de8fbe81f
 
 <p align="center">
   <img src="docs/worldc_logo.svg" width="150" alt="worldc logo: a gear framing a small room with a robot in it">
