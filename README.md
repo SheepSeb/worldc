@@ -53,6 +53,24 @@ Each of these builds in a few seconds (the warehouse in about 12) and passes the
 | [`outdoor_yard`](examples/specs/outdoor_yard.yaml) | 30 x 20 m outdoor yard: pallet stacks, concrete barriers, bins, a forklift loop | Nova Carter |
 | recipe `warehouse` | 40 x 25 m fulfillment warehouse: six rack aisles, three dock bays, conveyors and a packing table, a charging area, a forklift and two people | Dingo (set any robot in the spec) |
 
+## Real robots, real assets
+
+Every robot is a real Isaac Sim asset with its own articulation, joints and sensors, referenced from NVIDIA's asset library and
+never generated. Forklifts and people are NVIDIA's Isaac Sim forklift and characters, moving along waypoint paths. Everything else
+comes from a registry of physics-ready procedural assets, your own meshes, and an offline index of 1,500 NVIDIA Omniverse assets.
+
+![Real Isaac Sim robots rendered by worldc: Nova Carter, iw.hub, Jackal, Dingo, TurtleBot3 Burger, Ridgeback with Franka, Spot](docs/worldc_robots.png)
+
+```bash
+uv run worldc assets --tags robot                  # every supported robot, with size and footprint
+uv run worldc describe nova_carter                 # one robot: dimensions, ports, sensors
+uv run worldc drive out/lite_3 --video             # drive it to its goals in Isaac Sim physics
+```
+
+Pick a robot in the spec with `robot: {asset: dingo}`.
+
+![Nova Carter driving through a warehouse in Isaac Sim physics, with the wide camera inset](docs/worldc_demo_poster.png)
+
 ## Documentation
 
 - [docs/SPEC.md](docs/SPEC.md): the spec reference: relations, constraints, robots, outputs, every issue code
@@ -72,24 +90,6 @@ From one request, with the same spec and seed always producing the same scene:
 | `check.json` | the verification report (below) |
 | `renders/` | Isaac Sim RTX images from every camera |
 | `drive/` | optional: the robot driving to its goals in Isaac Sim, with chase and wide camera videos |
-
-## Real robots, real assets
-
-Every robot is a real Isaac Sim asset with its own articulation, joints and sensors, referenced from NVIDIA's asset library and
-never generated. Forklifts and people are NVIDIA's Isaac Sim forklift and characters, moving along waypoint paths. Everything else
-comes from a registry of physics-ready procedural assets, your own meshes, and an offline index of 1,500 NVIDIA Omniverse assets.
-
-![Real Isaac Sim robots rendered by worldc: Nova Carter, iw.hub, Jackal, Dingo, TurtleBot3 Burger, Ridgeback with Franka, Spot](docs/worldc_robots.png)
-
-```bash
-uv run worldc assets --tags robot                  # every supported robot, with size and footprint
-uv run worldc describe nova_carter                 # one robot: dimensions, ports, sensors
-uv run worldc drive out/lite_3 --video             # drive it to its goals in Isaac Sim physics
-```
-
-Pick a robot in the spec with `robot: {asset: dingo}`.
-
-![Nova Carter driving through a warehouse in Isaac Sim physics, with the wide camera inset](docs/worldc_demo_poster.png)
 
 ## Use it with an LLM agent
 
