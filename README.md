@@ -73,6 +73,7 @@ Pick a robot in the spec with `robot: {asset: dingo}`.
 - [docs/ASSETS.md](docs/ASSETS.md): the asset contract and sources (procedural, mesh, user file, generated)
 - [docs/CATALOG.md](docs/CATALOG.md): the Isaac Sim asset catalog: offline index, search, and the license notes for NVIDIA content
 - [docs/MCP.md](docs/MCP.md): the MCP server and its tools
+- [docs/DATAGEN.md](docs/DATAGEN.md): `worldc generate`: prompt to scene in one command, saved as a dataset
 
 ## What you get
 
@@ -110,6 +111,20 @@ From one request, with the same spec and seed always producing the same scene:
 
 The agent loop is: search assets, write a spec, `validate_spec`, fix the issues it reports, `build_scene`, `check_scene`, look at
 the renders, then `edit_scene` to refine. Details in [docs/MCP.md](docs/MCP.md).
+
+## Generate from a prompt
+
+`worldc generate` runs the whole agent loop for you, headless, with your own Claude Code login (no API key). The agent gets only
+the worldc tools, builds and checks the scene, and the run is saved as a dataset record with a readable trace and Isaac Sim renders.
+
+```bash
+uv run worldc generate "A 12x8 m workshop with two work tables on the north wall and a pallet near the door"
+uv run worldc generate --prompts-file prompts.txt      # one description per line
+uv run worldc dataset list                             # also: stats, show <run_id>, export
+```
+
+Each run stops at a spend cap (`--max-budget-usd`, default 20), `--max-turns` or `--timeout`. Details in
+[docs/DATAGEN.md](docs/DATAGEN.md).
 
 ## A spec, in one screen
 

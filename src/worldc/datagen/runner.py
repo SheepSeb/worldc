@@ -255,7 +255,7 @@ def _final_checks(scene: Path, run_dir: Path, trace: Trace, physics: bool, rtx: 
     return out
 
 
-def generate(prompt: str, *, root: Path, model: str | None = None, effort: str | None = None, max_budget_usd: float = 3.0,
+def generate(prompt: str, *, root: Path, model: str | None = None, effort: str | None = None, max_budget_usd: float = 20.0,
              max_turns: int = 60, timeout_s: float = 3600.0, final_checks: bool = True, keep_work: bool = False,
              claude_bin: str = "claude", extra_args: tuple = (), log=lambda s: print(s, file=sys.stderr, flush=True),
              command_override: list[str] | None = None) -> Record:

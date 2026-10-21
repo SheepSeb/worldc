@@ -139,6 +139,20 @@
   "articulation": true,
   "n_joints": 18
  },
+ "so101": {
+  "path": "Isaac/Robots/RobotStudio/so101_new_calib/so101_new_calib.usd",
+  "kind": "arm",
+  "description": "RobotStudio SO-101 low-cost 5-DoF desktop arm with gripper, fixed base (about 35 cm reach).",
+  "size_m": [
+   0.1109,
+   0.4296,
+   0.2672
+  ],
+  "base_offset_z": -0.0281,
+  "footprint_radius_m": 0.222,
+  "articulation": true,
+  "n_joints": 7
+ },
  "spot": {
   "path": "Isaac/Robots/BostonDynamics/spot/spot.usd",
   "kind": "legged",

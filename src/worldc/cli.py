@@ -10,7 +10,7 @@
     worldc describe rack_row
     worldc isaac-check [--deep]
     worldc drive out/scene_3 [--n-goals 3] [--video]              drive the real robot to its goals in Isaac Sim (+ chase / wide videos)
-    worldc generate "prompt" [--model opus] [--max-budget-usd 3]    prompt -> built scene via your Claude Code; saved as a dataset record
+    worldc generate "prompt" [--model opus] [--max-budget-usd 20]    prompt -> built scene via your Claude Code; saved as a dataset record
     worldc generate --prompts-file prompts.txt                      one prompt per line, run in sequence
     worldc dataset stats | export [--format prompt_spec,sft,records,stats] | show RUN_ID | list
 """
@@ -73,7 +73,7 @@ def main(argv=None):
     g.add_argument("--dataset", default=None, help="dataset folder (default: $WORLDC_DATASET or ./dataset)")
     g.add_argument("--model", default=None, help="Claude Code model alias or id (default: your Claude Code default)")
     g.add_argument("--effort", default=None, help="low|medium|high|xhigh|max (default: Claude Code's)")
-    g.add_argument("--max-budget-usd", type=float, default=3.0, help="spend cap per run, enforced by Claude Code")
+    g.add_argument("--max-budget-usd", type=float, default=20.0, help="spend cap per run, enforced by Claude Code")
     g.add_argument("--max-turns", type=int, default=60)
     g.add_argument("--timeout", type=float, default=3600.0, help="seconds per run")
     g.add_argument("--no-final-checks", action="store_true", help="skip the Isaac physics check + RTX render after the run")

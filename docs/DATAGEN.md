@@ -10,7 +10,7 @@ worldc dataset export                               # training files, see below
 `worldc generate` runs **your Claude Code** headless (`claude -p`, your own login, no API key). Claude Code gets only the `worldc` MCP
 tools (built-in tools are off, project settings only), so every run is the same loop an interactive session would do: search
 assets, write a spec, `validate_spec`, `build_scene`, `check_scene`, proxy renders, `edit_scene`. A run stops at the spend cap
-(`--max-budget-usd`, default 3), `--max-turns` (60) or `--timeout`. Options: `--model`, `--effort`, `--dataset DIR`,
+(`--max-budget-usd`, default 20), `--max-turns` (60) or `--timeout`. Options: `--model`, `--effort`, `--dataset DIR`,
 `--no-final-checks`, `--keep-work`. Requires Isaac Sim (the MCP server will not start without it) and `uv`.
 
 After the model finishes, the runner re-checks what was actually built, independent of what the model claimed: the static
