@@ -74,6 +74,7 @@ Pick a robot in the spec with `robot: {asset: dingo}`.
 - [docs/CATALOG.md](docs/CATALOG.md): the Isaac Sim asset catalog: offline index, search, and the license notes for NVIDIA content
 - [docs/MCP.md](docs/MCP.md): the MCP server and its tools
 - [docs/DATAGEN.md](docs/DATAGEN.md): `worldc generate`: prompt to scene in one command, saved as a dataset
+- [docs/OLLAMA.md](docs/OLLAMA.md): running `worldc generate` on Ollama models (local or cloud) instead of Anthropic
 
 ## What you get
 
