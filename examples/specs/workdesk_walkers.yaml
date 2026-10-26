@@ -1,0 +1,37 @@
+spec_version: "1.0"
+name: workdesk_walkers
+description: A room with a work desk on the north wall and three people who each walk from a different part of the room to the desk, stop there for a moment and walk back.
+environment:
+  footprint: {type: rect, size: [10, 8]}
+  height: 3.2
+  walls:
+    openings:
+      - {id: door, wall: south, center: 0.0, width: 1.15, height: 2.24, door: swing_door}
+objects:
+  - id: desk
+    asset: work_table
+    placement: {pose: {xy: [0.0, 3.45], yaw: 180}}
+  - id: cartons
+    asset: cardboard_box
+    count: 2
+    params: {size: [0.3, 0.25, 0.2]}
+    placement: {on: desk.top}
+agents:
+  - id: anna
+    asset: human
+    params: {character: female_adult_police_02, gait: stand_walk_2, dwell_s: 5.0}
+    keep_clear_width: 0.6
+    path: {waypoints: [[-4.0, -2.5], [-0.8, 2.65]], mode: pingpong, speed: 0.95}
+  - id: ben
+    asset: human
+    params: {character: male_adult_construction_05_new, gait: stand_walk_1, dwell_s: 4.0}
+    keep_clear_width: 0.6
+    path: {waypoints: [[0.0, -3.2], [0.0, 2.65]], mode: pingpong, speed: 1.05, phase: 3.0}
+  - id: carl
+    asset: human
+    params: {character: male_adult_construction_01_new, gait: stand_walk_3_mirror, dwell_s: 6.0}
+    keep_clear_width: 0.6
+    path: {waypoints: [[4.0, -2.0], [0.8, 2.65]], mode: pingpong, speed: 0.9, phase: 1.5}
+cameras:
+  - {id: overview, position: [0.0, -3.6, 2.3], look_at: [0.0, 1.0, 0.9], focal_mm: 14}
+  - {id: desk_side, position: [-3.6, 0.5, 1.6], look_at: [0.0, 2.2, 1.0], focal_mm: 18}

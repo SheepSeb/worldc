@@ -12,6 +12,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 import numpy as np
 
@@ -24,6 +25,21 @@ def _wrap(a):
     return (a + math.pi) % (2 * math.pi) - math.pi
 
 
+class Motion(NamedTuple):
+    """Where a path agent is in its stop-and-go cycle (``PathFollower.motion``)."""
+    s: float  # arclength along the path
+    back: bool  # on the return leg (or pausing at its start)
+    speed: float  # m/s right now
+    odo: float  # metres walked since the leg (lap) began
+    dwell_t: float | None  # seconds into the pause at a path end; None while walking
+    turn: float  # 0..1 progress of the turn-around at the end of the pause
+
+
+def _smooth(f: float) -> float:
+    f = min(max(f, 0.0), 1.0)
+    return f * f * (3 - 2 * f)
+
+
 @dataclass
 class PathFollower:
     waypoints: list  # [[x, y], ...]
@@ -32,6 +48,11 @@ class PathFollower:
     z: float = 0.0
     phase_m: float = 0.0
     blend: float = 1.0  # metres over which heading is blended around a vertex
+    # human-like ping-pong (all 0 = constant speed and an instant 180 degree flip at the ends, e.g. forklifts): each leg eases in and out
+    # over ease_s, the agent pauses dwell_s at each end and turns around (counter-clockwise) during the last turn_s of the pause
+    dwell_s: float = 0.0
+    ease_s: float = 0.0
+    turn_s: float = 0.0
 
     def __post_init__(self):
         pts = [tuple(map(float, p[:2])) for p in self.waypoints]
@@ -51,8 +72,70 @@ class PathFollower:
         s = s % (2 * self.total)
         return s if s <= self.total else 2 * self.total - s
 
+    @property
+    def humanized(self) -> bool:
+        return self.mode == "pingpong" and (self.dwell_s > 0 or self.ease_s > 0 or self.turn_s > 0)
+
+    def _ease(self, u: float, e: float, leg: float):
+        """(distance, speed) u seconds into a leg that accelerates over e, cruises, and brakes over e."""
+        v = self.speed
+        if e <= 0:
+            return v * u, v
+        a = v / e
+        if u < e:
+            return 0.5 * a * u * u, a * u
+        r = leg - u
+        if r < e:
+            return self.total - 0.5 * a * r * r, a * r
+        return 0.5 * v * e + v * (u - e), v
+
+    @property
+    def period_s(self) -> float:
+        """Seconds after which the motion repeats exactly."""
+        if self.mode == "loop":
+            return self.total / self.speed
+        return 2 * (self.total / self.speed + min(self.ease_s, self.total / self.speed) + self.dwell_s)
+
+    def motion(self, t: float) -> Motion:
+        """The agent's stop-and-go state at time t (periodic: the animation of a person is authored from it)."""
+        v, L = self.speed, self.total
+        if self.mode == "loop":
+            s = (self.phase_m + v * t) % L
+            return Motion(s, False, v, s, None, 0.0)
+        e = min(self.ease_s, L / v)
+        leg, dwell = L / v + e, self.dwell_s
+        k = (t + self.phase_m / v) % (2 * (leg + dwell))
+        back = k >= leg + dwell
+        k -= (leg + dwell) if back else 0.0
+        if k < leg:
+            d, sp = self._ease(k, e, leg)
+            return Motion(L - d if back else d, back, sp, d, None, 0.0)
+        k -= leg
+        turn = _smooth((k - (dwell - self.turn_s)) / self.turn_s) if self.turn_s > 0 else float(k >= dwell)
+        return Motion(0.0 if back else L, back, 0.0, L, k, turn)
+
+    def _yaw_forward(self, s: float) -> float:
+        """Heading walking forward at arclength s, blended across interior vertices."""
+        i = int(np.clip(np.searchsorted(self.cum, s, side="right") - 1, 0, len(self.seg_len) - 1))
+        ang = lambda j: math.atan2(self.seg_dir[j][1], self.seg_dir[j][0])
+        w = min(self.blend, 0.5 * self.seg_len[i])
+        if i > 0 and s - self.cum[i] < w:
+            return ang(i - 1) + (0.5 + 0.5 * (s - self.cum[i]) / w) * _wrap(ang(i) - ang(i - 1))
+        if i < len(self.seg_len) - 1 and self.cum[i + 1] - s < w:
+            return ang(i) + 0.5 * (1 - (self.cum[i + 1] - s) / w) * _wrap(ang(i + 1) - ang(i))
+        return ang(i)
+
+    def _pose_humanized(self, t: float):
+        m = self.motion(t)
+        i = int(np.clip(np.searchsorted(self.cum, m.s, side="right") - 1, 0, len(self.seg_len) - 1))
+        p = self.pts[i] + (m.s - self.cum[i]) / self.seg_len[i] * (self.pts[i + 1] - self.pts[i])
+        yaw = self._yaw_forward(m.s) + (math.pi if m.back else 0.0) + (math.pi * _smooth(m.turn) if m.dwell_t is not None else 0.0)
+        return float(p[0]), float(p[1]), self.z, float(_wrap(yaw))
+
     def pose(self, t: float):
         """(x, y, z, yaw) at time t. For ping-pong the heading flips on the return leg."""
+        if self.humanized:
+            return self._pose_humanized(t)
         s = self._arclen(t)
         back = self.mode == "pingpong" and (self.phase_m + self.speed * t) % (2 * self.total) > self.total
         i = int(np.clip(np.searchsorted(self.cum, s, side="right") - 1, 0, len(self.seg_len) - 1))
@@ -76,7 +159,8 @@ class PathFollower:
 
 def hazard_followers(graph: dict) -> dict:
     return {
-        h["path"]: PathFollower(h["waypoints"], h["speed_mps"], h["path_mode"], h["z"], h.get("path_phase_m", 0.0))
+        h["path"]: PathFollower(h["waypoints"], h["speed_mps"], h["path_mode"], h["z"], h.get("path_phase_m", 0.0),
+                     dwell_s=h.get("dwell_s", 0.0), ease_s=h.get("ease_s", 0.0), turn_s=h.get("turn_s", 0.0))
         for h in graph["hazards"]
     }
 

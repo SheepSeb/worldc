@@ -30,7 +30,7 @@ cardboard) or declarative `TextureSpec`s (`texturegen.py`).
   `pallet_jack_tipped`, `traffic_cone`, `trash_bin`
 - **Kitchen:** `kitchen_counter_l` (L-shaped base cabinets: hinged doors, drawers, bar handles, optional open drawer), `fridge`,
   `kitchen_island`, `window`, `plate`, `mug`, `cutting_board`, `fruit_bowl` (glass bowl with separate apples)
-- **Agents (real Isaac Sim assets, referenced by URL):** `human` (Isaac Sim characters, arms down and walking), `forklift` (Isaac Sim forklift); the robot is a real Isaac Sim robot too (see SPEC.md, Robots)
+- **Agents (real Isaac Sim assets, referenced by URL):** `human` (Isaac Sim characters moving like people: Isaac Sim's own `stand_walk_*` motion-capture clips retargeted onto the character, gait phase following the distance walked so the feet do not slide; they ease into and out of each walk, stop at the path ends to stand (idle clip) or look around (look-around clip), and step round to turn. Tune with `params.gait`, `dwell_s`, `ease_s`, `turn_s`; set them to 0 for constant-speed walking), `forklift` (Isaac Sim forklift); the robot is a real Isaac Sim robot too (see SPEC.md, Robots)
 - **Industrial** (from the former plant generator): `gate_valve`, `control_valve`, `gauge`, `instrument_box`, `enclosure`,
   `control_station`, `instrument_panel`, `pump_set`, `flexible_hose`, `pipe`, `pipe_run`, `worker_static`, `loose_tool`,
   `ibeam`
