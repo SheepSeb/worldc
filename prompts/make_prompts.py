@@ -1,5 +1,6 @@
 """Build prompts.csv and the two --prompts-file variants for E1."""
 import csv
+import re
 
 CONSTRAINT = ("Keep all walking aisles at least 1.2 m wide, keep 0.5 m clear around every robot cell, "
               "and make every workbench reachable on foot from a door.")
@@ -65,12 +66,19 @@ COUNTS = {
 CELL_TYPE = {"P12": "motor_gearbox_reman", "P14": "motor_gearbox_reman"}  # per-prompt override of T (their parts are motors and gearboxes)
 COUNT_FIELDS = ("n_benches", "n_robot_cells", "conveyor", "n_racks", "n_doors")
 
+def footprint(text: str) -> tuple[float, float]:
+    """(width_m, depth_m) from the prompt's "WxD m": width along x (east-west), depth along y."""
+    m = re.search(r"(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*m\b", text)
+    assert m, f"no footprint in {text[:60]!r}"
+    return float(m.group(1)), float(m.group(2))
+
+
 rows = []
 for i, (t, size, diff, ppl, coords, text) in enumerate(P, 1):
     pid = f"P{i:02d}"
     rows.append({"id": pid, "cell_type": CELL_TYPE.get(pid, T[t]), "size": size, "difficulty": diff, "n_people": ppl,
                  "explicit_coords": coords, "text_plain": text, "text_constrained": f"{text} {CONSTRAINT}",
-                 **dict(zip(COUNT_FIELDS, COUNTS[pid]))})
+                 **dict(zip(COUNT_FIELDS, COUNTS[pid])), **dict(zip(("width_m", "depth_m"), footprint(text)))})
 
 with open("prompts.csv", "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(rows[0]))

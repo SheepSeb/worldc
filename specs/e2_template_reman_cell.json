@@ -1,0 +1,423 @@
+{
+ "spec_version": "1.0",
+ "name": "e2_template_reman_cell",
+ "description": "E2 template baseline (P08, 16 x 10 m electronics disassembly area). Fixed floor plan: a conveyor running east into a fenced robot sorting cell at its east end, four steel workbenches along its north side with returned electronics on them, parts shelving with KLT bins and recycling containers by the east wall, pallets of returned monitors and PCs by the west door, three workers and a mobile robot. Seeds only vary props (counts, positions on their supports, jitter, yaw).",
+ "metadata": {
+  "baseline": "e2_template",
+  "based_on_prompt": "P08",
+  "layout_note": "1.3 m between benches and belt, 1.7 m west corridor, 0.6 m robot cell to walls: all walkways >= the mandatory 1.2 m"
+ },
+ "environment": {
+  "kind": "indoor",
+  "footprint": {
+   "type": "rect",
+   "size": [
+    16,
+    10
+   ]
+  },
+  "height": 5.0,
+  "floor": {
+   "material": "concrete",
+   "wear": 0.4
+  },
+  "walls": {
+   "openings": [
+    {
+     "id": "west_door",
+     "wall": "west",
+     "center": -3.4,
+     "width": 1.2,
+     "height": 2.3,
+     "door": "swing_door"
+    }
+   ]
+  }
+ },
+ "zones": [
+  {
+   "id": "staging",
+   "rect": [
+    -7.8,
+    -4.8,
+    -5.2,
+    -0.5
+   ],
+   "tags": [
+    "staging"
+   ],
+   "marking": "outline"
+  },
+  {
+   "id": "parts_storage",
+   "rect": [
+    7.0,
+    2.3,
+    7.95,
+    3.7
+   ],
+   "tags": [
+    "storage"
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "id": "belt",
+   "asset": "conveyor_belt",
+   "params": {
+    "length": 7.0,
+    "speed": 0.4
+   },
+   "placement": {
+    "pose": {
+     "xy": [
+      -1.0,
+      -1.5
+     ],
+     "yaw": -90
+    }
+   }
+  },
+  {
+   "id": "cell",
+   "asset": "robot_cell",
+   "params": {
+    "arm": "fanuc_crx10ia",
+    "arm_yaw": 180
+   },
+   "placement": {
+    "pose": {
+     "xy": [
+      5.4,
+      -1.5
+     ],
+     "yaw": 0
+    }
+   }
+  },
+  {
+   "id": "benches",
+   "asset": "workbench_steel",
+   "count": 4,
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -5.4,
+       0.5
+      ],
+      "yaw": 0
+     },
+     {
+      "xy": [
+       -3.0,
+       0.5
+      ],
+      "yaw": 0
+     },
+     {
+      "xy": [
+       -0.6,
+       0.5
+      ],
+      "yaw": 0
+     },
+     {
+      "xy": [
+       1.8,
+       0.5
+      ],
+      "yaw": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "laptops",
+   "asset": "laptop",
+   "count": [
+    2,
+    4
+   ],
+   "placement": {
+    "on": "benches.*.top"
+   },
+   "yaw": "random"
+  },
+  {
+   "id": "monitors",
+   "asset": "monitor",
+   "count": [
+    1,
+    3
+   ],
+   "placement": {
+    "on": "benches.*.top"
+   },
+   "yaw": {
+    "range": [
+     -20,
+     20
+    ]
+   }
+  },
+  {
+   "id": "toolboxes",
+   "asset": "toolbox",
+   "count": [
+    1,
+    2
+   ],
+   "placement": {
+    "on": "benches.*.top"
+   },
+   "yaw": "random"
+  },
+  {
+   "id": "shelf",
+   "asset": "parts_shelf",
+   "placement": {
+    "pose": {
+     "xy": [
+      7.55,
+      3.0
+     ],
+     "yaw": 90
+    }
+   }
+  },
+  {
+   "id": "klt_bins",
+   "asset": "klt_bin",
+   "count": [
+    3,
+    6
+   ],
+   "placement": {
+    "on": "shelf.*.shelf_*"
+   },
+   "yaw": {
+    "range": [
+     -5,
+     5
+    ]
+   }
+  },
+  {
+   "id": "recycling",
+   "asset": "scrap_bin_wheeled",
+   "placement": {
+    "pose": {
+     "xy": [
+      7.45,
+      4.25
+     ],
+     "yaw": 90
+    }
+   },
+   "jitter": {
+    "xy": 0.05,
+    "yaw": 8
+   }
+  },
+  {
+   "id": "recycling_2",
+   "asset": "scrap_bin",
+   "placement": {
+    "pose": {
+     "xy": [
+      7.45,
+      1.6
+     ],
+     "yaw": 90
+    }
+   },
+   "jitter": {
+    "xy": 0.05,
+    "yaw": 8
+   }
+  },
+  {
+   "id": "pallets",
+   "asset": "pallet_euro",
+   "count": 2,
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -7.2,
+       -1.6
+      ],
+      "yaw": 90
+     },
+     {
+      "xy": [
+       -5.3,
+       -4.35
+      ],
+      "yaw": 0
+     }
+    ]
+   }
+  },
+  {
+   "id": "returned_pcs",
+   "asset": "pc_tower",
+   "count": [
+    1,
+    2
+   ],
+   "placement": {
+    "on": "pallets.0.top"
+   },
+   "yaw": "random"
+  },
+  {
+   "id": "returned_monitors",
+   "asset": "monitor",
+   "count": [
+    1,
+    2
+   ],
+   "placement": {
+    "on": "pallets.1.top"
+   },
+   "yaw": "random"
+  }
+ ],
+ "agents": [
+  {
+   "id": "worker_0",
+   "asset": "human",
+   "path": {
+    "waypoints": [
+     [
+      -6.5,
+      2.0
+     ],
+     [
+      5.5,
+      2.0
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.9
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_1",
+   "asset": "human",
+   "path": {
+    "waypoints": [
+     [
+      -5.0,
+      -3.0
+     ],
+     [
+      2.8,
+      -3.0
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.8,
+    "phase": 3.0
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_2",
+   "asset": "human",
+   "path": {
+    "waypoints": [
+     [
+      -6.0,
+      -0.5
+     ],
+     [
+      2.4,
+      -0.5
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.7,
+    "phase": 5.0
+   },
+   "keep_clear_width": 0.8
+  }
+ ],
+ "robot": {
+  "asset": "dingo",
+  "spawn": {
+   "pose": {
+    "xy": [
+     -6.0,
+     -2.6
+    ],
+    "yaw": 0
+   }
+  },
+  "nav_goals": [
+   {
+    "id": "at_bench",
+    "type": "place",
+    "target": "benches.1",
+    "distance": 0.9
+   },
+   {
+    "id": "at_cell_gate",
+    "type": "pick",
+    "target": "cell.gate",
+    "approach": "port"
+   },
+   {
+    "id": "at_shelf",
+    "type": "place",
+    "target": "shelf.0",
+    "distance": 0.9
+   }
+  ]
+ },
+ "constraints": [
+  {
+   "type": "reachable",
+   "from": "robot.spawn",
+   "to": [
+    "*"
+   ]
+  }
+ ],
+ "cameras": [
+  {
+   "id": "topdown",
+   "mode": "top_down",
+   "position": [
+    0,
+    0,
+    16
+   ],
+   "focal_mm": 10.5,
+   "hide": [
+    "roof"
+   ]
+  },
+  {
+   "id": "overview",
+   "position": [
+    -7.2,
+    4.4,
+    3.4
+   ],
+   "look_at": [
+    1.5,
+    -1.0,
+    0.6
+   ],
+   "focal_mm": 14
+  }
+ ],
+ "lighting": {
+  "preset": "indoor_industrial"
+ }
+}

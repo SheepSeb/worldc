@@ -13,6 +13,7 @@
     worldc generate "prompt" [--model opus] [--max-budget-usd 20]    prompt -> built scene via your Claude Code; saved as a dataset record
     worldc generate --prompts-file prompts.txt                      one prompt per line, run in sequence
     worldc simready search "toaster" | info PKG [--probe] | fetch PKG | index | cached | clean   NVIDIA SimReady (Hugging Face)
+    worldc eval --runs DIR --prompts prompts/prompts.csv --out eval.csv [--prompt-id ids.csv]   adherence + plausibility per run
     worldc dataset stats | export [--format prompt_spec,sft,records,stats] | show RUN_ID | list
 """
 from __future__ import annotations
@@ -41,6 +42,8 @@ def main(argv=None):
     rc.add_argument("name")
     rc.add_argument("--seed", type=int, default=0)
     rc.add_argument("--out", default=None)
+    rc.add_argument("--prompts", default=None, help="remanufacturing: one scene per prompts.csv row into --out/<prompt_id>/")
+    rc.add_argument("--ids", default="", help="remanufacturing: only these comma-separated prompt ids")
     c = sub.add_parser("check", help="post-build checks of a scene directory")
     c.add_argument("scene")
     r = sub.add_parser("render", help="fast proxy render (no Isaac Sim)")
@@ -75,7 +78,8 @@ def main(argv=None):
     g.add_argument("--model", default=None, help="Claude Code model alias or id (default: your Claude Code default)")
     g.add_argument("--effort", default=None, help="low|medium|high|xhigh|max (default: Claude Code's)")
     g.add_argument("--max-budget-usd", type=float, default=20.0, help="spend cap per run, enforced by Claude Code")
-    g.add_argument("--max-turns", type=int, default=60)
+    g.add_argument("--max-turns", type=int, default=120)
+    g.add_argument("--allow-unfrozen", action="store_true", help="run a --prompts-file batch off the freeze tag / with a dirty tree")
     g.add_argument("--seed", type=int, default=None, help="pin the build seed for every build_scene of the run (default: the model's choice)")
     g.add_argument("--max-repairs", type=int, default=10, help="stop after this many validate_spec/build_scene calls returned errors (-1: no cap)")
     g.add_argument("--timeout", type=float, default=3600.0, help="seconds per run")
@@ -90,11 +94,16 @@ def main(argv=None):
     ds.add_argument("--include-rejected", action="store_true")
     ds.add_argument("--out", default=None)
     sub.add_parser("simready", help="NVIDIA SimReady assets on Hugging Face: index / search / info / fetch (see -h)", add_help=False)
+    sub.add_parser("eval", help="post-hoc adherence + plausibility per run -> CSV (see -h)", add_help=False)
     argv = sys.argv[1:] if argv is None else list(argv)
     if argv[:1] == ["simready"]:  # own sub-commands; network / file work only, so no Isaac gate
         from .assets.simready import main as simready_main
 
         return simready_main(argv[1:])
+    if argv[:1] == ["eval"]:  # post-hoc evaluation from scene_graph.json + USD colliders: no Isaac gate
+        from .eval.run import main as eval_main
+
+        return eval_main(argv[1:])
     args = ap.parse_args(argv)
 
     if args.cmd == "dataset":  # pure file work: no Isaac needed
@@ -137,6 +146,14 @@ def main(argv=None):
                     if args.prompts_file else [Path(args.prompt_file).read_text().strip() if args.prompt_file else args.prompt])
         if not prompts_ or not prompts_[0]:
             sys.exit("give a prompt, --prompt-file or --prompts-file")
+        if args.prompts_file and not args.allow_unfrozen:  # a batch is data collection: only from the exact frozen checkout
+            from .datagen.runner import freeze_info
+
+            fi = freeze_info()
+            if fi["at_freeze"] != "true":
+                sys.exit(f"refusing a batch: HEAD {fi['head_commit'][:12] or '?'} is not {fi['freeze_tag']} "
+                         f"({fi['freeze_commit'][:12] or 'missing'}){' or the tree is dirty' if fi['tree_dirty'] == 'true' else ''}. "
+                         f"Check out the tag in a clean worktree (or pass --allow-unfrozen for a trial).")
         root = dataset_root(args.dataset)
         recs = [generate(p, root=root, model=args.model, effort=args.effort, max_budget_usd=args.max_budget_usd, max_turns=args.max_turns,
                          max_repairs=None if args.max_repairs < 0 else args.max_repairs, seed=args.seed, timeout_s=args.timeout, final_checks=not args.no_final_checks, keep_work=args.keep_work, claude_bin=args.claude_bin)
@@ -170,6 +187,14 @@ def main(argv=None):
                 print(x)
             print(f"{'OK' if res.ok else 'FAILED'}: {res.out_dir or '-'} ({res.seconds:.1f} s)")
         sys.exit(0 if res.ok else 1)
+    if args.cmd == "recipe" and args.name == "remanufacturing":  # E2 baseline; not in RECIPES (the LLM's list_recipes / get_recipe)
+        from .recipes.remanufacturing import build_all
+
+        if not args.prompts or not args.out:
+            sys.exit("worldc recipe remanufacturing --prompts prompts/prompts.csv --out out/e2/recipe [--ids P01,P07]")
+        res = build_all(args.prompts, args.out, [i for i in args.ids.split(",") if i] or None)
+        print(f"{sum(r['accepted'] for r in res)}/{len(res)} accepted ({sum(r['first_try'] for r in res)} first try) -> {args.out}")
+        sys.exit(0 if all(r["accepted"] for r in res) else 1)
     if args.cmd == "recipe":
         from .compile import compile_scene
         from .recipes import RECIPES

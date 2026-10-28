@@ -72,18 +72,25 @@ def _physics_prims(stage) -> list[str]:
     return out
 
 
-def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None,
-                  root: str | None = None, rev: str | None = None, source_tags=("catalog", "isaac")) -> MeshAsset:
+def cached_sidecar(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None, root: str | None = None,
+                   rev: str | None = None) -> tuple[str, Path]:
+    """(asset id, sidecar path) where catalog_asset keeps this import; the file exists only once it has been imported."""
     url = catalog_url(path, root)
     ov = {k: v for k, v in (overrides or {}).items() if v not in (None, [], "")}
     unknown = set(ov) - META_KEYS
     if unknown:
         raise ValueError(f"unknown catalog overrides {sorted(unknown)}; allowed: {sorted(META_KEYS)}")
-    stem = Path(url).stem
-    asset_id = ov.get("id") or "isaac_" + "".join(c if c.isalnum() else "_" for c in stem).strip("_").lower()
+    asset_id = ov.get("id") or "isaac_" + "".join(c if c.isalnum() else "_" for c in Path(url).stem).strip("_").lower()
     key = hashlib.sha256((url + (rev or "") + json.dumps(ov, sort_keys=True, default=str)).encode()).hexdigest()[:12]
-    d = Path(cache_dir or DEFAULT_CACHE) / key
-    sidecar = d / f"{asset_id}.asset.yaml"
+    return asset_id, Path(cache_dir or DEFAULT_CACHE) / key / f"{asset_id}.asset.yaml"
+
+
+def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None,
+                  root: str | None = None, rev: str | None = None, source_tags=("catalog", "isaac")) -> MeshAsset:
+    url = catalog_url(path, root)
+    ov = {k: v for k, v in (overrides or {}).items() if v not in (None, [], "")}
+    asset_id, sidecar = cached_sidecar(path, overrides, cache_dir, root, rev)
+    d = sidecar.parent
     if not sidecar.is_file():
         tmp = d.with_name(d.name + ".tmp")
         shutil.rmtree(tmp, ignore_errors=True)

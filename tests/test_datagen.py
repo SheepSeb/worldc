@@ -37,7 +37,7 @@ def test_accepted_run_is_fully_collected(root, monkeypatch):
     assert rec.usage.est_cost_usd == 0.123 and rec.usage.tool_calls == 5 and rec.usage.cache_read_input_tokens == 1000
     assert rec.usage.repairs == 1 and rec.params["max_repairs"] == 10  # the first validate_spec came back with asset.unknown
     g = rec.generator
-    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze" and g["at_freeze"] in ("true", "false")
+    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze-v2" and g["at_freeze"] in ("true", "false")
     assert rec.summary == "Built a 6x6 room with two pallets." and rec.record_version == RECORD_VERSION and rec.split in ("train", "val", "test")
     assert rec.validation["last_validate"]["ok"] and rec.validation["last_build"]["ok"] and rec.validation["last_build"]["check"]["passed"]
     assert any(p.startswith(f"runs/{rec.run_id}/images/") for p in rec.render_paths) and (d / "images" / "001.png").is_file()
@@ -179,7 +179,7 @@ def test_final_renders_are_collected_and_shown(root, monkeypatch):
         return {"ok": True, "result": {"image": str(png), "stats": {"mean_luminance": 80}}, "issues": []}
 
     monkeypatch.setattr(T, "render", fake_render)
-    monkeypatch.setattr(T, "check_scene", lambda path, physics, sim_seconds: {"ok": True, "result": {"static": {"passed": True}, "physics": {"ran": True, "ok": True}}, "issues": []})
+    monkeypatch.setattr(T, "check_scene", lambda path, physics, sim_seconds, timeout_s=900.0: {"ok": True, "result": {"static": {"passed": True}, "physics": {"ran": True, "ok": True}}, "issues": []})
     monkeypatch.setenv("FAKE_MODE", "ok")
     rec = runner.generate("two pallets", root=root, final_checks=True, command_override=[sys.executable, str(FAKE)], log=lambda s: None)
     assert rec.accepted and [c for c, _ in calls] == ["auto_topdown", "auto_overview"] and {e for _, e in calls} == {"rtx"}
@@ -189,3 +189,26 @@ def test_final_renders_are_collected_and_shown(root, monkeypatch):
     md = (root / "runs" / rec.run_id / "trace.md").read_text()
     assert "## Final Isaac Sim renders" in md and "![auto_overview](final_renders/auto_overview.png)" in md and "Final checks" in md
     assert md.index("Final Isaac Sim renders") > md.index("Built a 6x6 room")  # at the end
+
+
+@pytest.mark.parametrize("second, accepted, status", [("timeout", False, "physics.timeout"), ("ok", True, "accepted")])
+def test_physics_timeout_is_retried_once_then_not_accepted(root, monkeypatch, second, accepted, status):
+    """A physics timeout is not a pass: one rerun with twice the timeout; a second timeout makes the run not accepted."""
+    from worldc import tools as T
+
+    calls = []
+
+    def fake_check(path, physics, sim_seconds, timeout_s=900.0):
+        calls.append(timeout_s)
+        if len(calls) == 1 or second == "timeout":
+            return {"ok": False, "result": {"static": {"passed": True}, "physics": {"ran": False, "ok": False}},
+                    "issues": [{"severity": "error", "code": "physics.timeout", "message": "", "hint": "", "path": ""}]}
+        return {"ok": True, "result": {"static": {"passed": True}, "physics": {"ran": True, "ok": True}}, "issues": []}
+
+    monkeypatch.setattr(T, "check_scene", fake_check)
+    monkeypatch.setattr(T, "render", lambda *a, **k: {"ok": False, "result": {}, "issues": []})
+    monkeypatch.setenv("FAKE_MODE", "ok")
+    rec = generate("two pallets", root=root, final_checks=True, command_override=[sys.executable, str(FAKE)], log=lambda s: None)
+    assert calls == [900.0, 1800.0]
+    assert rec.accepted is accepted and rec.final_status == status and rec.final_checks["physics_status"] == second
+    assert rec.final_checks["physics_first_attempt"]["status"] == "timeout"

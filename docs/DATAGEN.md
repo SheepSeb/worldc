@@ -10,7 +10,7 @@ worldc dataset export                               # training files, see below
 `worldc generate` runs **your Claude Code** headless (`claude -p`, your own login, no API key). Claude Code gets only the `worldc` MCP
 tools (built-in tools are off, project settings only), so every run is the same loop an interactive session would do: search
 assets, write a spec, `validate_spec`, `build_scene`, `check_scene`, proxy renders, `edit_scene`. A run stops at the spend cap
-(`--max-budget-usd`, default 20), `--max-turns` (60), `--max-repairs` (10; `-1` for no cap) or `--timeout`. A repair is a
+(`--max-budget-usd`, default 20), `--max-turns` (120), `--max-repairs` (10; `-1` for no cap) or `--timeout`. A repair is a
 `validate_spec` or `build_scene` call that returned at least one error-level issue; warnings do not count. Options: `--model`, `--effort`, `--dataset DIR`,
 `--no-final-checks`, `--keep-work`. Requires Isaac Sim (the MCP server will not start without it) and `uv`.
 
@@ -69,14 +69,19 @@ deterministic hash (80/10/10), so a held-out family never appears in train.
 ## E1 batch (`scripts/run_e1.sh`)
 
 ```
-git checkout e1-freeze
-scripts/run_e1.sh claude-opus-5-5 ollama:<model> ollama:<model>          # every prompt x {plain, constrained}
-E1_PROMPTS=P01,P18,P24 E1_VARIANTS=constrained scripts/run_e1.sh ollama:deepseek-v4.1-flash:cloud
+git worktree add --detach ../worldc-e1-freeze-v2 e1-freeze-v2 && cd ../worldc-e1-freeze-v2
+scripts/run_e1.sh claude-opus-5-5 ollama:<model> ollama:<model>            # pass 1: constrained, the 3 models concurrently
+scripts/run_e1.sh --plain claude-opus-5-5 ollama:<model> ollama:<model>    # optional pass 2: plain
+E1_PROMPTS=P01,P18,P24 scripts/run_e1.sh ollama:deepseek-v4.1-flash:cloud  # pilot subset
 ```
 
-The protocol is fixed in the script (effort high, 60 turns, $20 cap, seed 0, 10 repairs, 1 h timeout) and the models are
-arguments, so picking models never modifies the frozen checkout. It refuses to run off the `e1-freeze` tag or with
-modified tracked files (override: `E1_ALLOW_UNFROZEN=1`, recorded as `at_freeze: "false"`), warms the curated SimReady
-cache first (`python -m worldc.assets.curated warm`; unlike `bake` it does not rewrite the frozen table) and writes one
-dataset per model under `dataset/e1/<model>/`. Prompts come from `prompts/prompts.csv`; records are joined back to their
-prompt row by description.
+The protocol is fixed in the script (effort high, 120 turns, $20 cap, seed 0, 10 repairs as the binding limit, 1 h timeout)
+and the models are arguments, so picking them never touches the frozen checkout. Both the script and `worldc generate
+--prompts-file` refuse to run unless HEAD is the `e1-freeze-v2` commit with a clean tree (untracked files included;
+`--allow-unfrozen` on `worldc generate` for trials, recorded as `at_freeze: "false"`). The script warms the curated SimReady
+cache first (`python -m worldc.assets.curated warm`; unlike `bake` it does not rewrite the frozen table), runs the models'
+generation loops concurrently and writes one dataset per model under `dataset/e1/<model>/`. Isaac Sim work is queued
+machine-wide (`isaac_env.isaac_lock`, one Isaac Sim on the GPU at a time; a subprocess's timeout counts from its turn).
+
+A final physics check that times out is rerun once with twice the timeout (1800 s); a second timeout makes the run not
+accepted, `final_status: "physics.timeout"`.

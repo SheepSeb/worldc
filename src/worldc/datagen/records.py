@@ -96,6 +96,7 @@ class Record(BaseModel):
     spec: dict | None = None                 # final spec as written (last one that built; else last one validated)
     spec_hash: str | None = None
     accepted: bool = False                   # built, static checks pass, and (if run) the final physics check passed
+    final_status: str = ""                   # accepted | static_failed | physics_failed | physics.timeout | no_scene | error
     stop_reason: str = ""                    # end_turn | max_turns | max_repairs | max_cost | refusal | max_tokens | error
     error: str | None = None
     validation: dict[str, Any] = Field(default_factory=dict)  # last validate_spec / build / check summaries and issues

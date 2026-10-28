@@ -1,5 +1,32 @@
 # Changelog
 
+## e1-freeze-v2 (2026-10-29)
+
+### Changed: a physics timeout is not a pass
+The runner used to treat a final physics check that did not run (e.g. timed out) as passed, so a timed-out scene could be
+accepted (pilot run P18). Now a timeout is rerun once with twice the timeout (900 s -> 1800 s, alone on the GPU); a second
+timeout makes the run not accepted. Every record has `final_status`: `accepted`, `static_failed`, `physics_failed`,
+`physics.timeout`, `no_scene` or `error`; `final_checks.physics_status` is `ok | failed | timeout | not_run`.
+
+### Fixed: curated support anchors sit on their collision hulls
+Every support anchor of the curated SimReady assets is fitted to the convex hulls at bake time (`curated.fit_support`): its
+height is the top of the hulls carrying it, and its area is cut to the largest rectangle that no hull rises through
+(within 0.3 m above). This fixes props sinking 6 mm into `pallet_euro` / `pallet_block` (their tops were measured on the
+visual mesh), KLT bins colliding with shelf uprights (board anchors reached into the corner posts) and a partial board hull
+standing 1.1 cm above `parts_shelf` board 2. `workbench_modular` and `packing_table_deluxe` have no work-top anchor any
+more: their collision decomposition covers the whole work surface (a 2 m hull / a top hull ending 15 cm above the visible
+top), so nothing can stand on them in PhysX; their descriptions say so. Baked anchors now replace the importer's in the
+cached asset definitions. New test: every support anchor sits on a hull top with nothing rising through it.
+
+### Changed: E1 runner protocol
+* `--max-turns` default 120 (was 60); the 10-repair cap stays the binding limit.
+* `worldc generate --prompts-file` (a batch) refuses to start unless HEAD is the freeze tag (`WORLDC_FREEZE_TAG`,
+  default `e1-freeze-v2`) with a clean tree, untracked files included (`--allow-unfrozen` for trials).
+* Isaac Sim subprocesses (physics checks, RTX renders, drives) are queued machine-wide, one at a time on the GPU
+  (`isaac_env.isaac_lock`), so several generation loops can run concurrently.
+* `scripts/run_e1.sh`: the constrained variant for all models (concurrently); the plain variant is a separate, optional
+  pass (`--plain`). It only runs from a clean checkout of `e1-freeze-v2`.
+
 ## Unreleased (2026-10-28)
 
 ### Changed: convex-hull colliders count as solids in `check_scene`

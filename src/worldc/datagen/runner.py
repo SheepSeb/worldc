@@ -227,7 +227,7 @@ def env_signature(spec: dict | None) -> str:
     return f"{kind}|" + ",".join(ids[:4])
 
 
-FREEZE_TAG = os.environ.get("WORLDC_FREEZE_TAG", "e1-freeze")
+FREEZE_TAG = os.environ.get("WORLDC_FREEZE_TAG", "e1-freeze-v2")
 
 
 def _git(*args) -> str:
@@ -246,7 +246,7 @@ def freeze_info() -> dict[str, str]:
 
     tagged = _git("rev-parse", "--verify", "--quiet", f"{FREEZE_TAG}^{{commit}}")
     head = _git("rev-parse", "HEAD")
-    dirty = bool(_git("status", "--porcelain", "--untracked-files=no"))
+    dirty = bool(_git("status", "--porcelain"))  # tracked changes or untracked files (gitignored outputs do not count)
     return {"freeze_tag": FREEZE_TAG, "freeze_commit": tagged, "head_commit": head,
             "at_freeze": str(bool(tagged) and tagged == head and not dirty).lower(), "tree_dirty": str(dirty).lower(),
             "curated_table_sha256": hashlib.sha256(TABLE.read_bytes()).hexdigest()}
@@ -259,13 +259,37 @@ def _git_rev() -> str:
         return ""
 
 
+PHYSICS_TIMEOUT_S = 900.0
+
+
+def physics_status(c: dict) -> str:
+    """ok | failed | timeout | not_run, from a check_scene result."""
+    if any(i.get("code") == "physics.timeout" for i in c.get("issues", [])):
+        return "timeout"
+    ph = (c.get("result") or {}).get("physics") or {}
+    if not ph.get("ran"):
+        return "not_run"
+    return "ok" if ph.get("ok") else "failed"
+
+
 def _final_checks(scene: Path, run_dir: Path, trace: Trace, physics: bool, rtx: bool, log) -> dict:
-    """Independent verification after the loop: static + Isaac physics check, then Isaac RTX renders of every camera."""
+    """Independent verification after the loop: static + Isaac physics check, then Isaac RTX renders of every camera.
+    A physics timeout is rerun once with twice the timeout (alone on the GPU: Isaac Sim runs are queued machine-wide); a
+    second timeout leaves physics_status = "timeout", which is not accepted."""
     out: dict[str, Any] = {}
     log("  final checks: static" + (" + Isaac physics" if physics else ""))
-    c = tools.check_scene(str(scene), physics=physics, sim_seconds=6.0)
+    c = tools.check_scene(str(scene), physics=physics, sim_seconds=6.0, timeout_s=PHYSICS_TIMEOUT_S)
+    status = physics_status(c) if physics else "not_run"
+    if status == "timeout":
+        log(f"  physics timed out after {PHYSICS_TIMEOUT_S:.0f} s: rerunning once with {2 * PHYSICS_TIMEOUT_S:.0f} s")
+        trace.log("final_check", ok=c["ok"], static=c["result"].get("static"), physics=c["result"].get("physics"), issues=c["issues"][:30], attempt=1)
+        out["physics_first_attempt"] = {"status": "timeout", "timeout_s": PHYSICS_TIMEOUT_S}
+        c = tools.check_scene(str(scene), physics=True, sim_seconds=6.0, timeout_s=2 * PHYSICS_TIMEOUT_S)
+        status = physics_status(c)
+    out["physics_status"] = status
     out["check"] = {"ok": c["ok"], "static": c["result"].get("static"), "physics": c["result"].get("physics"), "issues": c["issues"][:30]}
-    trace.log("final_check", ok=c["ok"], static=c["result"].get("static"), physics=c["result"].get("physics"), issues=c["issues"][:30])
+    trace.log("final_check", ok=c["ok"], static=c["result"].get("static"), physics=c["result"].get("physics"), issues=c["issues"][:30],
+              physics_status=status)
     if rtx:
         g = json.loads((scene / "scene_graph.json").read_text())
         cams: dict[str, Any] = {x["name"]: x["name"] for x in g.get("cameras", []) if x.get("name")}
@@ -286,7 +310,7 @@ def _final_checks(scene: Path, run_dir: Path, trace: Trace, physics: bool, rtx: 
 
 
 def generate(prompt: str, *, root: Path, model: str | None = None, effort: str | None = None, max_budget_usd: float = 20.0,
-             max_turns: int = 60, max_repairs: int | None = 10, seed: int | None = None, timeout_s: float = 3600.0, final_checks: bool = True, keep_work: bool = False,
+             max_turns: int = 120, max_repairs: int | None = 10, seed: int | None = None, timeout_s: float = 3600.0, final_checks: bool = True, keep_work: bool = False,
              claude_bin: str = "claude", extra_args: tuple = (), log=lambda s: print(s, file=sys.stderr, flush=True),
              command_override: list[str] | None = None) -> Record:
     run_id, run_dir = new_run(root, prompt)
@@ -375,8 +399,11 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
     spec = st.built_spec or st.candidate_spec
     chk = final.get("check")
     static_ok = bool((st.last_build.get("check") or {}).get("passed")) if not chk else bool((chk.get("static") or {}).get("passed"))
-    physics_ok = True if not chk or not (chk.get("physics") or {}).get("ran") else bool(chk["physics"].get("ok"))
+    phys = final.get("physics_status", "not_run")  # not_run: final checks off, or Isaac Sim unavailable
+    physics_ok = phys in ("ok", "not_run")
     accepted = bool(scene is not None and static_ok and physics_ok and not err)
+    final_status = ("error" if err else "no_scene" if scene is None else "static_failed" if not static_ok else
+                    "physics.timeout" if phys == "timeout" else "physics_failed" if phys == "failed" else "accepted")
     if spec is not None:
         (run_dir / "spec.json").write_text(json.dumps(spec, indent=1))
     root_ = root
@@ -385,7 +412,8 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
         params={"effort": effort, "max_turns": max_turns, "max_repairs": max_repairs, "seed": seed, "loop_seconds": round(loop_s, 1),
                 "final_checks_seconds": round(time.time() - t0 - loop_s, 1), "max_budget_usd": max_budget_usd, "timeout_s": timeout_s, "final_checks": final_checks,
                 "session_id": st.session_id},
-        description=prompt, spec=spec, spec_hash=sha(canonical(spec)) if spec else None, accepted=accepted, stop_reason=stop or "unknown", error=err,
+        description=prompt, spec=spec, spec_hash=sha(canonical(spec)) if spec else None, accepted=accepted, final_status=final_status,
+        stop_reason=stop or "unknown", error=err,
         validation={"last_validate": st.last_validate, "last_build": st.last_build, "last_check": st.last_check},
         final_checks=final, asset_sources=_asset_sources(spec), env_signature=env_signature(spec),
         scene_dir=str(scene.relative_to(root_)) if scene else None,

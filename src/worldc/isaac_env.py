@@ -119,3 +119,29 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
+
+
+GPU_LOCK = Path(os.environ.get("WORLDC_ISAAC_LOCK", Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "worldc" / "isaac_gpu.lock"))
+
+
+class isaac_lock:
+    """Machine-wide queue for Isaac Sim subprocesses (one at a time on the GPU): concurrent generation loops wait here instead
+    of starting a second Isaac Sim.  A subprocess's own timeout starts once it holds the lock."""
+
+    def __enter__(self):
+        import fcntl
+        import time
+
+        GPU_LOCK.parent.mkdir(parents=True, exist_ok=True)
+        self.f = GPU_LOCK.open("a+")
+        t0 = time.time()
+        fcntl.flock(self.f, fcntl.LOCK_EX)
+        self.waited_s = time.time() - t0
+        return self
+
+    def __exit__(self, *exc):
+        import fcntl
+
+        fcntl.flock(self.f, fcntl.LOCK_UN)
+        self.f.close()
+        return False

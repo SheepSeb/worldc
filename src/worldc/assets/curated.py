@@ -62,21 +62,38 @@ def mesh(alias: str):
 
     e = table()[alias]
     m = catalog_asset(e["path"], overrides(alias, e), root=root_url(e), rev=e["rev"], source_tags=("catalog", "simready"))
-    extra = _extra_anchors(e.get("baked") or {})
-    if extra:
+    return _apply_baked(m, alias, e)
+
+
+def _apply_baked(m, alias: str, e: dict):
+    """The baked anchors (fitted to the hulls) replace the importer's in the cached sidecar."""
+    b = e.get("baked") or {}
+    if "anchors" not in b:
+        return m
+    want = [AnchorSpec(**a) for a in baked_anchors(b)]
+    if m.sidecar.anchors != want:
         sc_path = m.base_dir / f"{alias}.asset.yaml"
-        sc = read_sidecar(sc_path)
-        if not all(a in sc.anchors for a in extra):
-            names = {a.name for a in extra}
-            sc = sc.model_copy(update={"anchors": [a for a in sc.anchors if a.name not in names] + extra})
-            write_sidecar(sc, sc_path)
-            m.sidecar = sc
+        sc = read_sidecar(sc_path).model_copy(update={"anchors": want})
+        write_sidecar(sc, sc_path)
+        m.sidecar = sc
     return m
 
 
-def _extra_anchors(baked: dict) -> list[AnchorSpec]:
-    """Support anchors measured by bake on top of the importer's own: the bench work top and shelf boards."""
-    return [AnchorSpec(**a) for a in ([baked["work_top"]] if baked.get("work_top") else []) + baked.get("shelves", [])]
+def cached_mesh(alias: str):
+    """The imported MeshAsset if it is already in the cache (never downloads), else None."""
+    from .catalog import cached_sidecar
+    from .mesh.mesh_asset import MeshAsset
+
+    e = table()[alias]
+    _, sc = cached_sidecar(e["path"], overrides(alias, e), root=root_url(e), rev=e["rev"])
+    return _apply_baked(MeshAsset.from_file(sc), alias, e) if sc.is_file() else None
+
+
+def baked_anchors(b: dict) -> list[dict]:
+    """All anchors of a baked entry: the importer's (supports fitted), the bench work top and the shelf boards."""
+    extra = ([b["work_top"]] if b.get("work_top") else []) + b.get("shelves", [])
+    names = {a["name"] for a in extra}
+    return [a for a in b.get("anchors", []) if a["name"] not in names] + extra
 
 
 class CuratedAsset(Asset):
@@ -89,7 +106,8 @@ class CuratedAsset(Asset):
         b = e.get("baked") or {}
         self.description = (f"{e['description']}. SimReady asset ({e['dataset']}, {e['licence'].upper()}); "
                             f"{' x '.join(f'{v:.2f}' for v in (b.get('size') or e['size_m']))} m"
-                            + ("; work top is a support anchor 'top'" if b.get("work_top") else "")
+                            + ("; work top is a support anchor 'top'" if b.get("work_top") else
+                               "; no usable work top (its collision shape covers it): nothing can be placed on it" if e.get("work_top") else "")
                             + (f"; shelves are support anchors shelf_0..shelf_{len(b['shelves']) - 1}" if b.get("shelves") else ""))
         self.physics = PhysicsInfo(e["body"], e["material"], PHYSICAL[e["material"]][0], b.get("mass_kg"), "convex_hulls",
                                    f"{b.get('n_hulls', '?')} convex hull(s) from the SimReady mesh; its own physics is switched off")
@@ -103,10 +121,7 @@ class CuratedAsset(Asset):
         return Footprint.rect(x * s, y * s, z * s)
 
     def anchors(self, p):
-        b = self.e.get("baked") or {}
-        extra = _extra_anchors(b)
-        names = {a.name for a in extra}
-        return [a.to_anchor(p.scale) for a in [AnchorSpec(**a) for a in b.get("anchors", []) if a["name"] not in names] + extra]
+        return [AnchorSpec(**a).to_anchor(p.scale) for a in baked_anchors(self.e.get("baked") or {})]
 
     def build(self, ctx, path, pose, p, rng) -> Built:
         return mesh(self.id).build(ctx, path, pose, p, rng)
@@ -154,22 +169,45 @@ def _anchor(name: str, tris) -> dict:
             "polygon": [[round(float(x - c[0]), 4), round(float(y - c[1]), 4)] for x, y in h]}
 
 
-def _on_hulls(anchor: dict | None, collision_usd: Path) -> dict | None:
-    """Raise a measured surface to the collision hulls' top where they bulge above the visual (props must rest on the hulls)."""
-    if anchor is None:
-        return None
-    from .mesh.mesh_asset import load_hulls
+SUPPORT_TOL = 0.003      # a hull this much above a support surface is in the way of what stands on it
+SUPPORT_REACH = 0.3      # ... if it starts less than this above the surface (a board higher up is not)
+MIN_SUPPORT = 0.10       # a fitted support narrower than this (m) is dropped
 
-    z = anchor["pos"][2]
-    poly = np.array(anchor["polygon"]) + np.array(anchor["pos"][:2])
+
+def fit_support(anchor: dict | None, hulls) -> dict | None:
+    """Fit a support anchor to the collision hulls: its height to the top of the hulls carrying it (the ones covering >= 25 %
+    of it, else every hull within 3 cm of it), and its area to the largest rectangle left once every hull that rises above it
+    (uprights, rims, a raised partial hull) is cut out.  None if nothing usable is left."""
+    if anchor is None or anchor.get("kind") != "support" or not anchor.get("polygon"):
+        return anchor
+    z0 = anchor["pos"][2]
+    poly = np.array(anchor["polygon"], float) + np.array(anchor["pos"][:2], float)
     lo, hi = poly.min(0), poly.max(0)
     area = float(np.prod(hi - lo))
-    tops = []
-    for p, _, _ in load_hulls(collision_usd):  # only hulls that carry the surface (>= 25 % of it), not a post or rim
-        ov = np.clip(np.minimum(p[:, :2].max(0), hi) - np.maximum(p[:, :2].min(0), lo), 0, None)
-        if abs(float(p[:, 2].max()) - z) <= 0.03 and float(np.prod(ov)) >= 0.25 * area:
-            tops.append(float(p[:, 2].max()))
-    return {**anchor, "pos": [anchor["pos"][0], anchor["pos"][1], round(max([z] + tops), 4)]}
+
+    def overlap(p, r):
+        return np.clip(np.minimum(p[:, :2].max(0), r[2:]) - np.maximum(p[:, :2].min(0), r[:2]), 0, None)
+
+    r = np.array([lo[0], lo[1], hi[0], hi[1]])
+    near = [p for p in hulls if abs(float(p[:, 2].max()) - z0) <= 0.03 and float(np.prod(overlap(p, r))) > 0]
+    carriers = [p for p in near if float(np.prod(overlap(p, r))) >= MIN_TOP_FRAC * area]
+    z = max([z0] + [float(p[:, 2].max()) for p in (carriers or near)])
+    obstacles = sorted((p for p in hulls if float(p[:, 2].max()) > z + SUPPORT_TOL and float(p[:, 2].min()) < z + SUPPORT_REACH),
+                       key=lambda p: -float(np.prod(overlap(p, r))))
+    for p in obstacles:
+        if float(np.prod(overlap(p, r))) <= 0:
+            continue
+        (bx0, by0), (bx1, by1) = p[:, :2].min(0), p[:, :2].max(0)
+        cuts = [np.array([bx1, r[1], r[2], r[3]]), np.array([r[0], r[1], bx0, r[3]]),
+                np.array([r[0], by1, r[2], r[3]]), np.array([r[0], r[1], r[2], by0])]
+        cuts = [c for c in cuts if c[2] - c[0] >= MIN_SUPPORT and c[3] - c[1] >= MIN_SUPPORT]
+        if not cuts:
+            return None
+        r = max(cuts, key=lambda c: (c[2] - c[0]) * (c[3] - c[1]))
+    c = (r[:2] + r[2:]) / 2
+    return {**anchor, "pos": [round(float(c[0]), 4), round(float(c[1]), 4), round(z, 4)],
+            "polygon": [[round(float(x - c[0]), 4), round(float(y - c[1]), 4)] for x, y in
+                        ((r[0], r[1]), (r[2], r[1]), (r[2], r[3]), (r[0], r[3]))]}
 
 
 def _work_top(visual_usd: Path, fp) -> dict | None:
@@ -220,16 +258,26 @@ def bake_one(alias: str) -> tuple[str, dict]:
     e = table()[alias]
     if "robot_arm" in e["tags"]:
         return alias, _bake_arm(e)
+    from .catalog import catalog_asset
+    from .mesh.import_mesh import detect_top_anchor, load_parts
+    from .mesh.mesh_asset import load_hulls
+
     mesh.cache_clear()
-    m = mesh(alias)
+    m = catalog_asset(e["path"], overrides(alias, e), root=root_url(e), rev=e["rev"], source_tags=("catalog", "simready"))
     sc = m.sidecar
+    hulls = [h for h, _, _ in load_hulls(m.collision_file)]
+    parts = load_parts(m.visual_file)[0]
+    importer = [a.model_dump(mode="json", exclude_defaults=True) for a in sc.anchors if a.kind != "support"]  # ports as they are
+    top = detect_top_anchor(parts, sc.footprint)  # the importer's own top, measured afresh (the cached sidecar may be patched)
+    if top is not None and not e.get("work_top"):
+        importer.append(top.model_dump(mode="json", exclude_defaults=True))
     out = {"footprint": [list(map(float, p)) for p in sc.footprint], "bounds": [list(sc.bounds.min), list(sc.bounds.max)],
            "size": [round(v, 4) for v in sc.bounds.size], "mass_kg": sc.mass_kg, "n_hulls": sc.collision.n_hulls,
-           "anchors": [a.model_dump(mode="json", exclude_defaults=True) for a in sc.anchors if not (e.get("work_top") and a.name == "top")]}
+           "anchors": [a for a in (fit_support(a, hulls) for a in importer) if a is not None]}
     if e.get("work_top"):
-        out["work_top"] = _on_hulls(_work_top(m.visual_file, sc.footprint), m.collision_file)
+        out["work_top"] = fit_support(_work_top(m.visual_file, sc.footprint), hulls)
     if "shelf" in e["tags"]:
-        out["shelves"] = [_on_hulls(a, m.collision_file) for a in _shelves(m.visual_file, sc.footprint, sc.bounds.max[2])]
+        out["shelves"] = [a for a in (fit_support(a, hulls) for a in _shelves(m.visual_file, sc.footprint, sc.bounds.max[2])) if a is not None]
     return alias, out
 
 

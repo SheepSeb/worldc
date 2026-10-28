@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import re
 
+import numpy as np
 import pytest
 
 from worldc.assets import curated, get, list_assets, registry
@@ -40,12 +41,38 @@ def test_baked_footprint_matches_survey_size(alias):
     assert sorted([sx, sy]) == pytest.approx(want, abs=0.05) and sz == pytest.approx(e["size_m"][2], abs=0.05)  # units converted (WH01: cm)
 
 
+SCENE_ASSETS = [a for a, e in curated.table().items() if "robot_arm" not in e["tags"]]
+
+
+@pytest.mark.parametrize("alias", SCENE_ASSETS)
+def test_support_anchors_sit_on_their_hulls(alias):
+    """Every support anchor is at the top of the hulls it rests on (within SUPPORT_TOL) and nothing that starts below
+    SUPPORT_REACH above it rises through it (uprights, rims, raised partial hulls).  Needs the asset in the local cache."""
+    m = curated.cached_mesh(alias)
+    if m is None:
+        pytest.skip(f"{alias} not cached (python -m worldc.assets.curated warm)")
+    from worldc.assets.mesh.mesh_asset import load_hulls
+
+    hulls = [h for h, _, _ in load_hulls(m.collision_file)]
+    for an in (x for x in m.sidecar.anchors if x.kind == "support"):
+        P = np.array(an.polygon) + np.array(an.pos[:2])
+        lo, hi = P.min(0) + 0.002, P.max(0) - 0.002
+        under = [h for h in hulls if (np.minimum(h[:, :2].max(0), hi) > np.maximum(h[:, :2].min(0), lo)).all()]
+        z = an.pos[2]
+        assert any(abs(h[:, 2].max() - z) <= curated.SUPPORT_TOL for h in under), f"{alias}.{an.name}: no hull top at z={z}"
+        blocking = [h for h in under if h[:, 2].max() > z + curated.SUPPORT_TOL and h[:, 2].min() < z + curated.SUPPORT_REACH]
+        assert not blocking, f"{alias}.{an.name}: {len(blocking)} hull(s) rise through the support at z={z}"
+    assert m.sidecar.anchors == [type(m.sidecar.anchors[0])(**a) for a in curated.baked_anchors(curated.table()[alias]["baked"])] or not m.sidecar.anchors
+
+
 def test_bench_tops_and_shelves_are_support_anchors():
-    for alias in ("workbench_modular", "workbench_steel", "packing_table_heavy", "packing_table_deluxe"):
+    for alias in ("workbench_steel", "packing_table_heavy"):
         a = get(alias)
         top = next(x for x in a.anchors(a.params({})) if x.name == "top")
         assert top.kind == "support" and curated.WORK_TOP_BAND[0] <= top.pos[2] <= curated.WORK_TOP_BAND[1], alias
     assert next(x for x in get("workbench_steel").anchors(get("workbench_steel").params({})) if x.name == "top").pos[2] == pytest.approx(0.85, abs=0.02)
+    for alias in ("workbench_modular", "packing_table_deluxe"):  # their collision shape covers the work surface
+        assert not [x for x in get(alias).anchors(get(alias).params({})) if x.kind == "support"] and "no usable work top" in get(alias).description
     for alias in ("parts_shelf", "shelf_rack", "bulk_storage_rack"):
         a = get(alias)
         zs = [x.pos[2] for x in a.anchors(a.params({})) if x.name.startswith("shelf_")]

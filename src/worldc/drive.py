@@ -132,7 +132,10 @@ def run_drive(scene, out_dir=None, *, goal_ids=None, n_goals: int = 3, video: bo
     cmd = [str(sim.python), "-m", "worldc.render.isaac_drive", str(d), str(out), "--fps", str(fps), "--res", str(res[0]), str(res[1]),
            "--max-seconds", f"{max_s:.0f}", "--rt-subframes", str(rt_subframes)]
     env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[1]))
-    p = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=timeout_s)
+    from .isaac_env import isaac_lock
+
+    with isaac_lock():  # one Isaac Sim on the GPU at a time
+        p = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=timeout_s)
     (out / "drive_run.log").write_text(p.stdout + "\n--- stderr ---\n" + p.stderr)
     rf = out / "drive_result.json"
     if not rf.is_file():
