@@ -227,7 +227,7 @@ def env_signature(spec: dict | None) -> str:
     return f"{kind}|" + ",".join(ids[:4])
 
 
-FREEZE_TAG = os.environ.get("WORLDC_FREEZE_TAG", "e1-freeze-v2")
+FREEZE_TAG = os.environ.get("WORLDC_FREEZE_TAG", "e1-freeze-v3")
 
 
 def _git(*args) -> str:

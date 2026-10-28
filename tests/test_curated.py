@@ -24,15 +24,18 @@ def test_table_is_pinned_and_licensed():
 
 def test_aliases_are_registered_with_tags():
     scene_assets = [a for a, e in curated.table().items() if "robot_arm" not in e["tags"]]
-    assert len(scene_assets) == 43 and all(registry.exists(a) for a in scene_assets)
+    assert len(scene_assets) == 43 and len(curated.scene_aliases()) == 41
+    assert all(registry.exists(a) for a in curated.scene_aliases())
+    for a in ("workbench_modular", "packing_table_deluxe"):  # excluded: kept in the table with the reason, never registered
+        assert curated.table()[a]["excluded"] and not registry.exists(a)
     assert not registry.exists("fanuc_crx10ia")  # arms are robot_cell options, not scene objects
     benches = {a["id"] for a in list_assets(["workbench"])}
-    assert {"workbench_modular", "workbench_steel", "packing_table_heavy", "packing_table_deluxe"} <= benches
+    assert {"workbench_steel", "packing_table_heavy"} <= benches and not {"workbench_modular", "packing_table_deluxe"} & benches
     assert {a["id"] for a in list_assets(["klt"])} == {"klt_bin"}
     assert get("klt_bin").source == "simready"
 
 
-@pytest.mark.parametrize("alias", [a for a, e in curated.table().items() if "robot_arm" not in e["tags"]])
+@pytest.mark.parametrize("alias", curated.scene_aliases())
 def test_baked_footprint_matches_survey_size(alias):
     e = curated.table()[alias]
     a = get(alias)
@@ -41,7 +44,7 @@ def test_baked_footprint_matches_survey_size(alias):
     assert sorted([sx, sy]) == pytest.approx(want, abs=0.05) and sz == pytest.approx(e["size_m"][2], abs=0.05)  # units converted (WH01: cm)
 
 
-SCENE_ASSETS = [a for a, e in curated.table().items() if "robot_arm" not in e["tags"]]
+SCENE_ASSETS = curated.scene_aliases()
 
 
 @pytest.mark.parametrize("alias", SCENE_ASSETS)
@@ -71,8 +74,8 @@ def test_bench_tops_and_shelves_are_support_anchors():
         top = next(x for x in a.anchors(a.params({})) if x.name == "top")
         assert top.kind == "support" and curated.WORK_TOP_BAND[0] <= top.pos[2] <= curated.WORK_TOP_BAND[1], alias
     assert next(x for x in get("workbench_steel").anchors(get("workbench_steel").params({})) if x.name == "top").pos[2] == pytest.approx(0.85, abs=0.02)
-    for alias in ("workbench_modular", "packing_table_deluxe"):  # their collision shape covers the work surface
-        assert not [x for x in get(alias).anchors(get(alias).params({})) if x.kind == "support"] and "no usable work top" in get(alias).description
+    for alias in ("workbench_modular", "packing_table_deluxe"):  # their collision shape covers the work surface: excluded
+        assert not curated.table()[alias]["baked"].get("work_top") and "work top" in curated.table()[alias]["excluded"]
     for alias in ("parts_shelf", "shelf_rack", "bulk_storage_rack"):
         a = get(alias)
         zs = [x.pos[2] for x in a.anchors(a.params({})) if x.name.startswith("shelf_")]

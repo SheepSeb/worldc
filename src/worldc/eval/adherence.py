@@ -13,7 +13,7 @@ from collections import Counter
 from .scene import Scene
 
 # registry asset ids (assets/registry.py) per prompt field
-WORKBENCH_ASSETS = {"work_table", "workbench_steel", "workbench_modular", "packing_table_heavy", "packing_table_deluxe"}  # + curated SimReady
+WORKBENCH_ASSETS = {"work_table", "workbench_steel", "packing_table_heavy"}  # + curated SimReady benches (registered ones)
 ROBOT_CELL_ASSETS = {"robot_cell"}
 CONVEYOR_ASSETS = {"conveyor_belt", "conveyor_roller"}
 RACK_ASSETS = {"rack_row", "parts_shelf", "shelf_rack", "bulk_storage_rack"}  # prompts count parts shelving units

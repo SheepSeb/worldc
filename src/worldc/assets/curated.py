@@ -127,8 +127,13 @@ class CuratedAsset(Asset):
         return mesh(self.id).build(ctx, path, pose, p, rng)
 
 
+def scene_aliases() -> list[str]:
+    """Curated entries registered as scene assets: not robot_cell arms, not excluded (kept in the table with the reason)."""
+    return [a for a, e in table().items() if "robot_arm" not in e["tags"] and not e.get("excluded")]
+
+
 def load() -> list[Asset]:
-    return [CuratedAsset(a, e) for a, e in table().items() if "robot_arm" not in e["tags"]]
+    return [CuratedAsset(a, table()[a]) for a in scene_aliases()]
 
 
 def arm(alias: str) -> dict:
@@ -304,7 +309,7 @@ if __name__ == "__main__":
     elif sys.argv[1:2] == ["warm"]:  # before a frozen batch: same downloads / imports as bake, but the table (and its hash) stay as frozen
         from . import curated as _pkg
 
-        for a in sys.argv[2:] or [a for a, e in table().items() if "robot_arm" not in e["tags"]]:
+        for a in sys.argv[2:] or scene_aliases():
             _pkg.mesh(a)
             print(f"  {a}: cached")
     else:

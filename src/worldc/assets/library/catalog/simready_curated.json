@@ -186,7 +186,8 @@
    "anchors": [],
    "work_top": null
   },
-  "max_hulls": 32
+  "max_hulls": 32,
+  "excluded": "collision decomposition merges the work top with the 2 m back panel (two hulls 0.09-2.06 m over the whole bench): nothing can stand on it in PhysX"
  },
  "utility_cart": {
   "candidate": "C07",
@@ -1067,7 +1068,8 @@
    "anchors": [],
    "work_top": null
   },
-  "max_hulls": 32
+  "max_hulls": 32,
+  "excluded": "its top collision hull ends 0.15 m above the visible work top (0.93 m vs 1.08 m): props would float"
  },
  "toolbox": {
   "candidate": "C14",

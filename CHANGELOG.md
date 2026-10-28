@@ -1,5 +1,14 @@
 # Changelog
 
+## e1-freeze-v3 (2026-10-29)
+
+### Changed: two curated benches excluded from the library
+`workbench_modular` and `packing_table_deluxe` are no longer registered scene assets (so they never appear under
+`workbench` / `table` or anywhere in `list_assets`). They stay in the curated table with `"excluded"` and the reason: their
+collision decomposition covers the work surface (a 2 m hull over the whole bench / a top hull ending 15 cm above the
+visible top), so nothing can be placed on them. The curated set is now 41 scene assets + 2 `robot_cell` arms.
+`scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v3`.
+
 ## e1-freeze-v2 (2026-10-29)
 
 ### Changed: a physics timeout is not a pass
