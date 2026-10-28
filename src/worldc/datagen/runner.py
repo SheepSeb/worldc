@@ -26,6 +26,7 @@ from .records import Record, Trace, Usage, append_record, canonical, new_run, no
 
 MCP_PREFIX = "mcp__worldc__"
 MAX_TEXT = 60_000  # tool-result text kept per event in the trace
+REPAIR_TOOLS = ("validate_spec", "build_scene")
 
 
 @dataclass
@@ -41,6 +42,7 @@ class _State:
     last_build: dict = field(default_factory=dict)
     last_check: dict = field(default_factory=dict)
     n_tool_calls: int = 0
+    n_repairs: int = 0                                # REPAIR_TOOLS calls that came back with error issues
     n_images: int = 0
     n_specs: int = 0
     final_text: str = ""
@@ -48,9 +50,9 @@ class _State:
     mcp_status: dict = field(default_factory=dict)
 
 
-def mcp_config(path: Path, workspace: Path) -> Path:
-    cfg = {"mcpServers": {"worldc": {"command": "uv", "args": ["run", "--directory", str(prompts.REPO), "worldc-mcp"],
-                                  "env": {"WORLDC_WORKSPACE": str(workspace)}}}}
+def mcp_config(path: Path, workspace: Path, seed: int | None = None) -> Path:
+    env = {"WORLDC_WORKSPACE": str(workspace), **({"WORLDC_SEED": str(int(seed))} if seed is not None else {})}
+    cfg = {"mcpServers": {"worldc": {"command": "uv", "args": ["run", "--directory", str(prompts.REPO), "worldc-mcp"], "env": env}}}
     path.write_text(json.dumps(cfg, indent=1))
     return path
 
@@ -196,7 +198,10 @@ def _handle(ev: dict, st: _State, trace: Trace, run_dir: Path, log) -> None:
                 _write_spec(res["result"]["spec"], st, trace, run_dir, "result of edit_scene")
             if res is not None:
                 n_err = sum(1 for i in res.get("issues", []) if i.get("severity") == "error")
-                log(f"     {name}: {'ok' if res['ok'] else 'FAILED'}" + (f", {n_err} error(s)" if n_err else ""))
+                if name in REPAIR_TOOLS and n_err:
+                    st.n_repairs += 1
+                log(f"     {name}: {'ok' if res['ok'] else 'FAILED'}" + (f", {n_err} error(s)" if n_err else "")
+                    + (f" [repair {st.n_repairs}]" if name in REPAIR_TOOLS and n_err else ""))
     elif t == "result":
         st.result = ev
         trace.log("result", **{k: ev.get(k) for k in ("subtype", "is_error", "stop_reason", "num_turns", "total_cost_usd", "usage", "duration_ms",
@@ -220,6 +225,31 @@ def env_signature(spec: dict | None) -> str:
     kind = (spec.get("environment") or {}).get("kind", "indoor")
     ids = sorted({o["asset"] for o in spec.get("objects", []) or [] if isinstance(o.get("asset"), str)})
     return f"{kind}|" + ",".join(ids[:4])
+
+
+FREEZE_TAG = os.environ.get("WORLDC_FREEZE_TAG", "e1-freeze")
+
+
+def _git(*args) -> str:
+    try:
+        return subprocess.run(["git", "-C", str(prompts.REPO), *args], capture_output=True, text=True, timeout=10).stdout.strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def freeze_info() -> dict[str, str]:
+    """What a run was generated against: the freeze tag's commit, whether the checkout is exactly that commit, and the
+    sha256 of the curated asset table (the asset library a model could choose from)."""
+    import hashlib
+
+    from ..assets.curated import TABLE
+
+    tagged = _git("rev-parse", "--verify", "--quiet", f"{FREEZE_TAG}^{{commit}}")
+    head = _git("rev-parse", "HEAD")
+    dirty = bool(_git("status", "--porcelain", "--untracked-files=no"))
+    return {"freeze_tag": FREEZE_TAG, "freeze_commit": tagged, "head_commit": head,
+            "at_freeze": str(bool(tagged) and tagged == head and not dirty).lower(), "tree_dirty": str(dirty).lower(),
+            "curated_table_sha256": hashlib.sha256(TABLE.read_bytes()).hexdigest()}
 
 
 def _git_rev() -> str:
@@ -256,7 +286,7 @@ def _final_checks(scene: Path, run_dir: Path, trace: Trace, physics: bool, rtx: 
 
 
 def generate(prompt: str, *, root: Path, model: str | None = None, effort: str | None = None, max_budget_usd: float = 20.0,
-             max_turns: int = 60, timeout_s: float = 3600.0, final_checks: bool = True, keep_work: bool = False,
+             max_turns: int = 60, max_repairs: int | None = 10, seed: int | None = None, timeout_s: float = 3600.0, final_checks: bool = True, keep_work: bool = False,
              claude_bin: str = "claude", extra_args: tuple = (), log=lambda s: print(s, file=sys.stderr, flush=True),
              command_override: list[str] | None = None) -> Record:
     run_id, run_dir = new_run(root, prompt)
@@ -266,7 +296,7 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
     trace = Trace(run_dir / "trace.jsonl")
     trace.log("user", content=prompts.user_message(prompt), prompt_id=prompts.SPEC_WRITER_ID, description=prompt)
     log(f"[{run_id}] {prompt[:100]}")
-    cfg = mcp_config(run_dir / "mcp.json", work)
+    cfg = mcp_config(run_dir / "mcp.json", work, seed)
     cmd = command_override or claude_command(claude_bin, prompts.user_message(prompt), cfg, model=model, effort=effort,
                                              max_budget_usd=max_budget_usd, extra=extra_args)
     st, stop, err = _State(), "", None
@@ -301,6 +331,10 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
                     killed["why"] = "max_turns"
                     proc.kill()
                     break
+                if max_repairs is not None and st.n_repairs > max_repairs:
+                    killed["why"] = "max_repairs"
+                    proc.kill()
+                    break
         finally:
             timer.cancel()
             proc.wait()
@@ -318,7 +352,7 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
 
     # ---- usage from Claude Code's own accounting
     u = res.get("usage", {}) or {}
-    usage = Usage(turns=res.get("num_turns") or len(st.msg_ids), tool_calls=st.n_tool_calls, input_tokens=u.get("input_tokens", 0),
+    usage = Usage(turns=res.get("num_turns") or len(st.msg_ids), tool_calls=st.n_tool_calls, repairs=st.n_repairs, input_tokens=u.get("input_tokens", 0),
                   output_tokens=u.get("output_tokens", 0), cache_read_input_tokens=u.get("cache_read_input_tokens", 0),
                   cache_creation_input_tokens=u.get("cache_creation_input_tokens", 0), est_cost_usd=round(float(res.get("total_cost_usd") or 0), 5))
 
@@ -330,6 +364,7 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
     if not keep_work:
         shutil.rmtree(work, ignore_errors=True)
 
+    loop_s = time.time() - t0
     # ---- independent verification of what was actually built
     final: dict[str, Any] = {}
     if scene is not None and final_checks:
@@ -347,7 +382,8 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
     root_ = root
     rec = Record(
         id=sha(canonical(spec) + prompt), run_id=run_id, created_at=now(), model=st.model or model or "", prompt_id=prompts.SPEC_WRITER_ID,
-        params={"effort": effort, "max_turns": max_turns, "max_budget_usd": max_budget_usd, "timeout_s": timeout_s, "final_checks": final_checks,
+        params={"effort": effort, "max_turns": max_turns, "max_repairs": max_repairs, "seed": seed, "loop_seconds": round(loop_s, 1),
+                "final_checks_seconds": round(time.time() - t0 - loop_s, 1), "max_budget_usd": max_budget_usd, "timeout_s": timeout_s, "final_checks": final_checks,
                 "session_id": st.session_id},
         description=prompt, spec=spec, spec_hash=sha(canonical(spec)) if spec else None, accepted=accepted, stop_reason=stop or "unknown", error=err,
         validation={"last_validate": st.last_validate, "last_build": st.last_build, "last_check": st.last_check},
@@ -355,13 +391,14 @@ def generate(prompt: str, *, root: Path, model: str | None = None, effort: str |
         scene_dir=str(scene.relative_to(root_)) if scene else None,
         final_render_paths=sorted(f"runs/{run_id}/{x['path']}" for x in final.get("renders", []) if x.get("path")),
         render_paths=sorted(str(p.relative_to(root_)) for p in ([*scene.glob("renders/*.png")] if scene else []) + list((run_dir / "images").glob("*"))),
-        summary=st.final_text, usage=usage, n_events=trace.n, generator={"git": _git_rev(), "prompt": prompts.SPEC_WRITER_ID, "claude_code": "headless"},
+        summary=st.final_text, usage=usage, n_events=trace.n,
+        generator={"git": _git_rev(), "prompt": prompts.SPEC_WRITER_ID, "claude_code": "headless", **freeze_info()},
     )
     rec.split = split_of(rec.env_signature)
     append_record(root, rec, run_dir)
     from .view import write_markdown
 
     write_markdown(run_dir, rec)
-    log(f"[{run_id}] {'ACCEPTED' if accepted else 'REJECTED'} stop={rec.stop_reason} turns={usage.turns} tools={usage.tool_calls} "
+    log(f"[{run_id}] {'ACCEPTED' if accepted else 'REJECTED'} stop={rec.stop_reason} turns={usage.turns} tools={usage.tool_calls} repairs={usage.repairs} "
         f"cost=${usage.est_cost_usd:.2f} ({time.time() - t0:.0f}s)" + (f"  error: {err}" if err else ""))
     return rec

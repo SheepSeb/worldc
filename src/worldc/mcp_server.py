@@ -17,7 +17,7 @@ from . import tools
 INSTRUCTIONS = """Build physically valid 3D scenes (USD for Isaac Sim) from a declarative JSON spec.
 Typical loop: search_assets / describe_asset -> write a spec (get_spec_schema for the format; docs/SPEC.md has examples)
 -> validate_spec (fix issues using their `path` and `hint`) -> build_scene -> check_scene -> render (proxy is fast, rtx is
-realistic) -> edit_scene with a JSON Patch to refine.  Prefer registry assets, then Omniverse catalog assets; generate an
+realistic) -> edit_scene with a JSON Patch to refine.  Prefer registry assets, then Omniverse, then SimReady catalog assets; generate an
 asset only when nothing fits.  Every tool returns {ok, result, issues}; issues carry a JSON-pointer `path` and a `hint`."""
 
 

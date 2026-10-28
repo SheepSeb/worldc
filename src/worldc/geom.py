@@ -103,6 +103,26 @@ def obb_from_pose(pos, quat, size) -> OBB:
     return OBB(np.asarray(pos, float), np.asarray(size, float) / 2.0, qmat(quat))
 
 
+def _face_normals(P: np.ndarray) -> np.ndarray:
+    from scipy.spatial import ConvexHull
+
+    try:
+        return ConvexHull(P).equations[:, :3]
+    except Exception:  # noqa: BLE001  flat / degenerate point set
+        return np.zeros((0, 3))
+
+
+def hull_penetration(P: np.ndarray, Q: np.ndarray, extra_axes=()) -> float:
+    """SAT depth of two convex point sets over their face normals (+ ``extra_axes``). >0 overlap, <=0 separated.  Edge-edge
+    axes are left out, so a rare edge-edge separation reads as a small overlap (never the other way round)."""
+    axes = np.concatenate([_face_normals(P), _face_normals(Q)] + [np.asarray(extra_axes, float).reshape(-1, 3)])
+    if not len(axes):
+        return -1.0
+    pa, qa = P @ axes.T, Q @ axes.T
+    pen = np.minimum(pa.max(0) - qa.min(0), qa.max(0) - pa.min(0))
+    return -1.0 if (pen <= 0).any() else float(pen.min())
+
+
 def obb_penetration(a: OBB, b: OBB) -> float:
     """Minimum-translation SAT depth. >0 means overlap (metres); <=0 means separated."""
     d = b.c - a.c

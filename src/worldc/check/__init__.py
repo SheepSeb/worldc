@@ -17,6 +17,7 @@ from ..spec.issues import Issue, error, warning
 from . import clearance as CL
 from . import collide as CO
 from . import nav as NV
+from . import safety as SF
 from . import scene as SC
 
 __all__ = ["check_scene"]
@@ -42,7 +43,7 @@ def _empty(issues, seconds):
             "floating_bodies": [], "hazard_path_conflicts": [],
             "navigation": {"resolution_m": None, "robot_radius_m": None, "spawn_free": False, "goals": [],
                            "all_reachable": False, "n_goals": 0},
-            "clearance": [], "seconds": round(seconds, 2)}
+            "clearance": [], "safety": {}, "seconds": round(seconds, 2)}
 
 
 def check_scene(path, *, write: bool = True, nav_png: bool = True) -> dict:
@@ -180,6 +181,10 @@ def check_scene(path, *, write: bool = True, nav_png: bool = True) -> dict:
                                 hint=f"{'Widen' if diff < 0 else 'Narrow'} the gap along {ax} by {abs(diff):.3f} m near {other}={at:.2f} "
                                      f"(move the objects bounding the gap inside rect {ck['rect']}).",
                                 id=ck["id"], measured_m=round(meas, 3), target_m=tgt, difference_m=round(diff, 3), narrowest_at=round(at, 2)))
+
+    # ---- mandatory safety checks (fixed thresholds) + declared min_clearance
+    res["safety"], sissues = SF.check_safety(sd, cols, polys, graph, xr, yr, float(cfg["resolution_m"]), _who)
+    issues += sissues
 
     res["issues"] = [i.model_dump() for i in issues]
     res["passed"] = not any(i.severity == "error" for i in issues)

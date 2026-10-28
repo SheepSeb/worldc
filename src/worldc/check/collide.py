@@ -8,7 +8,7 @@ import numpy as np
 from pxr import Usd, UsdPhysics
 
 from ..colliders import Collider, shrunk
-from ..geom import OBB, obb_penetration, qmat, qyaw
+from ..geom import OBB, hull_penetration, obb_penetration, qmat, qyaw
 
 PEN_TOL = 0.003
 ARTIC_PREFIX = ("door_", "gate_", "drawer", "hazard", "conveyor")
@@ -104,6 +104,10 @@ def spawn_penetrations(cols, adj, lo, hi):
             continue
         A, B = cols[a], cols[b]
         pen = obb_penetration(shrunk(A), shrunk(B))
+        if pen > PEN_TOL and (A.points is not None or B.points is not None):  # a hull's box over-reports: test the hull itself
+            pa = A.points if A.points is not None else shrunk(A).corners()
+            pb = B.points if B.points is not None else shrunk(B).corners()
+            pen = min(pen, hull_penetration(pa, pb, [A.obb.R.T, B.obb.R.T]))
         if pen > PEN_TOL:
             out.append((a, b, pen))
     return out

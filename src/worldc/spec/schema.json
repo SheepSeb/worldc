@@ -878,8 +878,12 @@
      "title": "Body"
     },
     "catalog": {
-     "const": "omniverse",
      "default": "omniverse",
+     "description": "omniverse: Isaac Sim asset root; simready: NVIDIA SimReady assets on Hugging Face (downloaded only when used)",
+     "enum": [
+      "omniverse",
+      "simready"
+     ],
      "title": "Catalog",
      "type": "string"
     },
@@ -907,7 +911,7 @@
       }
      ],
      "default": null,
-     "description": "Exact catalog asset path relative to the asset root, e.g. Isaac/Props/Pallet/pallet.usd (pinned)",
+     "description": "Exact catalog asset path, e.g. Isaac/Props/Pallet/pallet.usd (omniverse) or appliance_toaster_a01/simready_usd/sm_appliance_toaster_a01_01.usd (simready) (pinned)",
      "title": "Path"
     },
     "query": {
@@ -933,7 +937,7 @@
       }
      ],
      "default": null,
-     "description": "Content revision (ETag) of `path` from the catalog index; set when a query is pinned",
+     "description": "Content revision of `path` from the catalog index (ETag, or the SimReady repo commit); set when a query is pinned",
      "title": "Rev"
     },
     "tags": {

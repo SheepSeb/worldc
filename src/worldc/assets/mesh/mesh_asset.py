@@ -208,7 +208,9 @@ class MeshAsset(Asset):
         body = p.body or sc.body
         mass = self._mass(p)
         hulls = load_hulls(self.collision_file)
-        pos = (pose.pos[0], pose.pos[1], pose.pos[2] + (0.001 if body == "dynamic" else 0.0))
+        # convex decomposition can bulge a few mm below the visual's bottom: lift dynamic bodies so their hulls start on the support
+        sink = max(0.0, -min(float(pts[:, 2].min()) for pts, _, _ in hulls) * s) if hulls and body == "dynamic" else 0.0
+        pos = (pose.pos[0], pose.pos[1], pose.pos[2] + (0.001 + sink if body == "dynamic" else 0.0))
         parts = []
         for pts, _, _ in hulls:
             lo, hi = pts.min(0) * s, pts.max(0) * s

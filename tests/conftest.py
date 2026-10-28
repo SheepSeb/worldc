@@ -18,6 +18,12 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: long-running (full warehouse builds over many seeds)")
 
 
+@pytest.fixture(autouse=True)
+def _no_user_simready_index(tmp_path, monkeypatch):
+    """Search results must not depend on a SimReady index in the user's cache; tests that need one build their own."""
+    monkeypatch.setenv("WORLDC_SIMREADY_INDEX", str(tmp_path / "no_simready_index.jsonl"))
+
+
 @pytest.fixture
 def scratch_ctx(tmp_path):
     """A BuildContext writing to a fresh stage in tmp_path (namespace ``scene``)."""

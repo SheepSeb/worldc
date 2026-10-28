@@ -19,9 +19,10 @@ _loaded = False
 # procedural modules imported on first access (each registers its assets)
 PROCEDURAL_MODULES = (
     "building", "racks", "doors", "conveyors", "furniture", "logistics", "clutter", "agents", "industrial", "kitchen",
+    "robot_cell",
 )
 # modules that only add loaders (mesh library sidecars, promoted generated assets)
-LOADER_MODULES = ("mesh.mesh_asset", "generated", "robots", "vehicles", "people")
+LOADER_MODULES = ("mesh.mesh_asset", "generated", "robots", "vehicles", "people", "curated")
 
 
 def register(cls_or_obj):

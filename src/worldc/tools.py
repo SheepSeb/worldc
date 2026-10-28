@@ -126,18 +126,25 @@ def list_assets(tags: list[str] | None = None, query: str | None = None) -> dict
 
 @tool
 def search_assets(query: str, tags: list[str] | None = None, sources: list[str] | None = None, limit: int = 10) -> dict:
-    """Ranked matches over the registry and the Omniverse catalog.  Prefer a registry hit, then a catalog hit, and only
-    generate a new asset when nothing fits.  ``sources``: any of "registry", "omniverse"."""
+    """Ranked matches over the registry, the Omniverse catalog and NVIDIA SimReady (Hugging Face, when its index is
+    installed).  Prefer a registry hit, then a catalog hit, and only generate a new asset when nothing fits.  SimReady
+    packages are downloaded only when a built spec uses them (``mb`` is the download).  ``sources``: any of "registry",
+    "omniverse", "simready"."""
     from .assets.resolve import search
 
-    hits = search(query, max(1, min(int(limit), 50)), tags or None)
+    k = max(1, min(int(limit), 50))
+    hits = search(query, 50 if sources else k, tags or None)  # filter by source before truncating
     if sources:
-        hits = [h for h in hits if h["source"] in sources]
+        hits = [h for h in hits if h["source"] in sources][:k]
     out = []
     for h in hits:
         if h["source"] == "registry":
             out.append({"source": "registry", "id": h["id"], "score": h["score"], "description": h.get("description", ""), "tags": h.get("tags", []),
                         "use": f'"asset": "{h["id"]}"'})
+        elif h["source"] == "simready":
+            out.append({"source": "simready", "path": h["path"], "score": h["score"], "size_m": h.get("size_m"), "mb": h["mb"],
+                        "has_physics": bool((h.get("physics") or {}).get("authored")), "license": h["license"],
+                        "use": f'"asset": {{"catalog": "simready", "path": "{h["path"]}"}}'})
         else:
             phys = h.get("physics") or {}
             out.append({"source": "omniverse", "path": h["path"], "score": h["score"], "size_m": h.get("size_m"),
@@ -328,7 +335,16 @@ def _check_summary(chk: dict) -> dict:
     return {"passed": chk.get("passed"), "spawn_interpenetrations": len(chk.get("spawn_interpenetrations", [])),
             "floating_bodies": len(chk.get("floating_bodies", [])), "hazard_path_conflicts": len(chk.get("hazard_path_conflicts", [])),
             "goals_reachable": nav.get("all_reachable"), "n_goals": nav.get("n_goals"),
-            "clearance": [{"id": c.get("id"), "measured_m": c.get("measured_m"), "target_m": c.get("target_m")} for c in chk.get("clearance", [])]}
+            "clearance": [{"id": c.get("id"), "measured_m": c.get("measured_m"), "target_m": c.get("target_m")} for c in chk.get("clearance", [])],
+            "safety": _safety_summary(chk.get("safety") or {})}
+
+
+def _safety_summary(s: dict) -> dict:
+    h = s.get("human") or {}
+    return {"ran": s.get("ran"), "thresholds": s.get("thresholds"),
+            "human_targets": [{k: t[k] for k in ("kind", "id", "reachable", "aisle_ok", "narrowest_m")} for t in h.get("targets", [])],
+            "robot_cells": [{k: c[k] for k in ("id", "ok", "min_distance_m")} for c in s.get("robot_cells", [])],
+            "min_clearance": [{k: c.get(k) for k in ("id", "value_m", "measured_m", "ok")} for c in s.get("min_clearance", [])]}
 
 
 @tool
@@ -345,6 +361,8 @@ def build_scene(spec: Any, seed: int = 0, out_dir: str | None = None, run_check:
     parsed, issues = check(d, base)
     if parsed is None or has_errors(issues):
         return _out(None, {"stage": "validate"}, issues)
+    if os.environ.get("WORLDC_SEED"):  # pinned by the run protocol (worldc generate --seed): the model's choice is ignored
+        seed = int(os.environ["WORLDC_SEED"])
     out = _under_workspace(out_dir) if out_dir else workspace() / f"{spec_hash(parsed)}_{int(seed)}"
     res = compile_scene(parsed, int(seed), out, base_dir=base, run_check=run_check)
     result: dict = {"seconds": round(res.seconds, 2)}

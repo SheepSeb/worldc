@@ -12,6 +12,7 @@
     worldc drive out/scene_3 [--n-goals 3] [--video]              drive the real robot to its goals in Isaac Sim (+ chase / wide videos)
     worldc generate "prompt" [--model opus] [--max-budget-usd 20]    prompt -> built scene via your Claude Code; saved as a dataset record
     worldc generate --prompts-file prompts.txt                      one prompt per line, run in sequence
+    worldc simready search "toaster" | info PKG [--probe] | fetch PKG | index | cached | clean   NVIDIA SimReady (Hugging Face)
     worldc dataset stats | export [--format prompt_spec,sft,records,stats] | show RUN_ID | list
 """
 from __future__ import annotations
@@ -75,6 +76,8 @@ def main(argv=None):
     g.add_argument("--effort", default=None, help="low|medium|high|xhigh|max (default: Claude Code's)")
     g.add_argument("--max-budget-usd", type=float, default=20.0, help="spend cap per run, enforced by Claude Code")
     g.add_argument("--max-turns", type=int, default=60)
+    g.add_argument("--seed", type=int, default=None, help="pin the build seed for every build_scene of the run (default: the model's choice)")
+    g.add_argument("--max-repairs", type=int, default=10, help="stop after this many validate_spec/build_scene calls returned errors (-1: no cap)")
     g.add_argument("--timeout", type=float, default=3600.0, help="seconds per run")
     g.add_argument("--no-final-checks", action="store_true", help="skip the Isaac physics check + RTX render after the run")
     g.add_argument("--keep-work", action="store_true", help="keep scratch builds from the run")
@@ -86,6 +89,12 @@ def main(argv=None):
     ds.add_argument("--format", default="prompt_spec,sft,records,stats")
     ds.add_argument("--include-rejected", action="store_true")
     ds.add_argument("--out", default=None)
+    sub.add_parser("simready", help="NVIDIA SimReady assets on Hugging Face: index / search / info / fetch (see -h)", add_help=False)
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if argv[:1] == ["simready"]:  # own sub-commands; network / file work only, so no Isaac gate
+        from .assets.simready import main as simready_main
+
+        return simready_main(argv[1:])
     args = ap.parse_args(argv)
 
     if args.cmd == "dataset":  # pure file work: no Isaac needed
@@ -130,7 +139,7 @@ def main(argv=None):
             sys.exit("give a prompt, --prompt-file or --prompts-file")
         root = dataset_root(args.dataset)
         recs = [generate(p, root=root, model=args.model, effort=args.effort, max_budget_usd=args.max_budget_usd, max_turns=args.max_turns,
-                         timeout_s=args.timeout, final_checks=not args.no_final_checks, keep_work=args.keep_work, claude_bin=args.claude_bin)
+                         max_repairs=None if args.max_repairs < 0 else args.max_repairs, seed=args.seed, timeout_s=args.timeout, final_checks=not args.no_final_checks, keep_work=args.keep_work, claude_bin=args.claude_bin)
                 for p in prompts_]
         for r in recs:
             print(json.dumps({"run_id": r.run_id, "accepted": r.accepted, "stop_reason": r.stop_reason, "scene": str(root / r.scene_dir) if r.scene_dir else None,

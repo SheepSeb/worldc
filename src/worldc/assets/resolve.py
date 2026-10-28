@@ -1,6 +1,6 @@
 """Resolve a spec ``asset`` reference to an Asset (PLAN.md §2.5).
 
-Priority when several sources could serve an object: user-provided file > registry > Omniverse catalog > generated.
+Priority when several sources could serve an object: user-provided file > registry > Omniverse catalog > SimReady > generated.
 A spec states which one it uses explicitly; ``resolve`` honours that.  ``search`` (and MCP ``search_assets``) rank
 registry and catalog matches together so the LLM prefers existing assets over generating new ones.
 """
@@ -30,19 +30,25 @@ def source_of(ref) -> str:
     raise AssetResolutionError("asset.bad_ref", f"Unrecognised asset reference {ref!r}")
 
 
+def _index_module(d: dict):
+    """The index module serving a catalog ref: ``catalog_index`` (omniverse) or ``simready``; same functions."""
+    from . import catalog_index, simready
+
+    return simready if d.get("catalog") == "simready" else catalog_index
+
+
 def pin_catalog(ref) -> dict:
     """Catalog ref (dict or model) with its ``query`` replaced by the exact ``path`` + ``rev`` it resolves to."""
-    from . import catalog_index
-
     d = dict(ref) if isinstance(ref, dict) else ref.model_dump(exclude_none=True)
     if d.get("path") or not d.get("query"):
         return d
-    hit = catalog_index.resolve_query(d["query"], d.get("tags"))
+    src = _index_module(d)
+    hit = src.resolve_query(d["query"], d.get("tags"))
     if hit is None:
-        idx = catalog_index.load_index()
+        idx = src.load_index()
         if idx is None:
-            raise AssetResolutionError("asset.catalog_unavailable", "No catalog index is installed, so catalog queries cannot be resolved.",
-                                       "Build one with `python -m worldc.assets.catalog_index index`, pin `path`, or use a registry asset.")
+            raise AssetResolutionError("asset.catalog_unavailable", f"No {d.get('catalog', 'omniverse')} catalog index is installed, so catalog "
+                                       "queries cannot be resolved.", src.INDEX_HINT)
         near = ", ".join(h["path"] for h in idx.search(d["query"], 3)) or "none"
         raise AssetResolutionError("asset.catalog_no_match", f"No catalog asset matches {d['query']!r}.",
                                    f"Closest: {near}. Try other words (search_assets), or use a registry id / generated asset.")
@@ -55,6 +61,17 @@ def _catalog(ref, get) -> Asset:
     from .catalog import CatalogError, catalog_asset
 
     d = pin_catalog(ref)
+    if d.get("catalog") == "simready":
+        from .simready import SimReadyError, simready_asset
+
+        try:
+            asset = simready_asset(d["path"], {"tags": d.get("tags") or [], "up_axis": d.get("up_axis"), "body": d.get("body"),
+                                               "mass_kg": d.get("mass_kg")}, rev=d.get("rev"))
+        except SimReadyError as e:
+            raise AssetResolutionError(e.code, str(e), e.hint) from e
+        if not registry.exists(asset.id):
+            registry.register(asset)
+        return asset
     if d.get("path", "").lstrip("/").startswith("Isaac/Robots/"):  # robots are measured, curated assets (assets/robots.py)
         from . import robots
 
@@ -74,11 +91,12 @@ def _catalog(ref, get) -> Asset:
 
 
 def search(query: str, k: int = 10, tags=None) -> list[dict]:
-    """One ranked list over registry assets (``source: registry``) and the Omniverse catalog (``source: omniverse``).
+    """One ranked list over registry assets (``source: registry``), the Omniverse catalog (``source: omniverse``) and, when
+    its index is installed, SimReady (``source: simready``; searched offline, nothing is downloaded).
 
     Scores are relative to each source's best hit; registry matches are listed first at equal score, because an
     existing registry asset is preferred over a catalog one (PLAN.md §2.5)."""
-    from . import catalog_index
+    from . import catalog_index, simready
 
     q = query.lower().split()
     reg = []
@@ -88,8 +106,9 @@ def search(query: str, k: int = 10, tags=None) -> list[dict]:
         if hit:
             reg.append({**a, "source": "registry", "score": round(hit / len(q), 3)})
     reg.sort(key=lambda h: (-h["score"], h["id"]))
-    cat = catalog_index.search(query, k, tags=tags)
-    return sorted(reg + cat, key=lambda h: (-h["score"], h["source"] != "registry"))[:k]
+    cat = catalog_index.search(query, k, tags=tags) + simready.search(query, k, tags=tags)
+    order = {"registry": 0, "omniverse": 1, "simready": 2}
+    return sorted(reg + cat, key=lambda h: (-h["score"], order[h["source"]]))[:k]
 
 
 def resolve(ref, base_dir: Path | None = None, cache_dir: Path | None = None) -> Asset:

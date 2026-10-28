@@ -24,7 +24,7 @@ from .mesh.mesh_asset import MeshAsset, VisualXform, read_sidecar, write_sidecar
 
 ASSET_ROOT = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1"
 DEFAULT_CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "worldc" / "catalog"
-META_KEYS = {"id", "mass_kg", "tags", "body", "material", "description", "collision", "up_axis"}
+META_KEYS = {"id", "mass_kg", "tags", "body", "material", "description", "collision", "up_axis", "max_hulls"}
 
 
 class CatalogError(RuntimeError):
@@ -73,7 +73,7 @@ def _physics_prims(stage) -> list[str]:
 
 
 def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None,
-                  root: str | None = None, rev: str | None = None) -> MeshAsset:
+                  root: str | None = None, rev: str | None = None, source_tags=("catalog", "isaac")) -> MeshAsset:
     url = catalog_url(path, root)
     ov = {k: v for k, v in (overrides or {}).items() if v not in (None, [], "")}
     unknown = set(ov) - META_KEYS
@@ -97,6 +97,7 @@ def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | st
             raise CatalogError("asset.catalog_bad_usd", f"{url} has no default prim, so it cannot be referenced.")
         try:
             sc_path = import_mesh(src, tmp, asset_id, ov.get("tags", ()), ov.get("mass_kg"), description=ov.get("description"),
+                                  max_hulls=int(ov.get("max_hulls", 16)),
                                   material=ov.get("material", "plastic"), body=ov.get("body", "dynamic"),
                                   collision=ov.get("collision", "auto"), up=ov.get("up_axis"), thumbnail=False)
         except ImportError_ as e:
@@ -113,7 +114,7 @@ def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | st
             "visual_xform": VisualXform(translate=tuple(round(float(-v), 6) for v in shift),
                                         rotate_x_deg=90.0 if up.upper() == "Y" else 0.0, scale=mpu),
             "disable_physics": _physics_prims(stage),
-            "tags": sorted(set(ov.get("tags", ())) | {"catalog", "isaac"}),
+            "tags": sorted(set(ov.get("tags", ())) | set(source_tags)),
         })
         write_sidecar(sc, sc_path)
         shutil.rmtree(d, ignore_errors=True)

@@ -5,6 +5,9 @@ environment:
   footprint: {type: rect, size: [12, 8]}
   height: 5.5
   floor: {material: concrete, wear: 0.8}
+  walls:
+    openings:
+      - {id: door, wall: west, center: -3.3, width: 1.2, height: 2.2, door: swing_door}
 zones:
   - {id: walkway, rect: [-6, -4, 6, -2.6], keep_clear: true}
   - {id: tool_area, rect: [-5.5, -2.4, -1.5, -0.6]}

@@ -52,7 +52,7 @@ def test_clean_scene_passes(scratch_ctx):
     build_asset(scratch_ctx, "rack_row", {"segments": [[-1.0, 1.0]], "bays_per_segment": 1}, Pose.xy_yaw(-3.5, 2.0, 0.0))
     r = finish(scratch_ctx)
     assert r["passed"], r["issues"]
-    assert r["issues"] == []
+    assert [i["code"] for i in r["issues"]] == ["check.safety_not_run"]  # hand-made scene graph: no safety block
     assert r["n_colliders"] > 5
     nav = r["navigation"]
     assert nav["spawn_free"] and nav["all_reachable"] and nav["n_goals"] == 1

@@ -259,11 +259,14 @@ def build_index(root: str = DEFAULT_ROOT, out: Path | str | None = None, packs=D
 class CatalogIndex:
     """BM25 over asset tokens: name x3, labels x2, folder x1."""
 
+    source = "omniverse"
+
     def __init__(self, path: Path | str):
         self.path = Path(path)
         lines = self.path.read_text().splitlines()
         self.meta = json.loads(lines[0])["_meta"]
         self.entries = [json.loads(ln) for ln in lines[1:] if ln.strip()]
+        self._prepare()
         self.by_path = {e["path"]: e for e in self.entries}
         self._docs = []
         for e in self.entries:
@@ -274,6 +277,12 @@ class CatalogIndex:
         df = Counter(t for d in self._docs for t in d)
         n = len(self._docs)
         self._idf = {t: math.log(1 + (n - c + 0.5) / (c + 0.5)) for t, c in df.items()}
+
+    def _prepare(self):
+        """Hook for subclasses: amend ``entries`` before they are tokenised."""
+
+    def license(self, path: str) -> str:
+        return license_of(path)
 
     def _qtokens(self, query: str) -> list[str]:
         toks = _tokens(query)
@@ -301,7 +310,7 @@ class CatalogIndex:
         top = scored[0][0] if scored else 1.0
         return [{"path": e["path"], "name": e["name"], "folder": e["folder"], "score": round(s / top, 3), "raw_score": round(s, 3),
                  "size_m": e.get("size_m"), "physics": e.get("physics"), "labels": e.get("labels", []), "etag": e.get("etag", ""),
-                 "license": license_of(e["path"]), "source": "omniverse"} for s, e in scored[:k]]
+                 "license": self.license(e["path"]), "source": self.source} for s, e in scored[:k]]
 
 
 _INDEX_CACHE: dict[str, CatalogIndex] = {}
@@ -324,6 +333,7 @@ def load_index(path: Path | str | None = None) -> CatalogIndex | None:
     return _INDEX_CACHE[key]
 
 
+INDEX_HINT = "Build one with `python -m worldc.assets.catalog_index index`, pin `path`, or use a registry asset."
 MIN_SCORE = 0.35  # relative to the best possible hit for the query's own tokens
 
 
@@ -332,9 +342,9 @@ def search(query: str, k: int = 8, **kw) -> list[dict]:
     return idx.search(query, k, **kw) if idx else []
 
 
-def resolve_query(query: str, tags: list[str] | None = None) -> dict | None:
+def resolve_query(query: str, tags: list[str] | None = None, idx: CatalogIndex | None = None) -> dict | None:
     """Best catalog hit for ``query`` or None (no index, or nothing matches every query word well enough)."""
-    idx = load_index()
+    idx = idx or load_index()
     if idx is None:
         return None
     hits = idx.search(query, 1, tags)

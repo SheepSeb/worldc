@@ -49,10 +49,13 @@ class FileAssetRef(Strict):
 
 
 class CatalogAssetRef(Strict):
-    catalog: Literal["omniverse"] = "omniverse"
+    catalog: Literal["omniverse", "simready"] = Field("omniverse", description="omniverse: Isaac Sim asset root; simready: NVIDIA SimReady "
+                                                      "assets on Hugging Face (downloaded only when used)")
     query: str | None = Field(None, description="Search text; resolved once and pinned in the resolved spec")
-    path: str | None = Field(None, description="Exact catalog asset path relative to the asset root, e.g. Isaac/Props/Pallet/pallet.usd (pinned)")
-    rev: str | None = Field(None, description="Content revision (ETag) of `path` from the catalog index; set when a query is pinned")
+    path: str | None = Field(None, description="Exact catalog asset path, e.g. Isaac/Props/Pallet/pallet.usd (omniverse) or "
+                                               "appliance_toaster_a01/simready_usd/sm_appliance_toaster_a01_01.usd (simready) (pinned)")
+    rev: str | None = Field(None, description="Content revision of `path` from the catalog index (ETag, or the SimReady repo commit); "
+                                              "set when a query is pinned")
     tags: list[str] = Field(default_factory=list)
     body: Literal["static", "dynamic", "kinematic"] | None = Field(None, description="Physics body type (default dynamic). Use static for furniture, "
                                                                     "desks, tables and anything that must not move or tip over")

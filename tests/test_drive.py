@@ -9,7 +9,7 @@ import pytest
 from worldc.compile import compile_scene
 from worldc.drive import plan_route
 
-ROOM = {"environment": {"footprint": {"size": [14, 10]}}, "zones": [{"id": "z", "rect": [-6, -4, 6, 4]}],
+ROOM = {"environment": {"footprint": {"size": [14, 10]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}}, "zones": [{"id": "z", "rect": [-6, -4, 6, 4]}],
         "objects": [{"id": "wall", "asset": "pallet_load", "count": 4, "placement": {"pose": [{"xy": [x, 0.0], "yaw": 90} for x in (-3.0, -1.0, 1.0, 3.0)]}}],
         "robot": {"asset": "nova_carter", "spawn": {"pose": {"xy": [-5.5, -3.5], "yaw": 0}},
                   "nav_goals": [{"id": "a", "type": "inspect", "target": [5.0, 3.5]}, {"id": "b", "type": "inspect", "target": [-5.0, 3.5]},

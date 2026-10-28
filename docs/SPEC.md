@@ -57,7 +57,7 @@ robot:
 ```
 Supported robots are the measured ones in `assets/library/robots/isaac_5.1_robots.json`; list them with `list_assets(tags=["robot"])`
 (`worldc assets --tags robot`). Wheeled AMRs (`nova_carter`, `carter_v1`, `iw_hub`, `jackal`, `dingo`, `turtlebot3_burger`, `kaya`,
-`o3dyn`), a mobile manipulator (`ridgeback_franka`), an arm (`franka`), and legged / humanoid robots (`spot`, `anymal_d`,
+`o3dyn`), a mobile manipulator (`ridgeback_franka`), arms (`franka`, `ur10`, `so101`), and legged / humanoid robots (`spot`, `anymal_d`,
 `unitree_go1`, `unitree_h1`; these need a locomotion controller to stand and are not gated by the settle check). Anything else is
 rejected: `robot.unknown` for names / paths outside the table, `robot.not_isaac` for generated, file or non-robot assets. Navigation
 reachability uses the robot's real footprint. `check_scene` with physics runs the robot's articulation in Isaac Sim and reports
@@ -113,6 +113,23 @@ whether it settled where it was spawned.
 placements, then refined on the built colliders.
 `reachable {from, to, robot_radius?}`, `keep_clear {zone | path + width}`, `stable {objects}`,
 `count_at_least {object, n}`. Each takes an optional `id` and `hard` (default true).
+`min_clearance` is measured after the build (`check_scene`) between the 2-D collider footprints of the two references (object
+ids with optional `.<n>` / `.*`, `robot`, or `wall:<side>`); a shortfall is the error `check.min_clearance` at the
+constraint's path. The solver does not use it for placement.
+
+### Mandatory safety checks
+`check_scene` always runs these against fixed thresholds (`check/safety.py`), whether or not the spec declares anything, so an
+accepted scene means the same thing for every model:
+
+| Check | Rule | Error |
+|---|---|---|
+| exit | an indoor building has at least one door (wall opening with `sill: 0`) | `check.safety_no_exit`, `check.safety_exit_blocked` |
+| human reachability | from the first door (outdoors: the site boundary), a person of radius 0.26 m reaches every workbench front (objects whose asset or spec tags include `table`, `workbench` or `desk`; the front is local +y, any side if the asset has no `front` port), every zone whose id or tags contain `storage`, and every other exit. Robot-cell safety footprints are obstacles | `check.human_unreachable` |
+| aisle width | the widest route to each of those targets is at least 1.20 m wide at its narrowest (5 cm grid) | `check.aisle_too_narrow` (gives the width and where) |
+| robot-cell clearance | nothing outside a `robot_cell` (its own fence, pedestal and the fixtures placed on its `inside` anchor are part of it) comes within 0.50 m of its safety footprint | `check.robot_cell_clearance` |
+
+Results are in `check.json` under `safety` (also in `build_scene` / `check_scene` summaries). Scene graphs without a `safety`
+block (hand-made or built before these checks) get the warning `check.safety_not_run`; rebuild them from their spec.
 
 ## How a spec is solved
 The solver is deterministic in (spec, seed). Every random draw uses a generator keyed by (seed, object id, instance index,
@@ -176,4 +193,6 @@ Every stage reports `Issue {severity, code, path, message, hint, data}`. `path` 
 | `solve.agent_corridor_blocked` (warning) | an agent's corridor overlaps objects placed before it |
 | `check.interpenetration`, `check.floating`, `check.hazard_path_blocked` | post-build physics pre-flight (prim paths + spec ids in data) |
 | `check.spawn_blocked`, `check.goal_unreachable`, `check.clearance`, `check.no_goals`, `check.no_robot`, `check.load_failed` | post-build navigation and loading |
+| `check.safety_no_exit`, `check.safety_exit_blocked`, `check.human_unreachable`, `check.aisle_too_narrow`, `check.robot_cell_clearance` | mandatory safety checks (see Constraints) |
+| `check.min_clearance`, `check.min_clearance_unresolved` | a declared `min_clearance` is not met, or a reference built nothing |
 | `build.failed` | an asset failed to build (generator bug or impossible param combination) |

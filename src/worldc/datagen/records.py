@@ -64,6 +64,7 @@ def dataset_root(path: str | Path | None = None) -> Path:
 class Usage(BaseModel):
     turns: int = 0
     tool_calls: int = 0
+    repairs: int = 0  # validate_spec / build_scene calls that returned error issues (each one is a repair round)
     input_tokens: int = 0
     output_tokens: int = 0
     cache_read_input_tokens: int = 0
@@ -95,7 +96,7 @@ class Record(BaseModel):
     spec: dict | None = None                 # final spec as written (last one that built; else last one validated)
     spec_hash: str | None = None
     accepted: bool = False                   # built, static checks pass, and (if run) the final physics check passed
-    stop_reason: str = ""                    # end_turn | max_turns | max_cost | refusal | max_tokens | error
+    stop_reason: str = ""                    # end_turn | max_turns | max_repairs | max_cost | refusal | max_tokens | error
     error: str | None = None
     validation: dict[str, Any] = Field(default_factory=dict)  # last validate_spec / build / check summaries and issues
     final_checks: dict[str, Any] = Field(default_factory=dict)  # independent re-check after the loop (static, physics, rtx)

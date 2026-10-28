@@ -34,6 +34,8 @@ cardboard) or declarative `TextureSpec`s (`texturegen.py`).
 - **Industrial** (from the former plant generator): `gate_valve`, `control_valve`, `gauge`, `instrument_box`, `enclosure`,
   `control_station`, `instrument_panel`, `pump_set`, `flexible_hose`, `pipe`, `pipe_run`, `worker_static`, `loose_tool`,
   `ibeam`
+- **Robot cell:** `robot_cell` (static UR10 or Franka arm from Isaac Sim on a pedestal, referenced as a non-driven visual, inside a
+  fenced or keep-out safety footprint that the mandatory robot-cell clearance check reads; fixtures go on its `inside` anchor)
 - **Mesh example:** `example_crate`
 
 `uv run worldc assets` lists them and `uv run worldc describe <id>` shows the full contract.

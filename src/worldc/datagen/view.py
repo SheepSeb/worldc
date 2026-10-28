@@ -38,7 +38,7 @@ def to_markdown(run_dir: Path, rec=None) -> str:
     seen_final = False
     if rec is not None:
         out += [f"- **{'ACCEPTED' if rec.accepted else 'REJECTED'}**, stop reason `{rec.stop_reason}`, model `{rec.model}`, "
-                f"{rec.usage.turns} turns, {rec.usage.tool_calls} tool calls, est. cost ${rec.usage.est_cost_usd:.2f}",
+                f"{rec.usage.turns} turns, {rec.usage.tool_calls} tool calls, {rec.usage.repairs} repairs, est. cost ${rec.usage.est_cost_usd:.2f}",
                 f"- environment family `{rec.env_signature}`, split `{rec.split}`, assets {rec.asset_sources}"]
         if rec.scene_dir:
             out.append(f"- scene: `{rec.scene_dir}/`")

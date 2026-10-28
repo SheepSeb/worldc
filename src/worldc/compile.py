@@ -365,7 +365,7 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
         "conveyors": ctx.scene["conveyors"], "articulations": ctx.scene["articulations"], "joints": ctx.scene["joints"],
         "hazards": ctx.scene.get("hazards", []),
         "robot": robot, "cameras": cams + ([{"name": "robot", "path": robot["camera"], "mounted_on": "/World/Robot"}] if robot and robot.get("camera") else []),
-        "goals": sol.goals, "clearance_checks": clearance_checks,
+        "goals": sol.goals, "clearance_checks": clearance_checks, "safety": _safety_inputs(spec, sol, inst_info, recs),
         "nav": {"resolution_m": 0.05, "z_band": [0.10, 1.80], "ignore_categories": ["hazard", "floor", "roof"]},
         "instances": inst_info,
         "solver": {"stats": sol.stats, "warnings": [i.model_dump() for i in sol.issues if i.severity != "error"]},
@@ -374,6 +374,57 @@ def build(sol: Solution, out_dir: Path) -> tuple[Path, dict]:
     }
     (out_dir / "scene_graph.json").write_text(json.dumps(graph, indent=1, default=lambda o: o.item() if hasattr(o, "item") else str(o)))
     return usd, graph
+
+
+# --------------------------------------------------------------------------------------------------- safety inputs
+WORKBENCH_TAGS = {"workbench", "work_table", "table", "desk"}
+EXIT_INSET_M = 0.6  # a door's exit point lies this far inside the building, on its centre line
+
+
+def _safety_inputs(spec: SceneSpec, sol: Solution, inst_info: dict, recs: list) -> dict:
+    """What check_scene's mandatory safety checks (check/safety.py) need and cannot read from the stage: exits (doors),
+    workbench fronts, storage zones, robot-cell safety footprints and the spec's min_clearance constraints."""
+    from .spec.issues import pointer
+
+    exits = []
+    if sol.env.kind == "indoor":
+        for o in spec.environment.walls.openings:
+            port = sol.env.ports.get(f"opening_{o.id}")
+            if port is None or o.sill > 0:  # windows are not exits
+                continue
+            nx, ny = (float(c) for c in qmat(port.quat)[:2, 1])  # port local +y = into the building
+            exits.append({"id": o.id, "wall": o.wall, "width_m": o.width,
+                          "xy": [round(port.pos[0] + EXIT_INSET_M * nx, 4), round(port.pos[1] + EXIT_INSET_M * ny, 4)]})
+    obj_tags = {o.id: set(o.tags) for o in spec.objects}
+    benches = []
+    for inst in sol.instances:
+        if not (set(inst.asset.tags) | obj_tags.get(inst.obj_id, set())) & WORKBENCH_TAGS:
+            continue
+        poly = np.asarray(inst.asset.footprint(inst.params).polygon, float)
+        (x0, y0), (x1, y1) = poly.min(0), poly.max(0)
+        d = 0.45  # a person stands here, clear of the edge
+        has_front = any(a.name == "front" for a in inst.asset.anchors(inst.params))
+        sides = [((x0 + x1) / 2, y1 + d)] + ([] if has_front else [((x0 + x1) / 2, y0 - d), (x1 + d, (y0 + y1) / 2), (x0 - d, (y0 + y1) / 2)])
+        pts = [[round(float(v), 4) for v in inst.pose.world((x, y, 0.0))[0][:2]] for x, y in sides]
+        benches.append({"id": inst.key, "spec_id": inst.obj_id, "has_front": has_front, "stand_points": pts})
+    zone_tags = {z.id: set(z.tags) for z in spec.zones}
+    storage = [{"id": zid, "rect": [round(float(v), 4) for v in rect]} for zid, rect in sol.zones.items()
+               if "storage" in zone_tags.get(zid, set()) or "storage" in zid.lower()]
+    roots = {v["root"]: k for k, v in inst_info.items()}
+    cells = []
+    for r in recs:
+        if r["category"] != "robot_cell":
+            continue
+        key = roots.get(r["path"])
+        members = [r["path"]] + [v["root"] for v in inst_info.values() if key and v.get("parent") == key]  # fixtures placed in the cell
+        cells.append({"id": key or r["path"], "spec_id": r.get("spec_id"), "path": r["path"], "polygon": r["safety_polygon"],
+                      "fenced": r.get("fenced", True), "members": members})
+    mins = [{"id": k.id or f"min_clearance_{i}", "between": list(k.between), "value": k.value, "path": pointer("constraints", i)}
+            for i, k in enumerate(spec.constraints) if k.type == "min_clearance"]
+    for oi, o in enumerate(spec.objects):
+        mins += [{"id": k.id or f"{o.id}.min_clearance_{i}", "between": list(k.between), "value": k.value, "path": pointer("objects", oi, "constraints", i)}
+                 for i, k in enumerate(o.constraints) if k.type == "min_clearance"]
+    return {"exits": exits, "workbenches": benches, "storage_zones": storage, "robot_cells": cells, "min_clearance": mins}
 
 
 # --------------------------------------------------------------------------------------------------- resolved spec

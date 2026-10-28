@@ -35,6 +35,9 @@ def test_accepted_run_is_fully_collected(root, monkeypatch):
     assert rec.scene_dir == f"runs/{rec.run_id}/scene" and (root / "README.md").is_file()
     assert rec.spec["objects"][0]["asset"] == "pallet" and rec.asset_sources == {"registry": 1} and rec.env_signature == "indoor|pallet"
     assert rec.usage.est_cost_usd == 0.123 and rec.usage.tool_calls == 5 and rec.usage.cache_read_input_tokens == 1000
+    assert rec.usage.repairs == 1 and rec.params["max_repairs"] == 10  # the first validate_spec came back with asset.unknown
+    g = rec.generator
+    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze" and g["at_freeze"] in ("true", "false")
     assert rec.summary == "Built a 6x6 room with two pallets." and rec.record_version == RECORD_VERSION and rec.split in ("train", "val", "test")
     assert rec.validation["last_validate"]["ok"] and rec.validation["last_build"]["ok"] and rec.validation["last_build"]["check"]["passed"]
     assert any(p.startswith(f"runs/{rec.run_id}/images/") for p in rec.render_paths) and (d / "images" / "001.png").is_file()
@@ -89,6 +92,19 @@ def test_missing_claude_binary(root):
 def test_max_turns_kills_the_run(root, monkeypatch):
     rec = run(root, monkeypatch=monkeypatch, max_turns=2)
     assert rec.stop_reason == "max_turns" and not rec.accepted
+
+
+def test_max_repairs_stops_the_run(root, monkeypatch):
+    rec = run(root, monkeypatch=monkeypatch, max_repairs=0)
+    assert rec.stop_reason == "max_repairs" and not rec.accepted and rec.usage.repairs == 1
+    assert run(root, "p2", monkeypatch=monkeypatch, max_repairs=None).accepted  # no cap
+
+
+def test_seed_is_pinned_for_the_mcp_server(root, monkeypatch):
+    rec = run(root, monkeypatch=monkeypatch, seed=7)
+    cfg = json.loads((root / "runs" / rec.run_id / "mcp.json").read_text())
+    assert cfg["mcpServers"]["worldc"]["env"]["WORLDC_SEED"] == "7" and rec.params["seed"] == 7
+    assert rec.params["loop_seconds"] >= 0 and rec.params["final_checks_seconds"] >= 0
 
 
 def test_exports(root, monkeypatch):

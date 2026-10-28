@@ -137,7 +137,7 @@ def test_compile_scene_with_catalog_query(root, index_file, tmp_path, monkeypatc
     monkeypatch.setenv("WORLDC_CATALOG_INDEX", str(index_file))
     monkeypatch.setenv("WORLDC_ISAAC_ASSET_ROOT", str(root))
     monkeypatch.setattr("worldc.assets.catalog.DEFAULT_CACHE", tmp_path / "cache")
-    d = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
+    d = {"environment": {"footprint": {"size": [6, 6]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
          "objects": [{"id": "truck", "asset": {"catalog": "omniverse", "query": "hand truck"}, "placement": {"inside": "z"}}]}
     r = compile_scene(d, 0, tmp_path / "out")
     assert r.ok, [str(i) for i in r.issues]

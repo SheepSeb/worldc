@@ -85,7 +85,8 @@ def stats(recs: list[Record]) -> dict:
             "by_stop_reason": dict(Counter(r.stop_reason for r in recs)), "by_env_signature": dict(Counter(r.env_signature for r in recs).most_common(50)),
             "asset_sources": dict(sum((Counter(r.asset_sources) for r in recs), Counter())),
             "total_cost_usd": round(sum(r.usage.est_cost_usd for r in recs), 2), "mean_turns": round(sum(r.usage.turns for r in recs) / n, 1),
-            "mean_tool_calls": round(sum(r.usage.tool_calls for r in recs) / n, 1),
+            "mean_tool_calls": round(sum(r.usage.tool_calls for r in recs) / n, 1), "mean_repairs": round(sum(r.usage.repairs for r in recs) / n, 1),
+            "mean_repairs_accepted": round(sum(r.usage.repairs for r in acc) / max(len(acc), 1), 1),
             "tokens": {k: sum(getattr(r.usage, k) for r in recs) for k in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")}}
 
 

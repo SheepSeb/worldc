@@ -100,7 +100,7 @@ def _resolve_asset(c: _Ctx, ref, path) -> object | None:
 
         try:  # no download here: the query is matched against the offline index only
             pinned = pin_catalog(ref)
-            if license_of(pinned["path"]) == "limited-use":
+            if ref.catalog == "omniverse" and license_of(pinned["path"]) == "limited-use":
                 c.add(warning("asset.catalog_limited_license", f"{pinned['path']} is NVIDIA Limited Use Content (use only, no modification, "
                               "no redistribution grant).", path, "Fine for local generation; see docs/CATALOG.md before shipping it in a dataset."))
         except AssetResolutionError as e:

@@ -12,6 +12,7 @@ environment:
     material: kitchen_wall
     openings:
       - {id: window, wall: east, center: 0.0, width: 1.4, height: 2.0, sill: 0.9, door: window, door_params: {mullions: 1}}
+      - {id: door, wall: south, center: -1.2, width: 0.9, height: 2.1, door: swing_door}
 zones:
   - {id: counter_front, rect: [-2.0, 0.2, 1.0, 1.15]}
 objects:

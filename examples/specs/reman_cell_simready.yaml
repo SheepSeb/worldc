@@ -1,0 +1,61 @@
+spec_version: "1.0"
+name: reman_cell_simready
+description: >
+  A 12 x 9 m remanufacturing cell built from the curated SimReady subset: a steel workbench with a toolbox, a bench grinder,
+  a planetary gearbox and a laptop on it, a FANUC cobot cell fenced with safety panels, a steel shelf with KLT bins, drums
+  and an IBC tank by the west wall, a parked pallet jack by the door and a wheeled scrap bin.
+environment:
+  footprint: {type: rect, size: [12, 9]}
+  height: 4.0
+  floor: {material: concrete, wear: 0.4}
+  walls:
+    openings:
+      - {id: door, wall: south, center: 0.0, width: 2.4, height: 2.6, door: rollup_door}
+zones:
+  - {id: storage, rect: [-5.8, -2.0, -3.6, 2.0], tags: [storage]}
+objects:
+  - id: bench
+    asset: workbench_steel
+    placement: {pose: {xy: [-1.5, 3.6], yaw: 180}}
+  - id: toolbox
+    asset: toolbox
+    placement: {on: bench.top}
+  - id: grinder
+    asset: bench_grinder
+    placement: {on: bench.top}
+  - id: gearbox
+    asset: planetary_gearbox
+    placement: {on: bench.top}
+  - id: laptop
+    asset: laptop
+    placement: {on: bench.top}
+  - id: cell
+    asset: robot_cell
+    params: {arm: fanuc_crx10ia, arm_yaw: 90}
+    placement: {pose: {xy: [3.3, 1.3], yaw: 0}}
+  - id: shelf
+    asset: parts_shelf
+    placement: {pose: {xy: [-5.4, 2.6], yaw: 90}}
+  - id: bins
+    asset: klt_bin
+    count: 4
+    placement: {on: "shelf.*.shelf_*"}
+  - id: drums
+    asset: drum_steel
+    count: 2
+    placement: {inside: storage}
+  - id: small_drums
+    asset: drum_plastic
+    count: 2
+    placement: {inside: storage}
+  - id: ibc
+    asset: ibc_tank
+    placement: {pose: {xy: [-4.9, -3.4], yaw: 0}}
+  - id: jack
+    asset: pallet_jack
+    placement: {pose: {xy: [3.2, -3.6], yaw: 0}}
+  - id: scrap
+    asset: scrap_bin_wheeled
+    placement: {pose: {xy: [-2.8, -3.6], yaw: 0}}
+cameras:
+  - {id: overview, position: [5.6, -4.2, 3.6], look_at: [-0.5, 1.0, 0.6], focal_mm: 14}

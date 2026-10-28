@@ -65,7 +65,7 @@ def test_solver_failure_surfaces(tmp_path):
 def test_generated_and_mesh_assets_in_spec(tmp_path):
     trimesh = pytest.importorskip("trimesh")
     trimesh.creation.box((0.5, 0.4, 0.3)).export(tmp_path / "crate.obj")
-    d = {"environment": {"footprint": {"size": [6, 6]}},
+    d = {"environment": {"footprint": {"size": [6, 6]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}},
          "objects": [{"id": "crates", "asset": {"file": "crate.obj", "id": "user_crate", "mass_kg": 4.0}, "count": 2, "placement": {"inside": "z"}},
                      {"id": "lib", "asset": "example_crate", "placement": {"pose": {"xy": [2, 2]}}},
                      {"id": "block", "asset": {"generate": {"id": "gen/block", "description": "block", "body": "dynamic", "mass_kg": 5,

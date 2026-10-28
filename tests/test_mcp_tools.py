@@ -12,7 +12,7 @@ from worldc.jsonpatch import PatchError, apply_patch, diff_summary
 
 ROOT = Path(__file__).resolve().parents[1]
 LITE = str(ROOT / "examples" / "specs" / "warehouse_lite.yaml")
-MINI = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
+MINI = {"environment": {"footprint": {"size": [6, 6]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
         "objects": [{"id": "pallets", "asset": "pallet", "count": 2, "placement": {"inside": "z"}}]}
 BLOCK = {"id": "gen/test_block", "description": "a steel block", "body": "dynamic", "mass_kg": 5,
          "parts": [{"name": "b", "shape": "box", "size": [0.4, 0.4, 0.4], "pos": [0, 0, 0.2]}]}

@@ -9,7 +9,7 @@ import uuid
 from worldc import tools as T
 
 MODE = os.environ.get("FAKE_MODE", "ok")
-MINI = {"environment": {"footprint": {"size": [6, 6]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
+MINI = {"environment": {"footprint": {"size": [6, 6]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}}, "zones": [{"id": "z", "rect": [-2.5, -2.5, 2.5, 2.5]}],
         "objects": [{"id": "pallets", "asset": "pallet", "count": 2, "placement": {"inside": "z"}}]}
 BAD = {**MINI, "objects": [{"id": "p", "asset": "palet", "placement": {"inside": "z"}}]}
 

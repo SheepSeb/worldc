@@ -36,6 +36,7 @@ CURATED: dict[str, tuple[str, str, str]] = {
     "ridgeback_franka": ("Isaac/Robots/Clearpath/RidgebackFranka/ridgeback_franka.usd", "mobile_manipulator",
                          "Clearpath Ridgeback omnidirectional base with a Franka Panda arm."),
     "franka": ("Isaac/Robots/FrankaRobotics/FrankaPanda/franka.usd", "arm", "Franka Panda 7-DoF arm with gripper, fixed base."),
+    "ur10": ("Isaac/Robots/UniversalRobots/ur10/ur10.usd", "arm", "Universal Robots UR10 6-DoF industrial arm (1.3 m reach, 10 kg payload), fixed base."),
     "so101": ("Isaac/Robots/RobotStudio/so101_new_calib/so101_new_calib.usd", "arm",
               "RobotStudio SO-101 low-cost 5-DoF desktop arm with gripper, fixed base (about 35 cm reach)."),
     "spot": ("Isaac/Robots/BostonDynamics/spot/spot.usd", "legged", "Boston Dynamics Spot quadruped (needs a locomotion controller to walk)."),

@@ -11,7 +11,7 @@ from worldc.assets.resolve import AssetResolutionError, resolve
 from worldc.compile import compile_scene
 from worldc.spec.validate import validate
 
-ROOM = {"environment": {"footprint": {"size": [8, 8]}}, "zones": [{"id": "z", "rect": [-3.5, -3.5, 3.5, 3.5]}],
+ROOM = {"environment": {"footprint": {"size": [8, 8]}, "walls": {"openings": [{"id": "door", "wall": "south", "center": 0.0, "width": 1.2, "height": 2.2}]}}, "zones": [{"id": "z", "rect": [-3.5, -3.5, 3.5, 3.5]}],
         "objects": [{"id": "boxes", "asset": "cardboard_box", "count": 3, "placement": {"inside": "z"}}]}
 
 
