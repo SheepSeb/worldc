@@ -1,0 +1,81 @@
+{
+ "template": {
+  "scenes": 30,
+  "first_try": 29,
+  "accepted": 29,
+  "mean_attempts": 1,
+  "adherence_mean": 1.0,
+  "plausibility_mean": 1.0,
+  "match_n_benches": "29/29",
+  "match_n_robot_cells": "29/29",
+  "match_conveyor": "29/29",
+  "match_n_racks": "29/29",
+  "match_n_doors": "29/29",
+  "match_n_people": "29/29",
+  "bench_access": "116/116 items, scene mean 1.0 over 29 scenes",
+  "conveyor_connected": "29/29 items, scene mean 1.0 over 29 scenes",
+  "storage_reachable": "58/58 items, scene mean 1.0 over 29 scenes",
+  "cell_not_blocking": "29/29 items, scene mean 1.0 over 29 scenes",
+  "rejected": {
+   "P08_seed07": [
+    "solve.unsatisfiable.on"
+   ]
+  },
+  "failed_attempt_codes": {
+   "solve.unsatisfiable.on": 1
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v7",
+   "e1_freeze_commit": "6f9647d2f45695e56f84c2282c8b2b0c30907b57",
+   "baseline_commit": "6f9647d2f45695e56f84c2282c8b2b0c30907b57",
+   "tree_dirty": "false",
+   "changed_since_freeze": []
+  }
+ },
+ "recipe": {
+  "scenes": 30,
+  "first_try": 14,
+  "accepted": 30,
+  "mean_attempts": 2.33,
+  "adherence_mean": 1.0,
+  "plausibility_mean": 0.961,
+  "match_n_benches": "30/30",
+  "match_n_robot_cells": "30/30",
+  "match_conveyor": "30/30",
+  "match_n_racks": "30/30",
+  "match_n_doors": "29/29",
+  "match_n_people": "30/30",
+  "bench_access": "144/144 items, scene mean 1.0 over 30 scenes",
+  "conveyor_connected": "12/13 items, scene mean 0.923 over 13 scenes",
+  "storage_reachable": "78/81 items, scene mean 0.97 over 29 scenes",
+  "cell_not_blocking": "27/31 items, scene mean 0.917 over 22 scenes",
+  "rejected": {},
+  "failed_attempt_codes": {
+   "solve.unsatisfiable.pose": 36,
+   "solve.unsatisfiable.on": 12,
+   "solve.goal_target": 10,
+   "solve.unsatisfiable.inside": 3,
+   "check.robot_cell_clearance": 1,
+   "solve.unreachable": 1
+  },
+  "bench_arrangement_realised": {
+   "mixed": 7,
+   "facing_rows": 6,
+   "fallback": 3,
+   "along_wall": 9,
+   "single_row": 5
+  },
+  "robot_spawn_realised": {
+   "right_of_lane": 16,
+   "near_charger": 7,
+   "left_of_lane": 7
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v7",
+   "e1_freeze_commit": "6f9647d2f45695e56f84c2282c8b2b0c30907b57",
+   "baseline_commit": "6f9647d2f45695e56f84c2282c8b2b0c30907b57",
+   "tree_dirty": "false",
+   "changed_since_freeze": []
+  }
+ }
+}
