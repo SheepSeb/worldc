@@ -515,16 +515,29 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     for c in cells:
         yaw = math.radians(c["yaw"])
         points.append(("cell", (c["xy"][0] + math.sin(yaw) * (c["half"] + 0.7), c["xy"][1] - math.cos(yaw) * (c["half"] + 0.7))))
-    points = [(k, p) for k, p in points if plan.inside(_rect(p[0], p[1], 0.6, 0.6)) and plan.free(_rect(p[0], p[1], 0.6, 0.6), 0.05, ignore=("reserved",))]
+    # nobody walks over the parked robot: every leg keeps the mandatory check.human_path_robot_spawn distance from the spawn
+    from ..check.safety import HUMAN_RADIUS_M, HUMAN_SPAWN_GAP_M
+
+    spawn_clear = HUMAN_RADIUS_M + float(get("dingo").info.footprint_radius_m) + HUMAN_SPAWN_GAP_M + 0.05
+
+    def off_spawn(a, b=None):
+        a = np.asarray(a, float)
+        e = np.asarray(b if b is not None else a, float) - a
+        t = float(np.clip(np.dot(np.asarray(spawn_pts[0]) - a, e) / max(float(np.dot(e, e)), 1e-12), 0.0, 1.0))
+        return math.dist(a + t * e, spawn_pts[0]) >= spawn_clear
+
+    points = [(k, p) for k, p in points if plan.inside(_rect(p[0], p[1], 0.6, 0.6)) and plan.free(_rect(p[0], p[1], 0.6, 0.6), 0.05, ignore=("reserved",))
+              and off_spawn(p)]
     pairs = [(i, j) for i in range(len(points)) for j in range(i + 1, len(points))
-             if points[i][0] != points[j][0] and math.dist(points[i][1], points[j][1]) > 1.5 and plan.segment_clear(points[i][1], points[j][1])]
+             if points[i][0] != points[j][0] and math.dist(points[i][1], points[j][1]) > 1.5 and plan.segment_clear(points[i][1], points[j][1])
+             and off_spawn(points[i][1], points[j][1])]
     agents = []
     for w in range(int(n_people)):
         if pairs:
             i, j = pairs[int(rng.integers(len(pairs)))]
             wp = [list(map(lambda v: round(float(v), 3), points[i][1])), list(map(lambda v: round(float(v), 3), points[j][1]))]
-        elif points:
-            p = points[int(rng.integers(len(points)))][1]
+        elif short := [p for _, p in points if off_spawn(p, (p[0] + 0.8, p[1]))]:
+            p = short[int(rng.integers(len(short)))]
             wp = [[round(p[0], 3), round(p[1], 3)], [round(p[0] + 0.8, 3), round(p[1], 3)]]
         else:
             wp = [[0.0, 0.0], [0.8, 0.0]]

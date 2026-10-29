@@ -1,5 +1,13 @@
 # Changelog
 
+## e2-baselines-v3 (2026-10-29)
+
+Rechecked against `e1-freeze-v6`: all 29 template scenes pass; 20 of 30 recipe scenes failed the new
+`check.human_path_robot_spawn` (the recipe parks the robot just inside the main door and walks workers from that door to
+benches / shelving / cells, so their legs crossed the spawn by construction). The recipe now keeps every worker leg and
+endpoint at least r_human + r_robot + 0.3 m (+ 5 cm) from the spawn, as the mandatory check requires of any spec. Both
+baselines are rebuilt.
+
 ## e1-freeze-v6 (2026-10-29)
 
 ### Added: mandatory check `check.human_path_robot_spawn`
