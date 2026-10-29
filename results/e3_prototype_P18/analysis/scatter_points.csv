@@ -1,10 +1,10 @@
 tier,policy,time_to_goal_median_s,ttg_lo,ttg_hi,moving_collisions_per_trial,mc_lo,mc_hi
 easy,blind,50.7,50.7,50.7,0.3,0.0,0.6
-easy,stop,58.075,52.55,62.55,0.0,0.0,0.0
+easy,fields,50.7,50.7,52.9,0.1,0.0,0.3
 easy,aware,62.675,56.35,65.65,0.0,0.0,0.0
 medium,blind,50.7,50.7,50.7,1.6,1.1,2.1
-medium,stop,71.75,64.675,78.05,0.2,0.0,0.5
+medium,fields,57.35,54.8,61.9,0.5,0.2,0.8
 medium,aware,83.4,71.9,106.2,0.0,0.0,0.0
 hard,blind,51.3,51.3,51.3,2.7,2.2,3.3
-hard,stop,94.1,88.35,138.65,0.4,0.1,0.7
+hard,fields,64.675,61.45,73.725,1.2,0.4,2.1
 hard,aware,169.6,98.3,199.9,0.0,0.0,0.0

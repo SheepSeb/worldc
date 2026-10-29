@@ -27,9 +27,9 @@ import numpy as np
 from scipy.stats import wilcoxon
 
 TIERS = ("easy", "medium", "hard")
-POLICIES = ("blind", "stop", "aware")
-POLICY_LABEL = {"blind": "Blind", "stop": "Stop-and-wait", "aware": "Human-aware"}
-PAIRS = (("blind", "stop"), ("blind", "aware"), ("stop", "aware"))
+POLICIES = ("blind", "fields", "aware")
+POLICY_LABEL = {"blind": "Blind", "fields": "Fields (ISO 3691-4-style)", "aware": "Human-aware"}
+PAIRS = (("blind", "fields"), ("blind", "aware"), ("fields", "aware"))
 
 
 def load(paths) -> list[dict]:
@@ -60,6 +60,7 @@ def _ttg(r):
 METRICS = {  # name -> (per-trial value, aggregate over the trials of a cell)
     "success": (lambda r: float(r["success"]), np.nanmean),
     "moving_collisions": (lambda r: r["collisions_robot_moving"], np.nanmean),
+    "moving_collisions_from_behind": (lambda r: r["collisions_robot_moving_from_behind"], np.nanmean),
     "all_collisions": (lambda r: r["collisions"], np.nanmean),
     "stationary_collisions": (lambda r: r["collisions_robot_stationary"], np.nanmean),
     "min_gap_moving": (lambda r: r["min_gap_moving_m"] if r["min_gap_moving_m"] is not None else np.nan, np.nanmedian),
@@ -178,6 +179,7 @@ def fmt(v, lo, hi, digits=1, pct=False):
 
 COLUMNS = [  # (header, metric, digits, pct)
     ("Moving coll./trial", "moving_collisions", 2, False),
+    ("of which from behind", "moving_collisions_from_behind", 2, False),
     ("All coll./trial", "all_collisions", 1, False),
     ("Success (%)", "success", 0, True),
     ("Frozen (%)", "frozen", 0, True),
@@ -206,7 +208,7 @@ def table2(est, n_scenes, n_seeds) -> tuple[str, str]:
 
 
 def scatter_svg(est, path):
-    W, H, L, R, T, Bm = 640, 440, 70, 170, 30, 55
+    W, H, L, R, T, Bm = 700, 440, 70, 230, 30, 55
     pts = []
     for t in TIERS:
         for p in POLICIES:
@@ -221,7 +223,7 @@ def scatter_svg(est, path):
     y0, y1 = 0.0, ystep * math.ceil(max(max(ys) if ys else 1.0, 0.5) * 1.05 / ystep)
     X = lambda v: L + (v - x0) / (x1 - x0) * (W - L - R)  # noqa: E731
     Y = lambda v: H - Bm - (v - y0) / (y1 - y0) * (H - T - Bm)  # noqa: E731
-    color = {"blind": "#c0392b", "stop": "#2471a3", "aware": "#1e8449"}
+    color = {"blind": "#c0392b", "fields": "#2471a3", "aware": "#1e8449"}
     shape = {"easy": "circle", "medium": "square", "hard": "triangle"}
     s = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" font-family="Helvetica, Arial, sans-serif" font-size="12">',
          f'<rect width="{W}" height="{H}" fill="white"/>',

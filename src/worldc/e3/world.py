@@ -6,7 +6,8 @@ no Isaac Sim.  Grid geometry is the post-build check's (``check.nav``), so 2D an
 Robot body: the footprint is the robot table's measured bounds (``assets/library/robots``: x by y in the robot's default
 pose, centred on its origin).  Which way the robot drives in that frame is the travel heading measured by the Isaac Sim drive
 calibration (``drive/drive_result.json``, ``travel_heading_in_robot_frame_rad``); an E3 variant carries its base scene's value in
-``e3_variant.json``.  Without either, +x is assumed and the source says so.
+``e3_variant.json``.  Without either, +x is assumed and the source says so.  Braking deceleration (for the ``fields``
+policy) is the table's ``brake_decel_mps2``.
 """
 from __future__ import annotations
 
@@ -186,6 +187,10 @@ def robot_frame(d: Path, rb: dict) -> dict:
     size = [info.size_m[0], info.size_m[1]] if info else [2 * float(rb.get("radius_m", 0.3))] * 2
     out = {"asset": rb.get("asset"), "size_m": [round(v, 4) for v in size],
            "size_source": "robot table (assets/library/robots)" if info else "footprint radius (no table entry)"}
+    if info and info.brake_decel_mps2:
+        out.update(brake_decel_mps2=info.brake_decel_mps2, brake_source=f"robot table: {info.brake_decel_source}")
+    else:
+        out.update(brake_decel_mps2=3.0, brake_source="no table entry: worldc drive's deceleration limit")
     variant = d / "e3_variant.json"
     if variant.exists():
         rf = json.loads(variant.read_text())["robot_frame"]

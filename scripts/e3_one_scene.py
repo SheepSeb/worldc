@@ -117,6 +117,9 @@ def summarize(rows) -> dict:
                 "outcomes": {o: sum(r["outcome"] == o for r in R) for o in S.OUTCOMES if any(r["outcome"] == o for r in R)},
                 "collisions_robot_moving_mean": mean("collisions_robot_moving"),
                 "trials_with_robot_moving_collision": sum(r["collisions_robot_moving"] > 0 for r in R),
+                "collisions_robot_moving_from_behind": sum(r["collisions_robot_moving_from_behind"] for r in R),
+                "collisions_robot_moving_total": sum(r["collisions_robot_moving"] for r in R),
+                "protective_stops_mean": mean("protective_stops"), "field_warning_mean_s": mean("field_warning_s"),
                 "collisions_mean": mean("collisions"), "collisions_robot_stationary_mean": mean("collisions_robot_stationary"),
                 "min_gap_moving_median_m": round(float(np.median([r["min_gap_moving_m"] for r in R if r["min_gap_moving_m"] is not None])), 3),
                 "near_miss_moving_rate": round(float(np.mean([r["min_gap_moving_m"] is not None and 0 < r["min_gap_moving_m"] < 0.5 for r in R])), 2),
@@ -131,6 +134,7 @@ def summarize(rows) -> dict:
 def table(summary) -> str:
     cols = [("success", lambda s: f"{s['success_rate']:.1f}"),
             ("moving coll./trial", lambda s: f"**{s['collisions_robot_moving_mean']:.1f}**"),
+            ("moving from behind (of total)", lambda s: f"{s['collisions_robot_moving_from_behind']} of {s['collisions_robot_moving_total']}"),
             ("all / stationary coll.", lambda s: f"{s['collisions_mean']:.1f} / {s['collisions_robot_stationary_mean']:.1f}"),
             ("<0.5 m / <1 m moving (s)", lambda s: f"{s['time_within_0.5m_moving_mean_s']:.1f} / {s['time_within_1m_moving_mean_s']:.1f}"),
             ("<0.5 m / <1 m all (s)", lambda s: f"{s['time_within_0.5m_mean_s']:.1f} / {s['time_within_1m_mean_s']:.1f}"),
@@ -191,7 +195,7 @@ def main():
                         if pol not in keep or rank > keep[pol][0]:
                             keep[pol] = (rank, seed, res)
                 print(f"{tier:6s} seed {seed:2d}: " + " | ".join(
-                    f"{r['policy']:5s} {r['outcome'][:9]:9s} coll {r['collisions_robot_moving']}/{r['collisions']} t {r['sim_s']}" for r in rows[-3:]),
+                    f"{r['policy']:6s} {r['outcome'][:9]:9s} coll {r['collisions_robot_moving']}/{r['collisions']} t {r['sim_s']}" for r in rows[-3:]),
                     flush=True)
 
     with open(out / "trials.csv", "w", newline="") as f:

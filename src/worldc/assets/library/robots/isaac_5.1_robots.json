@@ -109,7 +109,9 @@
   "base_offset_z": 0.0041,
   "footprint_radius_m": 0.577,
   "articulation": true,
-  "n_joints": 7
+  "n_joints": 7,
+  "brake_decel_mps2": 3.0,
+  "brake_decel_source": "worldc drive's commanded deceleration limit (render/isaac_drive.py slew), not a vendor figure"
  },
  "o3dyn": {
   "path": "Isaac/Robots/Fraunhofer/O3dyn/o3dyn.usd",

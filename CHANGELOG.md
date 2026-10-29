@@ -1,5 +1,25 @@
 # Changelog
 
+## e3-fields (2026-10-29)
+
+### Changed: E3 stop-and-wait becomes an ISO 3691-4-style field policy (`fields`)
+- **Policy `fields`** replaces `stop`; blind and human-aware are unchanged.
+  - It has a protective field (stop) and a warning field (slow to 50 % and flag): rectangles ahead along the travel
+    heading, widened while turning, the align turn included.
+  - **Lengths:** protective = v·T_react + v²/(2·a_brake) + margin, recomputed every step from the current speed;
+    warning = protective + 1.0 m.
+  - **Resume:** after 1 s with the protective field clear.
+  - **Parameters:** all in `sim.FIELDS`.
+- **Robot table:** `brake_decel_mps2` and `brake_decel_source` are new optional fields, and `build_table` keeps them.
+  Nova Carter gets 3.0 m/s², which is `worldc drive`'s deceleration limit, not a vendor figure.
+- **Collision tagging:** each collision event carries `ahead_x` and `from_behind`. Rows count
+  `collisions_robot_moving_from_behind`, and the summary and Table 2 show it.
+- **Renamed:** stop-and-wait is now "Fields (ISO 3691-4-style)" in docs and tables.
+- **P18 rerun** (same 90 trials): fields has 0.1 / 0.5 / 1.2 robot-moving collisions per trial (easy / medium / hard).
+  13 of its 18 are from behind; the other 5 are people stepping into the side of the field at the front corner.
+- **Tests:** field lengths and switching, stop and slow, from-behind tagging, and the turn-in-place sweep the fields do
+  not see.
+
 ## e3-analysis (2026-10-29)
 
 ### Added: E3 analysis and scene selection

@@ -1,14 +1,19 @@
 """The 2D trial: a diff-drive robot visits the scene's goals among seeded workers, under one of three policies.
 
 * ``blind``: plan once per leg on the static grid and follow it, ignoring people (the current ``worldc drive``).
-* ``stop``: as blind, but halt while a person is within STOP_DIST_M ahead (gap from the footprint, person in front of the
-  robot's centre); resume once that has been clear for STOP_CLEAR_S.
+* ``fields`` (ISO 3691-4-style stop-and-wait): as blind, with a protective and a warning field, both rectangles ahead of the
+  robot in the travel direction (see FIELDS).  Recomputed every step from the current speed (field switching):
+  protective length = v * t_react + v^2 / (2 a_brake) + margin, warning length = protective + warning_extra; both widen by
+  turn_widen per side while the robot turns (|w| > MOVING_W, the align turn included).  A person's disk in the protective
+  field stops the robot (braking at a_brake); it resumes once the protective field has been clear for resume_clear_s.  A
+  person in the warning field slows it (linear and angular) to warning_scale and is flagged (``field_warning_s``).
+  ``a_brake`` is the robot table's ``brake_decel_mps2``.
 * ``aware``: at AWARE_HZ, people are obstacles inflated by AWARE_INFLATE_M; when the path ahead is blocked, replan around
   them (wait if there is no way through); speed (linear and angular) scales from full at SLOW_FAR_M to zero at SLOW_NEAR_M from
   the nearest person.
 
-The human checks apply to the turn in place that aligns the robot at each goal too: stop-and-wait holds the turn under its
-STOP_DIST_M rule and human-aware scales its rotation; the align time limit does not run while the robot holds.
+The human checks apply to the turn in place that aligns the robot at each goal too: the fields policy holds the turn under its
+protective field and human-aware scales its rotation; the align time limit does not run while the robot holds.
 
 All three share the planner (A* + smoothing on the robot-inflated grid) and the controller (the pure pursuit of
 ``render/isaac_drive.py``: look-ahead, turn in place for large heading errors, slew-limited v and w, align at each goal).
@@ -17,7 +22,8 @@ react.  Distances are gaps between the footprint and a person's disk (radius HUM
 
 The robot counts as *moving* when |v| > MOVING_V or |w| > MOVING_W: turning in place counts as moving (the footprint
 sweeps).  Since people do not react, collisions are split by whether the robot was moving (the robot's doing; the primary
-metric) or standing (a person walked into it).
+metric) or standing (a person walked into it).  A collision is tagged ``from_behind`` when the person's centre is behind
+the robot's centre along the travel heading (an overtake or a person walking into its back).
 
 Outcome of a trial: ``success`` (every goal reached within the timeout and no robot-moving collision); otherwise
 ``collision`` (a robot-moving collision), ``frozen`` (no progress of FROZEN_M within FROZEN_S while driving, or holding for
@@ -37,14 +43,22 @@ DT = 0.05
 VMAX, WMAX, LOOK = 1.0, 1.4, 0.8  # as isaac_drive
 ACC_V, DEC_V, ACC_W = 2.0, 3.0, 8.0  # slew limits (m/s^2, rad/s^2), as isaac_drive
 REACH_M, YAW_TOL, ALIGN_MAX_S, PAUSE_S = 0.4, 0.12, 4.0, 0.9
-STOP_DIST_M, STOP_CLEAR_S = 1.0, 1.0
+FIELDS = {  # the ``fields`` policy, in one place; a_brake comes from the robot table (world.robot["brake_decel_mps2"])
+    "t_react_s": 0.1,  # detection to braking
+    "margin_m": 0.25,  # added to the stopping distance
+    "warning_extra_m": 1.0,  # warning length = protective length + this
+    "side_margin_m": 0.10,  # each side, beyond the footprint's half-width across the travel heading
+    "turn_widen_m": 0.15,  # extra each side while turning
+    "warning_scale": 0.5,  # speed factor (linear and angular) while a person is in the warning field
+    "resume_clear_s": 1.0,  # protective field clear this long before resuming
+}
 AWARE_HZ, AWARE_INFLATE_M, SLOW_FAR_M, SLOW_NEAR_M, AWARE_LOOKAHEAD_M = 5.0, 0.5, 2.0, 0.5, 4.0
 NEAR_BANDS = (0.5, 1.0, 2.0)
 MOVING_BANDS = (0.5, 1.0)
 MOVING_V, MOVING_W = 0.05, 0.2  # m/s, rad/s
 STATIONARY_NEAR_M = 1.0  # time stationary within this gap of a person
 FROZEN_S, FROZEN_M = 30.0, 0.10
-POLICIES = ("blind", "stop", "aware")
+POLICIES = ("blind", "fields", "aware")
 OUTCOMES = ("success", "collision", "frozen", "timeout", "goal_unreachable", "goal_missed")
 
 
@@ -88,6 +102,28 @@ class Path:
         i = min(int(np.searchsorted(self.cum, s, side="right")) - 1, len(self.seg) - 1)
         t = (s - self.cum[i]) / max(self.seg[i], 1e-9)
         return self.pts[i] + t * (self.pts[i + 1] - self.pts[i])
+
+
+def field_lengths(v: float, a_brake: float) -> tuple[float, float]:
+    """(protective, warning) field lengths ahead of the footprint's front edge at speed ``v``."""
+    v = abs(v)
+    prot = v * FIELDS["t_react_s"] + v * v / (2.0 * a_brake) + FIELDS["margin_m"]
+    return prot, prot + FIELDS["warning_extra_m"]
+
+
+def in_fields(world: World, x, y, th, v, w, H: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Which people's disks overlap the protective and the warning field (rectangles from the footprint's front edge along
+    the travel heading ``th``, as wide as the footprint across it plus the side margins)."""
+    hx, hy = world.body_half
+    c, s = abs(math.cos(world.phi0)), abs(math.sin(world.phi0))
+    front, half_w = c * hx + s * hy, s * hx + c * hy  # footprint extent along / across the travel heading
+    half_w += FIELDS["side_margin_m"] + (FIELDS["turn_widen_m"] if abs(w) > MOVING_W else 0.0)
+    prot, warn = field_lengths(v, world.robot["brake_decel_mps2"])
+    dx, dy = H[:, 0] - x, H[:, 1] - y
+    a, b = math.cos(th) * dx + math.sin(th) * dy, np.abs(-math.sin(th) * dx + math.cos(th) * dy)
+    lat = np.maximum(b - half_w, 0.0)
+    hit = lambda L: np.hypot(np.maximum(np.maximum(front - a, a - (front + L)), 0.0), lat) <= HUMAN_RADIUS_M  # noqa: E731
+    return hit(prot), hit(warn)
 
 
 def static_legs(world: World) -> list[np.ndarray | None]:
@@ -136,8 +172,9 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
     clear_since, holding = None, False
     next_aware, next_replan = 0.0, 0.0
     replans, hold_s = 0, 0.0
+    in_prot, protective_stops, warning_s = False, 0, 0.0
     in_contact = np.zeros(H.shape[1], bool)
-    collisions, moving_hits, events = 0, 0, []
+    collisions, moving_hits, moving_behind, events = 0, 0, 0, []
     min_gap, min_gap_moving = math.inf, math.inf
     near = {b: 0.0 for b in NEAR_BANDS}
     near_moving = {b: 0.0 for b in MOVING_BANDS}
@@ -171,8 +208,10 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
             for i in np.flatnonzero(hit & ~in_contact):
                 collisions += 1
                 moving_hits += moving
+                moving_behind += int(moving and ahead_x[i] < 0)
                 events.append({"type": "collision", "t": round(t, 2), "worker": int(i), "xy": [round(x, 2), round(y, 2)],
-                               "robot_v": round(v, 2), "robot_w": round(w, 2), "robot_moving": bool(moving)})
+                               "robot_v": round(v, 2), "robot_w": round(w, 2), "robot_moving": bool(moving),
+                               "ahead_x": round(float(ahead_x[i]), 2), "from_behind": bool(ahead_x[i] < 0)})
             in_contact = hit
             if len(Hk) > 1:
                 dd = np.hypot(*(Hk[:, None, :] - Hk[None, :, :]).transpose(2, 0, 1))
@@ -193,14 +232,20 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         else:
             prog_t, prog_xy = t, (x, y)
         gx, gy, gyaw = world.goals[leg]["pose"]
-        # ---- policy: may replace the path (aware) or hold the robot (stop, aware)
+        # ---- policy: may replace the path (aware) or hold the robot (fields, aware)
         scale = 1.0
-        if policy == "stop" and state in ("drive", "align") and len(gp):
-            if ((gp < STOP_DIST_M) & (ahead_x > 0)).any():
+        if policy == "fields" and state in ("drive", "align") and len(gp):
+            prot, warn = in_fields(world, x, y, th, v, w, Hk)
+            if prot.any():
+                protective_stops += not in_prot
                 holding, clear_since = True, None
             elif holding:
                 clear_since = t if clear_since is None else clear_since
-                holding = t - clear_since < STOP_CLEAR_S
+                holding = t - clear_since < FIELDS["resume_clear_s"]
+            in_prot = bool(prot.any())
+            if warn.any():
+                warning_s += DT
+                scale = FIELDS["warning_scale"]
         if policy == "aware" and len(gp):
             scale = float(np.clip((gp.min() - SLOW_NEAR_M) / (SLOW_FAR_M - SLOW_NEAR_M), 0.0, 1.0))
             if state == "align":
@@ -255,7 +300,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
                 path = Path(legs[leg]) if legs[leg] is not None else None
                 if path is not None and policy == "aware":  # the static plan starts at the goal pose; follow from where the robot is
                     path = Path(np.vstack([[x, y], legs[leg][1:]]))
-        v += float(np.clip(v_t - v, -DEC_V * DT, ACC_V * DT))
+        dec = world.robot["brake_decel_mps2"] if policy == "fields" and holding else DEC_V
+        v += float(np.clip(v_t - v, -dec * DT, ACC_V * DT))
         w += float(np.clip(w_t - w, -ACC_W * DT, ACC_W * DT))
         th = wrap(th + w * DT)
         x, y = x + v * math.cos(th) * DT, y + v * math.sin(th) * DT
@@ -273,11 +319,11 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         outcome = end
     fin = lambda m: round(m, 3) if math.isfinite(m) else None  # noqa: E731
     return {"policy": policy, "success": outcome == "success", "outcome": outcome, "end": end, "frozen": end == "frozen",
-            "collisions_robot_moving": moving_hits, "collisions": collisions, "collisions_robot_stationary": collisions - moving_hits,
+            "collisions_robot_moving": moving_hits, "collisions_robot_moving_from_behind": moving_behind, "collisions": collisions, "collisions_robot_stationary": collisions - moving_hits,
             "time_to_goal_s": round(t, 2) if end == "done" else None, "sim_s": round(t, 2),
             "min_gap_m": fin(min_gap), "min_gap_moving_m": fin(min_gap_moving),
             **{f"time_within_{b:g}m_s": round(near[b], 2) for b in NEAR_BANDS},
             **{f"time_within_{b:g}m_moving_s": round(near_moving[b], 2) for b in MOVING_BANDS},
             "stationary_s": round(stationary_s, 2), "stationary_near_1m_s": round(stationary_near_s, 2),
             "human_human_overlap_s": round(hh_overlap, 2), "goals_reached": sum(a["reached"] for a in arrivals), "n_goals": len(legs),
-            "replans": replans, "hold_s": round(hold_s, 2), "events": events, "arrivals": arrivals, "trajectory": traj}
+            "replans": replans, "hold_s": round(hold_s, 2), "protective_stops": protective_stops, "field_warning_s": round(warning_s, 2), "events": events, "arrivals": arrivals, "trajectory": traj}

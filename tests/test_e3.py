@@ -8,7 +8,7 @@ from worldc.e3 import sim as S
 from worldc.e3.walkers import workers
 from worldc.e3.world import World
 
-ROBOT = {"asset": "test", "size_m": [0.73, 0.9], "travel_heading_rad": 0.0, "source": "test"}
+ROBOT = {"asset": "test", "size_m": [0.73, 0.9], "travel_heading_rad": 0.0, "source": "test", "brake_decel_mps2": 3.0}
 
 
 @pytest.fixture
@@ -36,18 +36,18 @@ def test_policies_against_a_person_beside_the_route(room):
     H = standing(0.0, -0.6)  # 0.6 m off the straight route: the footprint (half width 0.45) plus the person (0.26) overlap
     blind = S.run_trial(room, H, "blind")
     assert blind["collisions_robot_moving"] >= 1 and blind["outcome"] == "collision"
-    stop = S.run_trial(room, H, "stop")
-    assert stop["collisions_robot_moving"] == 0 and stop["outcome"] == "frozen" and stop["frozen"]
+    fields = S.run_trial(room, H, "fields")
+    assert fields["collisions_robot_moving"] == 0 and fields["outcome"] == "frozen" and fields["frozen"]
     aware = S.run_trial(room, H, "aware")
     assert aware["outcome"] == "success" and aware["replans"] >= 1 and aware["min_gap_m"] > 0.3
     assert aware["time_within_0.5m_moving_s"] == 0.0
 
 
 def test_person_walking_into_a_holding_robot_is_stationary(room):
-    H = standing(-1.9, 0.0)  # ahead of the parked robot: stop-and-wait holds
+    H = standing(-1.9, 0.0)  # ahead of the parked robot: the protective field holds
     H[100:140, 0, 0] = np.linspace(-1.9, -3.0, 40)  # then the person walks onto it
     H[140:, 0, 0] = -3.0
-    r = S.run_trial(room, H, "stop")
+    r = S.run_trial(room, H, "fields")
     assert r["collisions"] == 1 and r["collisions_robot_stationary"] == 1 and r["collisions_robot_moving"] == 0
     assert r["outcome"] != "collision" and r["stationary_s"] > 5.0
 
@@ -70,10 +70,30 @@ def test_align_turn_is_guarded(room):
     H[int(t_align / S.DT) + 4:] = (3.0, 0.75)
     blind = S.run_trial(turn, H, "blind")
     assert blind["collisions_robot_moving"] >= 1 and abs(blind["events"][0]["robot_v"]) <= S.MOVING_V  # swept while turning
-    for pol in ("stop", "aware"):
-        r = S.run_trial(turn, H, pol)
-        assert r["collisions_robot_moving"] == 0 and r["hold_s"] > 0 and r["outcome"] == "frozen", (pol, r["outcome"])
-        assert r["stationary_near_1m_s"] > 25.0
+    r = S.run_trial(turn, H, "aware")
+    assert r["collisions_robot_moving"] == 0 and r["hold_s"] > 0 and r["outcome"] == "frozen", r["outcome"]
+    assert r["stationary_near_1m_s"] > 25.0
+    # fields: the person is beside the footprint, never in the (widened) fields ahead, so the corner sweep hits them
+    r = S.run_trial(turn, H, "fields")
+    assert r["collisions_robot_moving"] >= 1 and r["protective_stops"] == 0
+
+
+def test_fields_stop_slow_and_switch_with_speed(room):
+    prot, warn = S.field_lengths(1.0, 3.0)
+    assert prot == pytest.approx(0.1 + 1 / 6 + 0.25) and warn == pytest.approx(prot + 1.0)
+    assert S.field_lengths(0.0, 3.0)[0] == pytest.approx(0.25)
+    H = standing(0.0, -0.6)
+    r = S.run_trial(room, H, "fields")
+    assert r["protective_stops"] >= 1 and r["field_warning_s"] > 0 and r["min_gap_moving_m"] > 0
+    far = standing(0.0, -1.5)  # clear of both fields: drives as blind
+    assert S.run_trial(room, far, "fields")["trajectory"] == S.run_trial(room, far, "blind")["trajectory"]
+
+
+def test_collision_from_behind_is_tagged(room):
+    H = standing(-3.9, 0.0)
+    H[:, 0, 0] = np.minimum(-3.9 + 1.8 * S.DT * np.arange(len(H)), 3.9)  # walks along the route faster than the robot
+    r = S.run_trial(room, H, "blind")
+    assert r["events"][0]["from_behind"] and r["events"][0]["robot_moving"] and r["collisions_robot_moving_from_behind"] >= 1
 
 
 def test_walkers_do_not_depend_on_path_query_order(room):

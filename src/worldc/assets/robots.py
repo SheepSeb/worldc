@@ -68,6 +68,8 @@ class RobotInfo:
     footprint_radius_m: float                   # circumscribed circle of the xy bounds, centred on the robot origin
     articulation: bool
     n_joints: int
+    brake_decel_mps2: float | None = None       # braking deceleration (E3 field policy); see brake_decel_source
+    brake_decel_source: str | None = None
 
     @property
     def needs_controller(self) -> bool:
@@ -190,7 +192,8 @@ def build_table(out: Path = TABLE, only: list[str] | None = None, log=print) -> 
             log(f"  {alias}: not usable ({m.get('error') or m}); left out")
             table.pop(alias, None)
             continue
-        table[alias] = {"path": path, "kind": kind, "description": desc, **{k: m[k] for k in ("size_m", "base_offset_z", "footprint_radius_m", "articulation", "n_joints")}}
+        table[alias] = {"path": path, "kind": kind, "description": desc, **{k: m[k] for k in ("size_m", "base_offset_z", "footprint_radius_m", "articulation", "n_joints")},
+                          **{k: v for k, v in table.get(alias, {}).items() if k.startswith("brake_")}}  # not measured: kept
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(dict(sorted(table.items())), indent=1))
     return out
