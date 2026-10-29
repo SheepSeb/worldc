@@ -1,5 +1,24 @@
 # Changelog
 
+## e3-prototype (2026-10-29)
+
+### Added: E3 2D simulator for human-robot safety scenarios (outside the E1 freeze)
+`src/worldc/e3/` adds four pieces (details in `docs/E3.md`):
+- **Grids and task points:** a built scene becomes robot- and human-inflated 2D grids, plus task points (door, bench,
+  storage, cell gate) and human walkways.
+- **Walkers:** seeded worker tours, which replay exactly from the trial seed.
+- **Robot policies:** blind, stop-and-wait and human-aware, on `isaac_drive`'s planner and pure pursuit.
+- **Hard-tier transform:** 2-4 occluding shelving units beside walkways, kept only when the solver places them and the
+  rebuild passes `check_scene` (static).
+
+Metrics:
+- **Primary:** robot-moving collisions. Turning in place counts as moving.
+- **Also reported:** all and robot-stationary collisions, exposure while moving, and stationary time in walkways.
+- **Outcomes:** success / collision / frozen / timeout / goal_unreachable / goal_missed.
+
+The robot footprint comes from the robot table and its travel direction from the scene's Isaac drive calibration.
+`scripts/e3_one_scene.py` runs one scene. First run: `results/e3_prototype_P18/` (90 trials). Tests: `tests/test_e3.py`.
+
 ## e2-baselines-v3 (2026-10-29)
 
 Rechecked against `e1-freeze-v6`: all 29 template scenes passed; 20 of 30 recipe scenes failed

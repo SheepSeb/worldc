@@ -1,0 +1,188 @@
+{
+ "easy/blind": {
+  "trials": 10,
+  "success_rate": 0.7,
+  "outcomes": {
+   "success": 7,
+   "collision": 3
+  },
+  "collisions_robot_moving_mean": 0.3,
+  "trials_with_robot_moving_collision": 3,
+  "collisions_mean": 0.3,
+  "collisions_robot_stationary_mean": 0.0,
+  "min_gap_moving_median_m": 0.405,
+  "near_miss_moving_rate": 0.4,
+  "time_within_0.5m_moving_mean_s": 0.58,
+  "time_within_1m_moving_mean_s": 3.22,
+  "time_within_0.5m_mean_s": 0.9,
+  "time_within_1m_mean_s": 3.62,
+  "stationary_in_walkway_mean_s": 5.9,
+  "time_to_goal_median_s": 50.7,
+  "human_human_overlap_mean_s": 0.0
+ },
+ "easy/stop": {
+  "trials": 10,
+  "success_rate": 1.0,
+  "outcomes": {
+   "success": 10
+  },
+  "collisions_robot_moving_mean": 0.0,
+  "trials_with_robot_moving_collision": 0,
+  "collisions_mean": 0.5,
+  "collisions_robot_stationary_mean": 0.5,
+  "min_gap_moving_median_m": 0.556,
+  "near_miss_moving_rate": 0.4,
+  "time_within_0.5m_moving_mean_s": 0.03,
+  "time_within_1m_moving_mean_s": 1.19,
+  "time_within_0.5m_mean_s": 2.4,
+  "time_within_1m_mean_s": 8.62,
+  "stationary_in_walkway_mean_s": 13.98,
+  "time_to_goal_median_s": 58.1,
+  "human_human_overlap_mean_s": 0.0
+ },
+ "easy/aware": {
+  "trials": 10,
+  "success_rate": 1.0,
+  "outcomes": {
+   "success": 10
+  },
+  "collisions_robot_moving_mean": 0.0,
+  "trials_with_robot_moving_collision": 0,
+  "collisions_mean": 0.6,
+  "collisions_robot_stationary_mean": 0.6,
+  "min_gap_moving_median_m": 0.367,
+  "near_miss_moving_rate": 0.7,
+  "time_within_0.5m_moving_mean_s": 0.28,
+  "time_within_1m_moving_mean_s": 2.65,
+  "time_within_0.5m_mean_s": 2.74,
+  "time_within_1m_mean_s": 5.7,
+  "stationary_in_walkway_mean_s": 13.31,
+  "time_to_goal_median_s": 62.6,
+  "human_human_overlap_mean_s": 0.0
+ },
+ "medium/blind": {
+  "trials": 10,
+  "success_rate": 0.0,
+  "outcomes": {
+   "collision": 10
+  },
+  "collisions_robot_moving_mean": 1.6,
+  "trials_with_robot_moving_collision": 10,
+  "collisions_mean": 1.7,
+  "collisions_robot_stationary_mean": 0.1,
+  "min_gap_moving_median_m": 0.0,
+  "near_miss_moving_rate": 0.0,
+  "time_within_0.5m_moving_mean_s": 4.65,
+  "time_within_1m_moving_mean_s": 11.74,
+  "time_within_0.5m_mean_s": 5.67,
+  "time_within_1m_mean_s": 13.67,
+  "stationary_in_walkway_mean_s": 5.9,
+  "time_to_goal_median_s": 50.7,
+  "human_human_overlap_mean_s": 11.39
+ },
+ "medium/stop": {
+  "trials": 10,
+  "success_rate": 0.9,
+  "outcomes": {
+   "success": 9,
+   "collision": 1
+  },
+  "collisions_robot_moving_mean": 0.1,
+  "trials_with_robot_moving_collision": 1,
+  "collisions_mean": 1.9,
+  "collisions_robot_stationary_mean": 1.8,
+  "min_gap_moving_median_m": 0.297,
+  "near_miss_moving_rate": 0.6,
+  "time_within_0.5m_moving_mean_s": 0.52,
+  "time_within_1m_moving_mean_s": 4.09,
+  "time_within_0.5m_mean_s": 6.84,
+  "time_within_1m_mean_s": 23.85,
+  "stationary_in_walkway_mean_s": 26.87,
+  "time_to_goal_median_s": 68.7,
+  "human_human_overlap_mean_s": 15.2
+ },
+ "medium/aware": {
+  "trials": 10,
+  "success_rate": 1.0,
+  "outcomes": {
+   "success": 10
+  },
+  "collisions_robot_moving_mean": 0.0,
+  "trials_with_robot_moving_collision": 0,
+  "collisions_mean": 1.8,
+  "collisions_robot_stationary_mean": 1.8,
+  "min_gap_moving_median_m": 0.205,
+  "near_miss_moving_rate": 0.8,
+  "time_within_0.5m_moving_mean_s": 0.71,
+  "time_within_1m_moving_mean_s": 7.05,
+  "time_within_0.5m_mean_s": 4.53,
+  "time_within_1m_mean_s": 18.73,
+  "stationary_in_walkway_mean_s": 27.02,
+  "time_to_goal_median_s": 82.4,
+  "human_human_overlap_mean_s": 17.36
+ },
+ "hard/blind": {
+  "trials": 10,
+  "success_rate": 0.0,
+  "outcomes": {
+   "collision": 10
+  },
+  "collisions_robot_moving_mean": 2.7,
+  "trials_with_robot_moving_collision": 10,
+  "collisions_mean": 2.9,
+  "collisions_robot_stationary_mean": 0.2,
+  "min_gap_moving_median_m": 0.0,
+  "near_miss_moving_rate": 0.0,
+  "time_within_0.5m_moving_mean_s": 8.4,
+  "time_within_1m_moving_mean_s": 19.73,
+  "time_within_0.5m_mean_s": 9.71,
+  "time_within_1m_mean_s": 22.66,
+  "stationary_in_walkway_mean_s": 5.95,
+  "time_to_goal_median_s": 51.3,
+  "human_human_overlap_mean_s": 34.86
+ },
+ "hard/stop": {
+  "trials": 10,
+  "success_rate": 0.4,
+  "outcomes": {
+   "success": 4,
+   "collision": 4,
+   "frozen": 2
+  },
+  "collisions_robot_moving_mean": 0.5,
+  "trials_with_robot_moving_collision": 4,
+  "collisions_mean": 4.3,
+  "collisions_robot_stationary_mean": 3.8,
+  "min_gap_moving_median_m": 0.083,
+  "near_miss_moving_rate": 0.6,
+  "time_within_0.5m_moving_mean_s": 2.08,
+  "time_within_1m_moving_mean_s": 9.46,
+  "time_within_0.5m_mean_s": 14.37,
+  "time_within_1m_mean_s": 50.7,
+  "stationary_in_walkway_mean_s": 46.89,
+  "time_to_goal_median_s": 91.8,
+  "human_human_overlap_mean_s": 60.31
+ },
+ "hard/aware": {
+  "trials": 10,
+  "success_rate": 0.1,
+  "outcomes": {
+   "success": 1,
+   "collision": 4,
+   "frozen": 5
+  },
+  "collisions_robot_moving_mean": 0.6,
+  "trials_with_robot_moving_collision": 4,
+  "collisions_mean": 6.1,
+  "collisions_robot_stationary_mean": 5.5,
+  "min_gap_moving_median_m": 0.177,
+  "near_miss_moving_rate": 0.4,
+  "time_within_0.5m_moving_mean_s": 1.26,
+  "time_within_1m_moving_mean_s": 14.17,
+  "time_within_0.5m_mean_s": 29.36,
+  "time_within_1m_mean_s": 67.45,
+  "stationary_in_walkway_mean_s": 68.54,
+  "time_to_goal_median_s": 136.6,
+  "human_human_overlap_mean_s": 77.92
+ }
+}

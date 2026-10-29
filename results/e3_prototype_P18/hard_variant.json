@@ -1,0 +1,86 @@
+{
+ "base_scene": "dataset/e1_pilot_v5/deepseek-v4.1-flash_cloud/runs/20261029T115138_2acd8196/scene",
+ "robot_frame": {
+  "travel_heading_rad": 0.001,
+  "source": "Isaac drive calibration (dataset/e1_pilot_v5/deepseek-v4.1-flash_cloud/runs/20261029T115138_2acd8196/scene/drive/drive_result.json)"
+ },
+ "agents_removed": 3,
+ "tier": "hard",
+ "transform_seed": 0,
+ "occluder_asset": "parts_shelf",
+ "occluders": [
+  {
+   "xy": [
+    -2.683,
+    -1.558
+   ],
+   "yaw_deg": 0.0
+  },
+  {
+   "xy": [
+    0.727,
+    -2.034
+   ],
+   "yaw_deg": 90.0
+  },
+  {
+   "xy": [
+    -0.2,
+    4.275
+   ],
+   "yaw_deg": 0.0
+  },
+  {
+   "xy": [
+    -6.919,
+    2.068
+   ],
+   "yaw_deg": -90.0
+  }
+ ],
+ "attempts": [
+  {
+   "attempt": 0,
+   "units": [
+    {
+     "xy": [
+      -2.683,
+      -1.558
+     ],
+     "yaw_deg": 0.0
+    },
+    {
+     "xy": [
+      0.727,
+      -2.034
+     ],
+     "yaw_deg": 90.0
+    },
+    {
+     "xy": [
+      -0.2,
+      4.275
+     ],
+     "yaw_deg": 0.0
+    },
+    {
+     "xy": [
+      -6.919,
+      2.068
+     ],
+     "yaw_deg": -90.0
+    }
+   ],
+   "check": {
+    "ok": true,
+    "seconds": 1.7,
+    "errors": []
+   }
+  }
+ ],
+ "check": {
+  "ok": true,
+  "seconds": 1.7,
+  "errors": []
+ }
+}
