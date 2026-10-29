@@ -5,7 +5,7 @@
  "metadata": {
   "baseline": "e2_template",
   "based_on_prompt": "P08",
-  "layout_note": "1.3 m between benches and belt, 1.7 m west corridor, 0.6 m robot cell to walls: all walkways >= the mandatory 1.2 m"
+  "layout_note": "1.3 m between benches and belt, 1.7 m west corridor, belt outfeed 0.9 m from the caged robot cell (>= the 0.5 m cell clearance), 1.4 m east aisle: all walkways >= the mandatory 1.2 m"
  },
  "environment": {
   "kind": "indoor",
@@ -89,7 +89,7 @@
    "placement": {
     "pose": {
      "xy": [
-      5.4,
+      5.0,
       -1.5
      ],
      "yaw": 0
