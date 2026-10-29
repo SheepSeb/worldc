@@ -1,4 +1,10 @@
 {
+ "provenance": {
+  "e3_policies": "e3-policies-v1",
+  "e3_policies_commit": "b7cfb711519e",
+  "code_commit": "b7cfb711519e",
+  "policies_changed_since_tag": []
+ },
  "easy/blind": {
   "trials": 10,
   "success_rate": 0.7,
