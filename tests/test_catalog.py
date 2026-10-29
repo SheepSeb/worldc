@@ -208,3 +208,41 @@ def test_wrapper_layer_assets_are_mirrored(tmp_path):
     assert entries["bin"]["size_m"] == pytest.approx([0.3, 0.2, 0.15], abs=1e-3)
     a = catalog_asset("Isaac/Props/Bins/bin.usda", root=str(r), cache_dir=tmp_path / "cache")
     assert a.footprint(a.params({})).pieces()
+
+
+def test_reset_xform_parts_follow_the_placed_asset(tmp_path, scratch_ctx):
+    """ForgeCAD writes articulated links (doors, lids, turntables) as '!resetXformStack!' + a world-frame transform.  Referenced
+    under a placed asset they would sit at the scene origin; the import records their rest pose relative to the parent."""
+    pytest.importorskip("trimesh")
+    pytest.importorskip("coacd")
+    from worldc.assets import Pose
+    from worldc.assets.catalog import catalog_asset
+
+    r = tmp_path / "root"
+    f = r / "Props" / "oven.usda"
+    _make_usd(f, (0.4, 0.3, 0.2))
+    st = Usd.Stage.Open(str(f))
+    door = UsdGeom.Xform.Define(st, "/Root/Body/Door")  # under the scaled body, like a link nested in its parent's geometry
+    door.SetResetXformStack(True)
+    door.AddTransformOp(opSuffix="simulationWorld").Set(Gf.Matrix4d().SetTranslate(Gf.Vec3d(0.15, -0.1, 0.05)))
+    pane = UsdGeom.Mesh.Define(st, "/Root/Body/Door/Pane")
+    pane.GetPointsAttr().Set([Gf.Vec3f(x * 0.05, y * 0.05, z * 0.05) for x in (0, 1) for y in (0, 1) for z in (0, 1)])
+    pane.GetFaceVertexCountsAttr().Set([4] * 6)
+    pane.GetFaceVertexIndicesAttr().Set([0, 1, 3, 2, 4, 6, 7, 5, 0, 4, 5, 1, 2, 3, 7, 6, 0, 2, 6, 4, 1, 5, 7, 3])
+    hinge = UsdPhysics.RevoluteJoint.Define(st, "/Root/Hinge")
+    hinge.CreateBody1Rel().SetTargets([door.GetPath()])
+    UsdPhysics.Scene.Define(st, "/Root/PhysicsScene")  # ForgeCAD ships a physics scene inside every asset
+    st.Save()
+
+    a = catalog_asset("Props/oven.usda", root=str(r), cache_dir=tmp_path / "cache")
+    assert list(a.sidecar.local_xforms) == ["Body/Door"] and a.sidecar.inactive == ["Hinge", "PhysicsScene"]
+    path = scratch_ctx.alloc("/World/Test", "oven")
+    a.build(scratch_ctx, path, Pose((3.0, 2.0, 0.8)), a.params({}), __import__("numpy").random.default_rng(0))
+    stage = scratch_ctx.kit.stage
+    cache = UsdGeom.XformCache()
+    asset_xy = cache.GetLocalToWorldTransform(stage.GetPrimAtPath(f"{path}/Visual/Body")).ExtractTranslation()
+    door_xy = cache.GetLocalToWorldTransform(stage.GetPrimAtPath(f"{path}/Visual/Body/Door")).ExtractTranslation()
+    assert (door_xy[0] - asset_xy[0], door_xy[1] - asset_xy[1]) == pytest.approx((0.15, -0.1), abs=1e-6)  # not (0.15, -0.1) in the world
+    assert door_xy[0] == pytest.approx(3.15, abs=0.25) and door_xy[2] > 0.8
+    assert not stage.GetPrimAtPath(f"{path}/Visual/Hinge").IsActive()  # the asset's own joints are never simulated
+    assert not stage.GetPrimAtPath(f"{path}/Visual/PhysicsScene").IsActive()  # and the stage keeps one physics scene

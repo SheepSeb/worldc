@@ -56,9 +56,28 @@ def _load_cache() -> dict:
         return {}
 
 
+def run_isaac(cmd: list[str], *, timeout: float, env: dict | None = None) -> subprocess.CompletedProcess:
+    """subprocess.run for Isaac Sim: python.sh is a shell wrapper around Kit's python, so on timeout subprocess.run would
+    kill only the wrapper and leave Kit running on the GPU after the GPU lock is released.  Runs the command
+    in its own process group and kills the whole group on timeout, then raises TimeoutExpired."""
+    import signal
+
+    p = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
+    try:
+        out, err = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        p.communicate()
+        raise
+    return subprocess.CompletedProcess(cmd, p.returncode, out, err)
+
+
 def _smoke(sim: IsaacSim, timeout: float) -> tuple[bool, str]:
     try:
-        p = subprocess.run([str(sim.python), "-c", SMOKE], capture_output=True, text=True, timeout=timeout)
+        p = run_isaac([str(sim.python), "-c", SMOKE], timeout=timeout)
     except subprocess.TimeoutExpired:
         return False, f"headless SimulationApp did not start within {timeout:.0f} s"
     if "ISAAC_SMOKE_OK" in p.stdout:

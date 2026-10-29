@@ -436,11 +436,11 @@ def _physics(d: Path, sim_seconds: float, timeout_s: float) -> tuple[dict, list[
     f = d / "isaac_validation.json"
     f.unlink(missing_ok=True)
     try:
-        from .isaac_env import isaac_lock
+        from .isaac_env import isaac_lock, run_isaac
 
         with isaac_lock():  # one Isaac Sim on the GPU at a time; the timeout counts from here
-            p = subprocess.run([str(sim.python), "-m", "worldc.isaac_validate", str(d), "--sim-seconds", str(sim_seconds),
-                                "--skip-render", "--skip-art"], env=_isaac_env(), capture_output=True, text=True, timeout=timeout_s)
+            p = run_isaac([str(sim.python), "-m", "worldc.isaac_validate", str(d), "--sim-seconds", str(sim_seconds),
+                           "--skip-render", "--skip-art"], env=_isaac_env(), timeout=timeout_s)
     except subprocess.TimeoutExpired:
         return {"ok": False, "ran": False}, [error("physics.timeout", f"Physics settle did not finish within {timeout_s:.0f} s.", hint="Use a smaller scene or a larger timeout_s.")]
     (d / "isaac_run.log").write_text(p.stdout + "\n--- stderr ---\n" + p.stderr)
@@ -526,10 +526,10 @@ def render(path: str, camera: Any = "overview", width: int = 960, height: int = 
     else:
         return _out(False, issues=[error("render.camera", "Ad-hoc RTX cameras need position and look_at.", hint='Use {"position": [x,y,z], "look_at": [x,y,z]} or a named camera.')])
     try:
-        from .isaac_env import isaac_lock
+        from .isaac_env import isaac_lock, run_isaac
 
         with isaac_lock():
-            p = subprocess.run(cmd, env=_isaac_env(), capture_output=True, text=True, timeout=900)
+            p = run_isaac(cmd, env=_isaac_env(), timeout=900)
     except subprocess.TimeoutExpired:
         return _out(False, issues=[error("render.timeout", "RTX render did not finish within 900 s.", hint='Try engine="proxy" or a smaller image.')])
     line = next((ln for ln in reversed(p.stdout.splitlines()) if ln.startswith("RENDER_RESULT:")), None)

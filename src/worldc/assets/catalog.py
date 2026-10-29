@@ -16,7 +16,7 @@ import urllib.request
 from pathlib import Path
 
 import numpy as np
-from pxr import Usd
+from pxr import Usd, UsdGeom, UsdPhysics
 
 from .catalog_index import _mirror
 from .mesh.import_mesh import ImportError_, import_mesh, load_parts, normalise
@@ -72,6 +72,43 @@ def _physics_prims(stage) -> list[str]:
     return out
 
 
+def _local_xforms(stage) -> dict[str, list[float]]:
+    """Prims under the default prim whose xformOpOrder starts with '!resetXformStack!' (ForgeCAD writes articulated links in
+    the asset's world frame), with their rest pose relative to the parent.  Referenced under a placed prim, such a part would
+    otherwise ignore the placement and sit at the scene origin."""
+    root = stage.GetDefaultPrim()
+    cache = UsdGeom.XformCache()
+    out = {}
+    for prim in Usd.PrimRange(root):
+        if prim == root or not prim.IsA(UsdGeom.Xformable) or not UsdGeom.Xformable(prim).GetResetXformStack():
+            continue
+        local = cache.GetLocalToWorldTransform(prim) * cache.GetLocalToWorldTransform(prim.GetParent()).GetInverse()
+        rel = str(prim.GetPath().MakeRelativePath(root.GetPath()))
+        out[rel] = [round(float(local[i][j]), 9) for i in range(4) for j in range(4)]
+    return out
+
+
+def _inactive(stage) -> list[str]:
+    """The asset's own physics joints and physics scenes (prim types, so _physics_prims does not see them).  Referenced into a
+    scene, PhysX would still build the joints between the switched-off links (articulations, mimic joints) and every asset
+    would add a physics scene next to ours (ForgeCAD ships one per asset, GPU dynamics by default): with several of them
+    the first simulation step can stall.  The scene keeps exactly one physics scene, ours."""
+    root = stage.GetDefaultPrim()
+    return [str(p.GetPath().MakeRelativePath(root.GetPath())) for p in Usd.PrimRange(root)
+            if p.IsA(UsdPhysics.Joint) or p.IsA(UsdPhysics.Scene)]
+
+
+def ensure_overrides(sidecar: Path) -> Path:
+    """Imports made before local_xforms / inactive were recorded: compute them from the cached source USD (no download)."""
+    sc = read_sidecar(sidecar)
+    if (sc.local_xforms is None or sc.inactive is None) and sc.visual_url:
+        src = next((sidecar.parent / "src").rglob(Path(sc.visual_url).name), None)
+        stage = Usd.Stage.Open(str(src)) if src else None
+        if stage is not None and stage.GetDefaultPrim():
+            write_sidecar(sc.model_copy(update={"local_xforms": _local_xforms(stage), "inactive": _inactive(stage)}), sidecar)
+    return sidecar
+
+
 def cached_sidecar(path: str, overrides: dict | None = None, cache_dir: Path | str | None = None, root: str | None = None,
                    rev: str | None = None) -> tuple[str, Path]:
     """(asset id, sidecar path) where catalog_asset keeps this import; the file exists only once it has been imported."""
@@ -121,9 +158,11 @@ def catalog_asset(path: str, overrides: dict | None = None, cache_dir: Path | st
             "visual_xform": VisualXform(translate=tuple(round(float(-v), 6) for v in shift),
                                         rotate_x_deg=90.0 if up.upper() == "Y" else 0.0, scale=mpu),
             "disable_physics": _physics_prims(stage),
+            "local_xforms": _local_xforms(stage),
+            "inactive": _inactive(stage),
             "tags": sorted(set(ov.get("tags", ())) | set(source_tags)),
         })
         write_sidecar(sc, sc_path)
         shutil.rmtree(d, ignore_errors=True)
         tmp.rename(d)
-    return MeshAsset.from_file(sidecar)
+    return MeshAsset.from_file(ensure_overrides(sidecar))

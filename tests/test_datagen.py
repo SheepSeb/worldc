@@ -37,7 +37,7 @@ def test_accepted_run_is_fully_collected(root, monkeypatch):
     assert rec.usage.est_cost_usd == 0.123 and rec.usage.tool_calls == 5 and rec.usage.cache_read_input_tokens == 1000
     assert rec.usage.repairs == 1 and rec.params["max_repairs"] == 10  # the first validate_spec came back with asset.unknown
     g = rec.generator
-    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze-v3" and g["at_freeze"] in ("true", "false")
+    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze-v4" and g["at_freeze"] in ("true", "false")
     assert rec.summary == "Built a 6x6 room with two pallets." and rec.record_version == RECORD_VERSION and rec.split in ("train", "val", "test")
     assert rec.validation["last_validate"]["ok"] and rec.validation["last_build"]["ok"] and rec.validation["last_build"]["check"]["passed"]
     assert any(p.startswith(f"runs/{rec.run_id}/images/") for p in rec.render_paths) and (d / "images" / "001.png").is_file()
@@ -212,3 +212,21 @@ def test_physics_timeout_is_retried_once_then_not_accepted(root, monkeypatch, se
     assert calls == [900.0, 1800.0]
     assert rec.accepted is accepted and rec.final_status == status and rec.final_checks["physics_status"] == second
     assert rec.final_checks["physics_first_attempt"]["status"] == "timeout"
+
+
+def test_isaac_timeout_kills_the_whole_process_tree(tmp_path):
+    """python.sh is a shell wrapper around Kit's python: a timeout must kill the child too, not leave it on the GPU."""
+    import os
+    import subprocess
+    import time
+
+    from worldc.isaac_env import run_isaac
+
+    pidfile = tmp_path / "child.pid"
+    wrapper = f"sleep 60 & echo $! > {pidfile}; wait"  # like python.sh: a shell that runs the real process as a child
+    with pytest.raises(subprocess.TimeoutExpired):
+        run_isaac(["bash", "-c", wrapper], timeout=1.0)
+    pid = int(pidfile.read_text())
+    time.sleep(0.2)
+    with pytest.raises(ProcessLookupError):
+        os.kill(pid, 0)

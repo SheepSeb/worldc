@@ -105,6 +105,10 @@ class MeshSidecar(_M):
     visual_url: str | None = None
     visual_xform: VisualXform | None = None
     disable_physics: list[str] = Field(default_factory=list)  # prims (relative to the default prim) whose own physics is switched off
+    # prims whose source transform resets the xform stack (articulated links authored in the asset's world frame): their rest
+    # pose relative to the parent, a row-major 4x4, so they follow the placed asset.  None = not computed for this import yet.
+    local_xforms: dict[str, list[float]] | None = None
+    inactive: list[str] | None = None  # the asset's own physics joints and scenes, deactivated (None = not computed yet)
 
     @field_validator("material")
     @classmethod
@@ -235,6 +239,13 @@ class MeshAsset(Asset):
                 over = k.stage.OverridePrim(f"{path}/Visual/{rel}" if rel else f"{path}/Visual")
                 over.CreateAttribute("physics:collisionEnabled", Sdf.ValueTypeNames.Bool).Set(False)
                 over.CreateAttribute("physics:rigidBodyEnabled", Sdf.ValueTypeNames.Bool).Set(False)
+                over.CreateAttribute("physxArticulation:articulationEnabled", Sdf.ValueTypeNames.Bool).Set(False)
+            for rel in sc.inactive or ():
+                k.stage.OverridePrim(f"{path}/Visual/{rel}").SetActive(False)
+            for rel, m in (sc.local_xforms or {}).items():  # '!resetXformStack!' would pin these parts to the scene origin
+                xf = UsdGeom.Xformable(k.stage.OverridePrim(f"{path}/Visual/{rel}"))
+                xf.ClearXformOpOrder()
+                xf.AddTransformOp(opSuffix="rest").Set(Gf.Matrix4d(*m))
         else:
             # visual: USD reference to the normalised visual file
             ref = self.visual_file

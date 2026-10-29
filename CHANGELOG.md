@@ -1,5 +1,37 @@
 # Changelog
 
+## e1-freeze-v4 (2026-10-29)
+
+### Fixed: moving parts of articulated SimReady assets rendered at the scene origin
+ForgeCAD assets author their articulated links (doors, lids, drawers, turntables, wheels) with `!resetXformStack!` and a
+world-frame transform. Referenced under a placed asset, those parts ignored the placement and all sat at the scene origin
+(pilot P18: the microwave doors and turntables and the toolbox lids piled up at (0, 0) on the floor; the toolboxes on the
+benches had no lids). Affected: `toolbox`, `microwave`, `wheelie_bin`, `pallet_jack`, `planetary_gearbox`, `lidded_tote`.
+The import now records each such part's rest pose relative to its parent (`local_xforms` in the asset definition) and the
+build authors it as the part's local transform; assets already in the cache get it from their cached source on first use.
+Collision hulls, footprints and anchors were already computed in the asset frame and do not change. New tests: a synthetic
+reset-xform asset placed off the origin, and every curated scene asset's rendered meshes inside its placed bounds.
+
+### Fixed: one physics scene per stage; the assets' own joints are not simulated (pilot P18 physics timeout)
+Every ForgeCAD SimReady asset (KLT bin, toolbox, microwave, wheelie bin, pallet jack, ...) ships its own `PhysicsScene`
+(default settings, i.e. GPU dynamics) and its own joints. The importer switched off the asset's rigid bodies and colliders
+(prims with physics schemas applied) but not these, which are prim types: a scene with N such assets had N + 1 physics
+scenes, and PhysX also built the ForgeCAD articulations and mimic joints between the switched-off links. Depending on the
+combination, Isaac Sim's first simulation step (`create_simulation_view` / `update_simulation`) never returned: pilot P18
+timed out at 900 s and 1800 s, twice. Bisection on the P18 scene: microwaves + shelving and toolboxes + shelving hang,
+each group alone passes; with the fix the full P18 scene settles in 31 s (29 bodies, max drift 0.8 mm). The asset's
+joints and physics scenes are now recorded at import (`inactive`) and deactivated in the scene, and its articulation
+roots are disabled; the stage keeps exactly one physics scene (ours) and our convex hulls remain the asset's only physics.
+The placement test checks that no curated asset keeps an active joint or physics scene.
+
+### Fixed: a timed-out Isaac Sim subprocess kept running
+`python.sh` is a shell wrapper around Kit's python; on timeout `subprocess.run` killed only the wrapper, so Kit kept
+running on the GPU (orphaned, after the GPU lock was released) alongside the retry and every later job. Physics checks,
+RTX renders, drive runs and the install smoke test now run Isaac Sim in its own process group and kill the whole group on
+timeout (`isaac_env.run_isaac`). New test: a timed-out wrapper leaves no child behind.
+
+`scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v4`.
+
 ## e1-freeze-v3 (2026-10-29)
 
 ### Changed: two curated benches excluded from the library

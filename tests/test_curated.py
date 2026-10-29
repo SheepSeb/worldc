@@ -111,3 +111,40 @@ def test_robot_cell_panel_fence_geometry():
     assert cell.half(cell.params({"arm": "ur10", "fence_style": "cage"})) == pytest.approx(1.6)
     assert [k.tag for k in cell.keepouts(cell.params({"fence": False}))] == ["robot_cell"]
     assert math.isclose(cell.pedestal(cell.params({"arm": "fanuc_crx20ia_l"}))[0], 0.75)
+
+
+@pytest.mark.parametrize("alias", SCENE_ASSETS)
+def test_visual_follows_the_placement(alias, scratch_ctx):
+    """Placed away from the origin, every rendered mesh of the referenced original sits inside the asset's placed bounds (a part
+    authored with '!resetXformStack!' would stay at the scene origin), and none of its own joints or physics scenes is active
+    (PhysX would build them; extra physics scenes can stall the first step).  Composes the cached source, so needs the local cache."""
+    m = curated.cached_mesh(alias)
+    if m is None:
+        pytest.skip(f"{alias} not cached (python -m worldc.assets.curated warm)")
+    from pathlib import Path
+
+    from pxr import Sdf, Usd, UsdGeom
+
+    from worldc.assets import Pose
+
+    src = next((m.base_dir / "src").rglob(Path(m.sidecar.visual_url).name))
+    path = scratch_ctx.alloc("/World/Test", alias)
+    m.build(scratch_ctx, path, Pose((6.0, 4.0, 0.5)), m.params({}), np.random.default_rng(0))
+    stage = scratch_ctx.kit.stage
+    stage.GetPrimAtPath(f"{path}/Visual").GetReferences().SetReferences([Sdf.Reference(str(src))])  # the URL, offline
+    b = m.sidecar.bounds
+    lo, hi = np.array([6.0, 4.0, 0.5]) + b.min - 0.05, np.array([6.0, 4.0, 0.5]) + b.max + 0.05
+    bbox = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_, UsdGeom.Tokens.render])
+    outside = []
+    for prim in Usd.PrimRange(stage.GetPrimAtPath(f"{path}/Visual")):
+        if prim.IsA(UsdGeom.Mesh):
+            r = bbox.ComputeWorldBound(prim).ComputeAlignedRange()
+            if not r.IsEmpty():
+                c = np.array(r.GetMidpoint())
+                if not ((c >= lo) & (c <= hi)).all():
+                    outside.append(f"{prim.GetPath().name} at {np.round(c, 2).tolist()}")
+    assert not outside, f"{alias}: {len(outside)} mesh(es) outside the placed bounds, e.g. {outside[:3]}"
+    from pxr import UsdPhysics
+
+    live = [p.GetPath().name for p in Usd.PrimRange(stage.GetPrimAtPath(f"{path}/Visual")) if p.IsA(UsdPhysics.Joint) or p.IsA(UsdPhysics.Scene)]
+    assert not live, f"{alias}: the asset's own joints / physics scenes are still active: {live[:3]}"  # our hulls are its only physics

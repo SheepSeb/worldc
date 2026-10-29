@@ -81,12 +81,12 @@ def _apply_baked(m, alias: str, e: dict):
 
 def cached_mesh(alias: str):
     """The imported MeshAsset if it is already in the cache (never downloads), else None."""
-    from .catalog import cached_sidecar
+    from .catalog import cached_sidecar, ensure_overrides
     from .mesh.mesh_asset import MeshAsset
 
     e = table()[alias]
     _, sc = cached_sidecar(e["path"], overrides(alias, e), root=root_url(e), rev=e["rev"])
-    return _apply_baked(MeshAsset.from_file(sc), alias, e) if sc.is_file() else None
+    return _apply_baked(MeshAsset.from_file(ensure_overrides(sc)), alias, e) if sc.is_file() else None
 
 
 def baked_anchors(b: dict) -> list[dict]:
