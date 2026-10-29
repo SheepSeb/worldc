@@ -80,8 +80,8 @@ def test_align_turn_is_guarded(room):
 
 def test_fields_stop_slow_and_switch_with_speed(room):
     prot, warn = S.field_lengths(1.0, 3.0)
-    assert prot == pytest.approx(0.1 + 1 / 6 + 0.25) and warn == pytest.approx(prot + 1.0)
-    assert S.field_lengths(0.0, 3.0)[0] == pytest.approx(0.25)
+    assert prot == pytest.approx(0.1 + 1 / 6 + 1.6 * (0.1 + 1 / 3) + 0.25) and warn == pytest.approx(prot + 1.0)
+    assert S.field_lengths(0.0, 3.0)[0] == pytest.approx(1.6 * 0.1 + 0.25)
     H = standing(0.0, -0.6)
     r = S.run_trial(room, H, "fields")
     assert r["protective_stops"] >= 1 and r["field_warning_s"] > 0 and r["min_gap_moving_m"] > 0

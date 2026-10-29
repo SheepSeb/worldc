@@ -3,8 +3,9 @@
 * ``blind``: plan once per leg on the static grid and follow it, ignoring people (the current ``worldc drive``).
 * ``fields`` (ISO 3691-4-style stop-and-wait): as blind, with a protective and a warning field, both rectangles ahead of the
   robot in the travel direction (see FIELDS).  Recomputed every step from the current speed (field switching):
-  protective length = v * t_react + v^2 / (2 a_brake) + margin, warning length = protective + warning_extra; both widen by
-  turn_widen per side while the robot turns (|w| > MOVING_W, the align turn included).  A person's disk in the protective
+  protective length = v * t_react + v^2 / (2 a_brake) + approach * (t_react + v / a_brake) + margin (approach: an
+  ISO 13855-style 1.6 m/s for a person closing in while the robot stops), warning length = protective + warning_extra;
+  both widen by turn_widen per side while the robot turns (|w| > MOVING_W, the align turn included).  A person's disk in the protective
   field stops the robot (braking at a_brake); it resumes once the protective field has been clear for resume_clear_s.  A
   person in the warning field slows it (linear and angular) to warning_scale and is flagged (``field_warning_s``).
   ``a_brake`` is the robot table's ``brake_decel_mps2``.
@@ -23,7 +24,8 @@ react.  Distances are gaps between the footprint and a person's disk (radius HUM
 The robot counts as *moving* when |v| > MOVING_V or |w| > MOVING_W: turning in place counts as moving (the footprint
 sweeps).  Since people do not react, collisions are split by whether the robot was moving (the robot's doing; the primary
 metric) or standing (a person walked into it).  A collision is tagged ``from_behind`` when the person's centre is behind
-the robot's centre along the travel heading (an overtake or a person walking into its back).
+the robot's centre along the travel heading (an overtake or a person walking into its back), and ``braking`` (counted in
+``collisions_robot_moving_braking``) when the policy was already holding: the robot was braking in a stop.
 
 Outcome of a trial: ``success`` (every goal reached within the timeout and no robot-moving collision); otherwise
 ``collision`` (a robot-moving collision), ``frozen`` (no progress of FROZEN_M within FROZEN_S while driving, or holding for
@@ -46,6 +48,7 @@ REACH_M, YAW_TOL, ALIGN_MAX_S, PAUSE_S = 0.4, 0.12, 4.0, 0.9
 FIELDS = {  # the ``fields`` policy, in one place; a_brake comes from the robot table (world.robot["brake_decel_mps2"])
     "t_react_s": 0.1,  # detection to braking
     "margin_m": 0.25,  # added to the stopping distance
+    "approach_mps": 1.6,  # ISO 13855-style human approach speed, over the time to stop (T_react + v / a_brake)
     "warning_extra_m": 1.0,  # warning length = protective length + this
     "side_margin_m": 0.25,  # each side, beyond the footprint's half-width across the travel heading
     "turn_widen_m": 0.15,  # extra each side while turning
@@ -107,7 +110,8 @@ class Path:
 def field_lengths(v: float, a_brake: float) -> tuple[float, float]:
     """(protective, warning) field lengths ahead of the footprint's front edge at speed ``v``."""
     v = abs(v)
-    prot = v * FIELDS["t_react_s"] + v * v / (2.0 * a_brake) + FIELDS["margin_m"]
+    t_stop = FIELDS["t_react_s"] + v / a_brake
+    prot = v * FIELDS["t_react_s"] + v * v / (2.0 * a_brake) + FIELDS["approach_mps"] * t_stop + FIELDS["margin_m"]
     return prot, prot + FIELDS["warning_extra_m"]
 
 
@@ -174,7 +178,7 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
     replans, hold_s = 0, 0.0
     in_prot, protective_stops, warning_s = False, 0, 0.0
     in_contact = np.zeros(H.shape[1], bool)
-    collisions, moving_hits, moving_behind, events = 0, 0, 0, []
+    collisions, moving_hits, moving_behind, moving_braking, events = 0, 0, 0, 0, []
     min_gap, min_gap_moving = math.inf, math.inf
     near = {b: 0.0 for b in NEAR_BANDS}
     near_moving = {b: 0.0 for b in MOVING_BANDS}
@@ -209,6 +213,7 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
                 collisions += 1
                 moving_hits += moving
                 moving_behind += int(moving and ahead_x[i] < 0)
+                moving_braking += int(moving and holding)
                 events.append({"type": "collision", "t": round(t, 2), "worker": int(i), "xy": [round(x, 2), round(y, 2)],
                                "robot_v": round(v, 2), "robot_w": round(w, 2), "robot_moving": bool(moving),
                                "ahead_x": round(float(ahead_x[i]), 2), "from_behind": bool(ahead_x[i] < 0),
@@ -320,7 +325,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         outcome = end
     fin = lambda m: round(m, 3) if math.isfinite(m) else None  # noqa: E731
     return {"policy": policy, "success": outcome == "success", "outcome": outcome, "end": end, "frozen": end == "frozen",
-            "collisions_robot_moving": moving_hits, "collisions_robot_moving_from_behind": moving_behind, "collisions": collisions, "collisions_robot_stationary": collisions - moving_hits,
+            "collisions_robot_moving": moving_hits, "collisions_robot_moving_from_behind": moving_behind,
+            "collisions_robot_moving_braking": moving_braking, "collisions": collisions, "collisions_robot_stationary": collisions - moving_hits,
             "time_to_goal_s": round(t, 2) if end == "done" else None, "sim_s": round(t, 2),
             "min_gap_m": fin(min_gap), "min_gap_moving_m": fin(min_gap_moving),
             **{f"time_within_{b:g}m_s": round(near[b], 2) for b in NEAR_BANDS},

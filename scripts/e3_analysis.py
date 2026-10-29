@@ -61,6 +61,7 @@ METRICS = {  # name -> (per-trial value, aggregate over the trials of a cell)
     "success": (lambda r: float(r["success"]), np.nanmean),
     "moving_collisions": (lambda r: r["collisions_robot_moving"], np.nanmean),
     "moving_collisions_from_behind": (lambda r: r["collisions_robot_moving_from_behind"], np.nanmean),
+    "moving_collisions_braking": (lambda r: r["collisions_robot_moving_braking"], np.nanmean),
     "all_collisions": (lambda r: r["collisions"], np.nanmean),
     "stationary_collisions": (lambda r: r["collisions_robot_stationary"], np.nanmean),
     "min_gap_moving": (lambda r: r["min_gap_moving_m"] if r["min_gap_moving_m"] is not None else np.nan, np.nanmedian),
@@ -180,6 +181,7 @@ def fmt(v, lo, hi, digits=1, pct=False):
 COLUMNS = [  # (header, metric, digits, pct)
     ("Moving coll./trial", "moving_collisions", 2, False),
     ("of which from behind", "moving_collisions_from_behind", 2, False),
+    ("of which already braking", "moving_collisions_braking", 2, False),
     ("All coll./trial", "all_collisions", 1, False),
     ("Success (%)", "success", 0, True),
     ("Frozen (%)", "frozen", 0, True),

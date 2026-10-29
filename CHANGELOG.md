@@ -1,5 +1,15 @@
 # Changelog
 
+## e3-fields-3 (2026-10-29)
+
+### Changed: E3 protective field includes an ISO 13855-style human approach
+- **Protective length:** v·T_react + v²/(2·a_brake) + 1.6 m/s·(T_react + v/a_brake) + margin; warning = protective +
+  1.0 m. `sim.FIELDS["approach_mps"]`.
+- **New row metric:** `collisions_robot_moving_braking` (the robot was already braking in a stop). It is in the
+  summary and in Table 2.
+- **P18 rerun** (90 trials): fields has 0.1 / 0.4 / 1.1 robot-moving collisions per trial (easy / medium / hard). 10 of
+  16 are from behind and 6 happen while already braking; none happen while the robot drives freely.
+
 ## e3-fields-2 (2026-10-29)
 
 ### Changed: E3 fields parameters

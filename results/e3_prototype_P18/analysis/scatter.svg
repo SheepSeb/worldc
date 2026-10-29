@@ -17,27 +17,27 @@
 <line x1="151.1" y1="358.4" x2="151.1" y2="358.4" stroke="#c0392b" stroke-opacity="0.6"/>
 <line x1="151.1" y1="385.0" x2="151.1" y2="331.8" stroke="#c0392b" stroke-opacity="0.6"/>
 <circle cx="151.1" cy="358.4" r="5.5" fill="#c0392b"/>
-<line x1="151.1" y1="367.2" x2="154.6" y2="367.2" stroke="#2471a3" stroke-opacity="0.6"/>
-<line x1="151.1" y1="385.0" x2="151.1" y2="340.6" stroke="#2471a3" stroke-opacity="0.6"/>
-<circle cx="151.1" cy="367.2" r="5.5" fill="#2471a3"/>
+<line x1="151.1" y1="376.1" x2="155.5" y2="376.1" stroke="#2471a3" stroke-opacity="0.6"/>
+<line x1="151.1" y1="385.0" x2="151.1" y2="358.4" stroke="#2471a3" stroke-opacity="0.6"/>
+<circle cx="151.1" cy="376.1" r="5.5" fill="#2471a3"/>
 <line x1="160.2" y1="385.0" x2="175.0" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <line x1="170.3" y1="385.0" x2="170.3" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <circle cx="170.3" cy="385.0" r="5.5" fill="#1e8449"/>
 <line x1="151.1" y1="243.0" x2="151.1" y2="243.0" stroke="#c0392b" stroke-opacity="0.6"/>
 <line x1="151.1" y1="287.4" x2="151.1" y2="198.6" stroke="#c0392b" stroke-opacity="0.6"/>
 <rect x="146.1" y="238.0" width="10" height="10" fill="#c0392b"/>
-<line x1="157.8" y1="314.0" x2="169.4" y2="314.0" stroke="#2471a3" stroke-opacity="0.6"/>
-<line x1="162.0" y1="358.4" x2="162.0" y2="269.6" stroke="#2471a3" stroke-opacity="0.6"/>
-<rect x="157.0" y="309.0" width="10" height="10" fill="#2471a3"/>
+<line x1="158.3" y1="349.5" x2="172.1" y2="349.5" stroke="#2471a3" stroke-opacity="0.6"/>
+<line x1="164.7" y1="376.1" x2="164.7" y2="322.9" stroke="#2471a3" stroke-opacity="0.6"/>
+<rect x="159.7" y="344.5" width="10" height="10" fill="#2471a3"/>
 <line x1="185.0" y1="385.0" x2="239.9" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <line x1="203.4" y1="385.0" x2="203.4" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <rect x="198.4" y="380.0" width="10" height="10" fill="#1e8449"/>
 <line x1="152.1" y1="145.4" x2="152.1" y2="145.4" stroke="#c0392b" stroke-opacity="0.6"/>
 <line x1="152.1" y1="189.7" x2="152.1" y2="92.1" stroke="#c0392b" stroke-opacity="0.6"/>
 <polygon points="152.1,138.9 146.1,149.9 158.1,149.9" fill="#c0392b"/>
-<line x1="170.6" y1="251.9" x2="189.8" y2="251.9" stroke="#2471a3" stroke-opacity="0.6"/>
-<line x1="178.2" y1="314.0" x2="178.2" y2="189.7" stroke="#2471a3" stroke-opacity="0.6"/>
-<polygon points="178.2,245.4 172.2,256.4 184.2,256.4" fill="#2471a3"/>
+<line x1="178.2" y1="287.4" x2="207.6" y2="287.4" stroke="#2471a3" stroke-opacity="0.6"/>
+<line x1="188.8" y1="340.6" x2="188.8" y2="225.2" stroke="#2471a3" stroke-opacity="0.6"/>
+<polygon points="188.8,280.9 182.8,291.9 194.8,291.9" fill="#2471a3"/>
 <line x1="227.3" y1="385.0" x2="389.8" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <line x1="341.4" y1="385.0" x2="341.4" y2="385.0" stroke="#1e8449" stroke-opacity="0.6"/>
 <polygon points="341.4,378.5 335.4,389.5 347.4,389.5" fill="#1e8449"/>
