@@ -38,7 +38,8 @@ Primary metric in bold: robot-moving collisions per trial (mean of 10).
 - **Blind:** almost all of its collisions happen while it moves. Robot-moving collisions rise from easy to hard
   (0.3, 1.6, 2.7).
 - **Stop-and-wait:** 6 robot-moving collisions remain in medium and hard. 5 happen while it drives and 1 while it turns.
-  In each, the person comes from beside or behind the robot, which its "ahead" rule does not cover.
+  All 6 are overtakes. The person comes from behind (0.4-0.6 m behind the robot's centre) and walks 1.0-1.5 m/s in the
+  robot's direction, faster than the robot, into its back. The "ahead" rule does not cover that.
 - **Stationary collisions:** most collisions of the two cautious policies are people walking into the robot while it
   stands. `stationary <1 m of a person` is the time the robot stands within 1.0 m of someone.
 - **Frozen:** in the hard tier the cautious policies often freeze (stop 3, aware 6 of 10). Freezing costs human-aware

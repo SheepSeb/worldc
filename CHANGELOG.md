@@ -1,5 +1,19 @@
 # Changelog
 
+## e3-analysis (2026-10-29)
+
+### Added: E3 analysis and scene selection
+- **`scripts/e3_analysis.py`:**
+  - Cluster-bootstrap CIs (scenes, then seeds).
+  - Paired Wilcoxon tests between policies on identical seeds, Holm-corrected, for robot-moving collisions and time to
+    goal (unfinished trials count at the timeout).
+  - Table 2 (`table2.md` / `.tex`) and the safety-vs-efficiency scatter (SVG plus points).
+  - Example on P18: `results/e3_prototype_P18/analysis/`.
+- **`scripts/e3_select_scenes.py`:** proposes the E3 scenes from accepted E1 runs, covering the 6 cell-type families and
+  S / M / L. It only reads records and grids, so it is safe while E1 runs.
+- `results/e3_prototype_P18/README.md`: the remaining stop-and-wait robot-moving collisions are all overtakes from
+  behind.
+
 ## e3-prototype-2 (2026-10-29)
 
 ### Changed: E3 policies guard the align turn; stationary-near-person metric; path direction fix
