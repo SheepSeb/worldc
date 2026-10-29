@@ -5,7 +5,7 @@
 Builds the scene's E3 variants first (``worldc.e3.tiers``: ``base`` for easy / medium, ``hard`` with occluders; rebuilt and
 statically checked) into OUT/scenes unless they are there.  Easy / medium / hard = 1 / 3 / 6 workers.  Writes trials.csv,
 trials.jsonl (with drawn workers, events, trajectories and a digest), summary.json, summary.md, map_{base,hard}.png (grid,
-walkways, task points, goals), and for the hard tier per policy a picture and a GIF of the seed with the most robot-moving
+task points, goals), and for the hard tier per policy a picture and a GIF of the seed with the most robot-moving
 collisions (then the smallest gap).  Replays one trial from its seed and checks it is identical.
 """
 from __future__ import annotations
@@ -42,7 +42,6 @@ def px(world, x, y):
 def base_image(world) -> Image.Image:
     g, h = world.grid, world.hgrid
     rgb = np.full(g.occ.shape + (3,), 245, np.uint8)
-    rgb[world.walkways] = (225, 235, 250)
     rgb[~h.free & ~g.occ] = (225, 215, 215)
     rgb[g.occ] = (60, 60, 60)
     im = Image.fromarray(rgb).resize((int(g.nx * g.res * PX), int(g.ny * g.res * PX)), Image.NEAREST)
@@ -123,7 +122,7 @@ def summarize(rows) -> dict:
                 "near_miss_moving_rate": round(float(np.mean([r["min_gap_moving_m"] is not None and 0 < r["min_gap_moving_m"] < 0.5 for r in R])), 2),
                 "time_within_0.5m_moving_mean_s": mean("time_within_0.5m_moving_s"), "time_within_1m_moving_mean_s": mean("time_within_1m_moving_s"),
                 "time_within_0.5m_mean_s": mean("time_within_0.5m_s"), "time_within_1m_mean_s": mean("time_within_1m_s"),
-                "stationary_in_walkway_mean_s": mean("stationary_in_walkway_s"),
+                "stationary_near_1m_mean_s": mean("stationary_near_1m_s"),
                 "time_to_goal_median_s": round(float(np.median(done)), 1) if done else None,
                 "human_human_overlap_mean_s": mean("human_human_overlap_s")}
     return out
@@ -135,7 +134,7 @@ def table(summary) -> str:
             ("all / stationary coll.", lambda s: f"{s['collisions_mean']:.1f} / {s['collisions_robot_stationary_mean']:.1f}"),
             ("<0.5 m / <1 m moving (s)", lambda s: f"{s['time_within_0.5m_moving_mean_s']:.1f} / {s['time_within_1m_moving_mean_s']:.1f}"),
             ("<0.5 m / <1 m all (s)", lambda s: f"{s['time_within_0.5m_mean_s']:.1f} / {s['time_within_1m_mean_s']:.1f}"),
-            ("stationary in walkway (s)", lambda s: f"{s['stationary_in_walkway_mean_s']:.1f}"),
+            ("stationary <1 m of a person (s)", lambda s: f"{s['stationary_near_1m_mean_s']:.1f}"),
             ("time to goal (median s)", lambda s: f"{s['time_to_goal_median_s']}"),
             ("outcomes", lambda s: ", ".join(f"{k} {v}" for k, v in s["outcomes"].items()))]
     lines = ["| tier / policy | " + " | ".join(c for c, _ in cols) + " |", "|---" * (len(cols) + 1) + "|"]
@@ -168,7 +167,7 @@ def main():
         timeouts[variant] = S.timeout_s(w, legs[variant])
         base_image(w).save(out / f"map_{variant}.png")
         print(f"{w.name}: grid {w.grid.nx}x{w.grid.ny}, task points { {k: len(p) for k, p in w.pois.items()} }, goals {len(w.goals)}, "
-              f"unreachable legs {sum(p is None for p in legs[variant])}, walkways {w.walkways.mean():.0%} of the grid, "
+              f"unreachable legs {sum(p is None for p in legs[variant])}, "
               f"timeout {timeouts[variant]:.0f} s; robot {w.robot}")
     timeout = max(timeouts.values())  # one timeout for every tier
 
@@ -181,7 +180,8 @@ def main():
                 for pol in S.POLICIES:
                     t2 = time.time()
                     res = S.run_trial(world, H, pol, legs[variant], timeout)
-                    row = {"scene": a.name, "variant": variant, "tier": tier, "workers": n, "seed": seed, "wall_s": round(time.time() - t2, 2),
+                    row = {"scene": a.name, "variant": variant, "tier": tier, "workers": n, "seed": seed, "timeout_s": round(timeout, 1),
+                           "wall_s": round(time.time() - t2, 2),
                            **{k: v for k, v in res.items() if k not in ("events", "arrivals", "trajectory")}}
                     rows.append(row)
                     jf.write(json.dumps({**row, "workers_drawn": info, "events": res["events"], "arrivals": res["arrivals"],

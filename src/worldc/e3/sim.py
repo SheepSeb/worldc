@@ -4,7 +4,11 @@
 * ``stop``: as blind, but halt while a person is within STOP_DIST_M ahead (gap from the footprint, person in front of the
   robot's centre); resume once that has been clear for STOP_CLEAR_S.
 * ``aware``: at AWARE_HZ, people are obstacles inflated by AWARE_INFLATE_M; when the path ahead is blocked, replan around
-  them (wait if there is no way through); speed scales from full at SLOW_FAR_M to zero at SLOW_NEAR_M from the nearest person.
+  them (wait if there is no way through); speed (linear and angular) scales from full at SLOW_FAR_M to zero at SLOW_NEAR_M from
+  the nearest person.
+
+The human checks apply to the turn in place that aligns the robot at each goal too: stop-and-wait holds the turn under its
+STOP_DIST_M rule and human-aware scales its rotation; the align time limit does not run while the robot holds.
 
 All three share the planner (A* + smoothing on the robot-inflated grid) and the controller (the pure pursuit of
 ``render/isaac_drive.py``: look-ahead, turn in place for large heading errors, slew-limited v and w, align at each goal).
@@ -16,7 +20,8 @@ sweeps).  Since people do not react, collisions are split by whether the robot w
 metric) or standing (a person walked into it).
 
 Outcome of a trial: ``success`` (every goal reached within the timeout and no robot-moving collision); otherwise
-``collision`` (a robot-moving collision), ``frozen`` (no progress of FROZEN_M within FROZEN_S while driving),
+``collision`` (a robot-moving collision), ``frozen`` (no progress of FROZEN_M within FROZEN_S while driving, or holding for
+FROZEN_S during an align turn),
 ``timeout``, ``goal_unreachable`` (no static plan) or ``goal_missed`` (finished but a goal was not reached).
 """
 from __future__ import annotations
@@ -37,6 +42,7 @@ AWARE_HZ, AWARE_INFLATE_M, SLOW_FAR_M, SLOW_NEAR_M, AWARE_LOOKAHEAD_M = 5.0, 0.5
 NEAR_BANDS = (0.5, 1.0, 2.0)
 MOVING_BANDS = (0.5, 1.0)
 MOVING_V, MOVING_W = 0.05, 0.2  # m/s, rad/s
+STATIONARY_NEAR_M = 1.0  # time stationary within this gap of a person
 FROZEN_S, FROZEN_M = 30.0, 0.10
 POLICIES = ("blind", "stop", "aware")
 OUTCOMES = ("success", "collision", "frozen", "timeout", "goal_unreachable", "goal_missed")
@@ -44,12 +50,6 @@ OUTCOMES = ("success", "collision", "frozen", "timeout", "goal_unreachable", "go
 
 def wrap(a: float) -> float:
     return (a + math.pi) % (2 * math.pi) - math.pi
-
-
-def body_pts(half) -> np.ndarray:
-    """Footprint sample points in the robot frame: corners, edge midpoints, centre."""
-    hx, hy = half
-    return np.array([(sx * hx, sy * hy) for sx in (-1, 0, 1) for sy in (-1, 0, 1)], float)
 
 
 def gaps(x: float, y: float, yaw: float, half, H: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -126,8 +126,7 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
     legs = static_legs(world) if legs is None else legs
     timeout = timeout_s(world, legs) if timeout is None else timeout
     n_steps = min(int(timeout / DT), H.shape[0] - 1)
-    g, hg, phi0 = world.grid, world.hgrid, world.phi0
-    walk, bpts = world.walkways, body_pts(world.body_half)
+    g, phi0 = world.grid, world.phi0
     x, y, yaw0 = world.spawn
     th = wrap(yaw0 + phi0)
     v = w = 0.0
@@ -142,7 +141,7 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
     min_gap, min_gap_moving = math.inf, math.inf
     near = {b: 0.0 for b in NEAR_BANDS}
     near_moving = {b: 0.0 for b in MOVING_BANDS}
-    stationary_s = stationary_walkway_s = 0.0
+    stationary_s = stationary_near_s = 0.0
     hh_overlap = 0.0
     traj, arrivals = [], []
     prog_t, prog_xy = 0.0, (x, y)
@@ -154,12 +153,10 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         yaw = th - phi0
         moving = abs(v) > MOVING_V or abs(w) > MOVING_W
         # ---- metrics
+        gp = gaps(x, y, yaw, world.body_half, Hk)[0] if len(Hk) else np.array([])
         if not moving:
             stationary_s += DT
-            c, s = math.cos(yaw), math.sin(yaw)
-            if any(walk[hg.clamp(hg.cell(x + c * a - s * b, y + s * a + c * b))] for a, b in bpts):
-                stationary_walkway_s += DT
-        gp = gaps(x, y, yaw, world.body_half, Hk)[0] if len(Hk) else np.array([])
+            stationary_near_s += DT * bool(len(gp) and gp.min() < STATIONARY_NEAR_M)
         if len(gp):
             ahead_x = math.cos(th) * (Hk[:, 0] - x) + math.sin(th) * (Hk[:, 1] - y)  # along the travel heading, from the centre
             gmin = float(gp.min())
@@ -189,10 +186,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         if path is None:
             end = "goal_unreachable"
             break
-        if state == "drive":
-            if math.hypot(x - prog_xy[0], y - prog_xy[1]) > FROZEN_M:
-                prog_t, prog_xy = t, (x, y)
-            elif t - prog_t > FROZEN_S:
+        if (state == "drive" or (state == "align" and holding)) and math.hypot(x - prog_xy[0], y - prog_xy[1]) <= FROZEN_M:
+            if t - prog_t > FROZEN_S:
                 end = "frozen"
                 break
         else:
@@ -200,7 +195,7 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
         gx, gy, gyaw = world.goals[leg]["pose"]
         # ---- policy: may replace the path (aware) or hold the robot (stop, aware)
         scale = 1.0
-        if policy == "stop" and state == "drive" and len(gp):
+        if policy == "stop" and state in ("drive", "align") and len(gp):
             if ((gp < STOP_DIST_M) & (ahead_x > 0)).any():
                 holding, clear_since = True, None
             elif holding:
@@ -208,6 +203,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
                 holding = t - clear_since < STOP_CLEAR_S
         if policy == "aware" and len(gp):
             scale = float(np.clip((gp.min() - SLOW_NEAR_M) / (SLOW_FAR_M - SLOW_NEAR_M), 0.0, 1.0))
+            if state == "align":
+                holding = scale <= 0.0
             if state == "drive" and t >= next_aware:
                 next_aware = t + 1.0 / AWARE_HZ
                 blocked = _human_block(world, Hk)
@@ -237,14 +234,18 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
             elif holding:
                 hold_s += DT
             elif abs(alpha) > 0.7:
-                w_t = float(np.clip(2.0 * alpha, -WMAX, WMAX))
+                w_t = scale * float(np.clip(2.0 * alpha, -WMAX, WMAX))
             else:
                 v_t = scale * VMAX * float(np.clip(dist_end / 1.5, 0.25, 1.0)) * (1.0 - 0.6 * abs(alpha))
-                w_t = float(np.clip(2.0 * v_t * math.sin(alpha) / LOOK + 0.8 * alpha, -WMAX, WMAX))
+                w_t = scale * float(np.clip(2.0 * v_t * math.sin(alpha) / LOOK + 0.8 * alpha, -WMAX, WMAX))
         if state == "align":
             err = wrap(gyaw - th)
-            w_t = float(np.clip(1.8 * err, -1.0, 1.0)) if abs(err) > YAW_TOL else 0.0
-            if abs(err) <= YAW_TOL or t - state_t > ALIGN_MAX_S:
+            if holding:  # a person too close: hold the turn; the align time limit waits
+                state_t += DT
+                hold_s += DT
+            else:
+                w_t = scale * float(np.clip(1.8 * err, -1.0, 1.0)) if abs(err) > YAW_TOL else 0.0
+            if not holding and (abs(err) <= YAW_TOL or t - state_t > ALIGN_MAX_S):
                 arrivals.append({"goal": world.goals[leg]["id"], "reached": math.hypot(gx - x, gy - y) < REACH_M, "t": round(t, 2)})
                 state, state_t = "pause", t
         if state == "pause" and t - state_t > PAUSE_S:
@@ -277,6 +278,6 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
             "min_gap_m": fin(min_gap), "min_gap_moving_m": fin(min_gap_moving),
             **{f"time_within_{b:g}m_s": round(near[b], 2) for b in NEAR_BANDS},
             **{f"time_within_{b:g}m_moving_s": round(near_moving[b], 2) for b in MOVING_BANDS},
-            "stationary_s": round(stationary_s, 2), "stationary_in_walkway_s": round(stationary_walkway_s, 2),
+            "stationary_s": round(stationary_s, 2), "stationary_near_1m_s": round(stationary_near_s, 2),
             "human_human_overlap_s": round(hh_overlap, 2), "goals_reached": sum(a["reached"] for a in arrivals), "n_goals": len(legs),
             "replans": replans, "hold_s": round(hold_s, 2), "events": events, "arrivals": arrivals, "trajectory": traj}

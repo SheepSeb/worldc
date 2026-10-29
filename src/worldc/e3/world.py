@@ -17,7 +17,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
 from scipy import ndimage
 
 from ..check import nav as NV
@@ -47,7 +46,6 @@ class World:
     hgrid: NV.Grid = None  # people: free = HUMAN_RADIUS_M clear of static colliders and robot-cell safety footprints
     pois: dict = None
     _paths: dict = field(default_factory=dict, repr=False)
-    _walkways: np.ndarray | None = field(default=None, repr=False)
 
     def __post_init__(self):
         self.grid = NV.build_grid(NV.Grid(self.xr, self.yr, self.res), self.polys, self.robot_r)
@@ -95,36 +93,24 @@ class World:
         return {k: v for k, v in out.items() if v}
 
     def human_path(self, a, b) -> np.ndarray:
-        """Smoothed shortest walking path between two task points (cached; task points are fixed per world)."""
+        """Smoothed shortest walking path between two task points (cached; task points are fixed per world).  Always planned
+        from the smaller point to the larger and reversed for the other direction: A* breaks ties differently each way, and the
+        path must not depend on which direction was asked for first (a seed's workers must be the same in every run)."""
         key = (tuple(a), tuple(b))
         if key not in self._paths:
-            p = plan(self.hgrid, self.hgrid.free, a, b)
+            lo, hi = sorted(key)
+            p = plan(self.hgrid, self.hgrid.free, lo, hi)
             if p is None:
                 raise ValueError(f"no walking path {a} -> {b}")
-            self._paths[key] = p
-            self._paths[key[::-1]] = p[::-1].copy()
+            self._paths[(lo, hi)] = p
+            self._paths[(hi, lo)] = p[::-1].copy()
         return self._paths[key]
 
     def walkway_paths(self) -> list[np.ndarray]:
+        """The walking paths between every pair of task points."""
         pts = [p for v in self.pois.values() for p in v]
         return [self.human_path(a, b) for i, a in enumerate(pts) for b in pts[i + 1:]]
 
-    @property
-    def walkways(self) -> np.ndarray:
-        """Cells of the human walkways: what a walking person's disk sweeps along the walking paths between every pair of task
-        points.  A scene property (independent of seed and policy)."""
-        if self._walkways is None:
-            g, k = self.hgrid, 1.0 / self.res
-            img = Image.new("1", (g.nx, g.ny), 0)
-            dr = ImageDraw.Draw(img)
-            r = HUMAN_RADIUS_M * k
-            for p in self.walkway_paths():
-                q = [((x - g.x0) * k, (g.y1 - y) * k) for x, y in p]
-                dr.line(q, fill=1, width=int(round(2 * r)))
-                for x, y in q:
-                    dr.ellipse([x - r, y - r, x + r, y + r], fill=1)
-            self._walkways = np.asarray(img, bool) & ~g.occ
-        return self._walkways
 
 
 def astar(free: np.ndarray, start, goal):

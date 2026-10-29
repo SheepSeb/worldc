@@ -1,5 +1,19 @@
 # Changelog
 
+## e3-prototype-2 (2026-10-29)
+
+### Changed: E3 policies guard the align turn; stationary-near-person metric; path direction fix
+- **Align turn:** stop-and-wait applies its 1.0 m rule to the turn in place at each goal, and human-aware scales its
+  rotation (everywhere, not only while aligning). The align time limit waits while the robot holds, and a hold of 30 s
+  during an align turn ends the trial as `frozen`.
+- **Metric:** `stationary_in_walkway_s` is replaced by `stationary_near_1m_s` (time standing within 1.0 m of a person).
+  The walkway mask is gone.
+- **Fix:** a walking path is planned from the smaller task point to the larger and reversed for the other direction. A*
+  breaks ties differently each way, so cached paths depended on which direction was asked for first, and with it a
+  seed's workers (P18: 10 blind trials changed slightly between runs). Test added.
+- **Rows:** each trial row carries `timeout_s`.
+- **P18 rerun** (same 90 trials, `results/e3_prototype_P18/`): human-aware has no robot-moving collision in any tier.
+
 ## e3-prototype (2026-10-29)
 
 ### Added: E3 2D simulator for human-robot safety scenarios (outside the E1 freeze)

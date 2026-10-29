@@ -57,3 +57,31 @@ def test_turning_in_place_counts_as_moving(room):
     H = standing(-3.0, 0.75)  # beside the robot: its corner sweeps through the person while it turns around
     r = S.run_trial(turned, H, "blind")
     assert r["events"] and r["events"][0]["robot_moving"] and abs(r["events"][0]["robot_v"]) <= S.MOVING_V
+
+
+def test_align_turn_is_guarded(room):
+    """A person steps beside the goal just as the robot starts its align turn there (goal yaw: turn around)."""
+    turn = World("room", room.xr, room.yr, room.res, {}, [], room.spawn, ROBOT, 0.577, [{"id": "g", "pose": (3.0, 0.0, np.pi)}],
+                 room.raw_pois)
+    far = standing(-3.6, 1.6)
+    first = S.run_trial(turn, far, "blind")
+    t_align = next(r[0] for r in first["trajectory"] if np.hypot(3.0 - r[1], r[2]) < 0.3)
+    H = far.copy()
+    H[int(t_align / S.DT) + 4:] = (3.0, 0.75)
+    blind = S.run_trial(turn, H, "blind")
+    assert blind["collisions_robot_moving"] >= 1 and abs(blind["events"][0]["robot_v"]) <= S.MOVING_V  # swept while turning
+    for pol in ("stop", "aware"):
+        r = S.run_trial(turn, H, pol)
+        assert r["collisions_robot_moving"] == 0 and r["hold_s"] > 0 and r["outcome"] == "frozen", (pol, r["outcome"])
+        assert r["stationary_near_1m_s"] > 25.0
+
+
+def test_walkers_do_not_depend_on_path_query_order(room):
+    a, _ = workers(room, 3, 3, 60.0, S.DT)
+    other = World("room", room.xr, room.yr, room.res, {}, [], room.spawn, ROBOT, 0.577, room.goals, room.raw_pois)
+    pts = [p for v in other.pois.values() for p in v]
+    for p in pts[::-1]:  # ask for every path the other way round first
+        for q in pts:
+            if p != q:
+                other.human_path(p, q)
+    assert np.array_equal(workers(other, 3, 3, 60.0, S.DT)[0], a)
