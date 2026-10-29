@@ -44,6 +44,7 @@ def main(argv=None):
     rc.add_argument("--out", default=None)
     rc.add_argument("--prompts", default=None, help="remanufacturing: one scene per prompts.csv row into --out/<prompt_id>/")
     rc.add_argument("--ids", default="", help="remanufacturing: only these comma-separated prompt ids")
+    rc.add_argument("--seeds", type=int, default=30, help="e2_template: build seeds 0..N-1 into --out/<prompt>_seed<NN>/")
     c = sub.add_parser("check", help="post-build checks of a scene directory")
     c.add_argument("scene")
     r = sub.add_parser("render", help="fast proxy render (no Isaac Sim)")
@@ -194,6 +195,14 @@ def main(argv=None):
             sys.exit("worldc recipe remanufacturing --prompts prompts/prompts.csv --out out/e2/recipe [--ids P01,P07]")
         res = build_all(args.prompts, args.out, [i for i in args.ids.split(",") if i] or None)
         print(f"{sum(r['accepted'] for r in res)}/{len(res)} accepted ({sum(r['first_try'] for r in res)} first try) -> {args.out}")
+        sys.exit(0 if all(r["accepted"] for r in res) else 1)
+    if args.cmd == "recipe" and args.name == "e2_template":  # E2 template baseline (specs/e2_template_reman_cell.json)
+        from .recipes.remanufacturing import build_template
+
+        if not args.out:
+            sys.exit("worldc recipe e2_template --out out/e2/template [--seeds 30]")
+        res = build_template(args.out, args.seeds)
+        print(f"{sum(r['accepted'] for r in res)}/{len(res)} accepted -> {args.out}")
         sys.exit(0 if all(r["accepted"] for r in res) else 1)
     if args.cmd == "recipe":
         from .compile import compile_scene

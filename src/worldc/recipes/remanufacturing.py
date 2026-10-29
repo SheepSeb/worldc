@@ -41,6 +41,7 @@ CONVEYOR_CELL_GAP = 0.7                            # conveyor end to the robot c
 ARRANGEMENTS = ("along_wall", "single_row", "facing_rows", "along_conveyor")
 LIGHTING = ("indoor_industrial", "bright_day", "mixed_warm")
 WALLS = ("south", "north", "west", "east")
+ARMS = ("ur10", "fanuc_crx10ia", "fanuc_crx20ia_l", "franka")
 # props per cell type: (bench props [(asset, count range)], floor props [(asset, count range)], on-pallet unit, n pallets range)
 PROPS = {
     "ev_battery_dismantling": ([("toolbox", (1, 2)), ("crate_gray", (1, 2))], [("crate_blue", (2, 4)), ("drum_steel", (1, 3)), ("ibc_tank", (1, 1)),
@@ -74,7 +75,7 @@ class Plan:
         for q, kind in self.rects:
             if kind in ignore:
                 continue
-            g = 0.0 if kind == "reserved" else gap
+            g = (0.0 if kind == "reserved" else gap) - 1e-6  # exactly `gap` apart is fine (rows are placed at exactly A)
             if r[0] < q[2] + g and r[2] > q[0] - g and r[1] < q[3] + g and r[3] > q[1] - g:
                 return False
         return True
@@ -151,7 +152,8 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     plan, knobs, objects, zones = Plan(W, D), {"aisle_m": A}, [], []
 
     # ---- doors
-    walls = list(rng.permutation(WALLS))
+    first = WALLS[(int(seed) + int(seed) // 1000) % 4]  # the main door's wall cycles over the four walls across seeds
+    walls = [first] + [w for w in rng.permutation(WALLS).tolist() if w != first]
     door_walls = [walls[i % 4] for i in range(max(1, n_doors))]
     openings, door_pts, spawn_pts = [], [], []
     for i, wall in enumerate(door_walls):
@@ -179,7 +181,9 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     # ---- robot cells
     cells, cell_rects = [], []
     for c in range(n_cells):
-        arm = "franka" if min(W, D) < 9 else str(rng.choice(["ur10", "fanuc_crx10ia", "fanuc_crx20ia_l", "franka"]))
+        fits = [a for a in ARMS if 2 * RobotCell().half(RobotCell().params({"arm": a})) + 2 * CELL_WALL_GAP + A <= min(W, D)]
+        # cycles over the arms whose cell (+ wall gaps + an aisle) fits, across seeds and cells (balanced over the prompt set)
+        arm = fits[(int(seed) + c + int(seed) // 1000) % len(fits)] if fits else "franka"
         h = RobotCell().half(RobotCell().params({"arm": arm}))
         cands = []
         for sx in (-1, 1):
@@ -266,78 +270,99 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
                 return [(xy, yaw) for xy, _, yaw in items]
         return []
 
-    # ---- shelving
-    free_walls = [w for w in walls if w not in door_walls] or list(walls)
-    shelves, shelf_walls, shelf_runs = [], [], []
-    remaining = n_racks
-    for wall in rng.permutation(free_walls).tolist() + [w for w in walls if w in door_walls]:
-        while remaining > 0:
-            got = wall_slots(wall, SHELF[1], SHELF[2], remaining, 0.05, "shelf", A)
-            if got:
-                shelves += got
-                shelf_runs.append((wall, got))
-                shelf_walls.append(wall)
-                remaining = 0
+    # ---- pallet staging next to a door (any door, sliding outward along its wall, three sizes)
+    staging = None
+    for di in [0] + [i for i in rng.permutation(len(openings)).tolist() if i != 0]:
+        d0 = openings[di]
+        L0 = _wall_frame(d0["wall"], W, D)[3]
+        for along, depth in ((2.6, 2.0), (2.0, 1.6), (1.6, 1.3)):
+            for shift in (0.6, 1.2, 2.0, 3.0):
+                for side in rng.permutation([-1, 1]):
+                    t = d0["center"] + side * (d0["width"] / 2 + shift + along / 2)
+                    if abs(t) > L0 / 2 - along / 2 - PAD:
+                        continue
+                    xy, r, yaw = _against(d0["wall"], t, along, depth, W, D)
+                    if plan.inside(r) and plan.free(r, A):
+                        plan.add(r, "staging")
+                        staging = r
+                        break
+                if staging is not None:
+                    break
+            if staging is not None:
                 break
-            if remaining == 1:
-                break
-            half_n = remaining // 2  # split the run across walls
-            got = wall_slots(wall, SHELF[1], SHELF[2], half_n, 0.05, "shelf", A)
-            if not got:
-                break
-            shelves += got
-            shelf_runs.append((wall, got))
-            shelf_walls.append(wall)
-            remaining -= half_n
-        if remaining == 0:
+        if staging is not None:
             break
-    knobs["shelving_walls"] = shelf_walls
-    if shelves:
-        objects.append({"id": "shelving", "asset": SHELF[0], "count": len(shelves),
-                        "placement": {"pose": [{"xy": [round(x, 3), round(y, 3)], "yaw": yaw} for (x, y), yaw in shelves]}})
-        xs = [x for (x, _), _ in shelves]
-        ys = [y for (_, y), _ in shelves]
-        for zi, (wall, run) in enumerate(shelf_runs):  # per wall run: the shelves + 0.8 m in front (a person stands there), nothing beside
-            (nx, ny) = _wall_frame(wall, W, D)[2]
-            rs = [_rect(x, y, SHELF[1], SHELF[2]) if nx == 0 else _rect(x, y, SHELF[2], SHELF[1]) for (x, y), _ in run]
-            x0, y0, x1, y1 = min(q[0] for q in rs), min(q[1] for q in rs), max(q[2] for q in rs), max(q[3] for q in rs)
-            x0, x1 = (x0, x1 + 0.8) if nx > 0 else (x0 - 0.8, x1) if nx < 0 else (x0, x1)
-            y0, y1 = (y0, y1 + 0.8) if ny > 0 else (y0 - 0.8, y1) if ny < 0 else (y0, y1)
-            zones.append({"id": f"parts_storage_{zi}", "rect": [round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3)], "tags": ["storage"]})
-        objects.append({"id": "klt_bins", "asset": "klt_bin", "count": [len(shelves), 3 * len(shelves)],
-                        "placement": {"on": "shelving.*.shelf_*"}, "yaw": {"range": [-5, 5]}})
+    knobs["staging"] = None if staging is None else [round(v, 2) for v in staging]
+    if staging is not None:
+        zones.append({"id": "staging", "rect": [round(v, 3) for v in staging], "tags": ["staging"], "marking": "outline"})
+        lo, hi = props[3]
+        n_pal = int(rng.integers(lo, hi + 1))
+        objects.append({"id": "pallets", "asset": "pallet", "count": [1, n_pal], "placement": {"inside": "staging"}, "yaw": "aligned"})
+        unit = props[2]
+        objects.append({"id": "returned_units", "asset": unit, "count": [1, n_pal] if unit == "washing_machine" else [1, 2 * n_pal],
+                        "placement": {"on": "pallets.*.deck"}, "yaw": "random" if unit != "washing_machine" else {"range": [-10, 10]}})
+
 
     # ---- benches
     arrangements = [a for a in ARRANGEMENTS if a != "along_conveyor" or belt]
-    arrangement = str(rng.choice(arrangements))
-    knobs["bench_arrangement"] = arrangement
+    # cycles over the options across consecutive seeds (balanced over the prompt set); a resample (seed + 1000 k) shifts it
+    arrangement = arrangements[(int(seed) + int(seed) // 1000) % len(arrangements)]
+    knobs["bench_arrangement_drawn"] = arrangement
     benches = []
     L_b, D_b = BENCH[1], BENCH[2]
 
-    def try_row(points_dir, n, yaw):
-        """points_dir: (start xy, step unit) -> place n benches; returns placed [(xy, yaw)] or []"""
-        (sx, sy), (ux, uy) = points_dir
-        items = []
-        for j in range(n):
-            cx, cy = sx + ux * j * (L_b + BENCH_GAP), sy + uy * j * (L_b + BENCH_GAP)
-            r = _rect(cx, cy, L_b, D_b) if ux else _rect(cx, cy, D_b, L_b)
-            if not (plan.inside(r, A) and plan.free(r, A)):
-                return []
-            items.append(((cx, cy), r))
-        for _, r in items:
-            plan.add(r, "bench")
-        return [(xy, yaw) for xy, _ in items]
-
-    def row_candidates(axis, band):
-        """Start points for a row along ``axis`` whose centre line is at ``band`` (perpendicular coordinate)."""
+    def greedy_row(axis, band, n, tag):
+        """Up to n benches along the line ``band`` (perpendicular coordinate) parallel to ``axis``, each slid into the next free
+        gap (BENCH_GAP to its row neighbours, the aisle A to everything else); returns [(xy, yaw)]."""
         span = W if axis == "x" else D
-        out = []
-        for s in np.arange(-span / 2 + A + L_b / 2, span / 2, 0.3):
-            out.append(((s, band), (1, 0)) if axis == "x" else ((band, s), (0, 1)))
-        return [out[i] for i in rng.permutation(len(out))]
+        yaw = 0 if axis == "x" else 90
+        placed, s_pos = [], -span / 2 + A + L_b / 2
+        while len(placed) < n and s_pos <= span / 2 - A - L_b / 2 + 1e-9:
+            cx, cy = (s_pos, band) if axis == "x" else (band, s_pos)
+            r = _rect(cx, cy, L_b, D_b) if axis == "x" else _rect(cx, cy, D_b, L_b)
+            if plan.inside(r, A) and plan.free(r, A, ignore=(tag,)):
+                plan.add(r, tag)
+                placed.append(((cx, cy), yaw))
+                s_pos += L_b + BENCH_GAP
+            else:
+                s_pos += 0.1
+        return placed
+
+    def undo(tag):
+        plan.rects = [q for q in plan.rects if q[1] != tag]
+
+    def best_rows(axes, band_sets, per_row):
+        """Try every axis / band combination; keep the one placing the most benches (ties: first in the shuffled order)."""
+        best = None
+        for axis in axes:
+            span_perp = D if axis == "x" else W
+            for bands in band_sets(axis, span_perp):
+                got = []
+                for k, (b, n) in enumerate(zip(bands, per_row)):
+                    got += greedy_row(axis, b, n, f"row{k}")
+                for k in range(len(bands)):
+                    undo(f"row{k}")
+                if best is None or len(got) > len(best[1]):
+                    best = ((axis, bands), got)
+                if len(got) >= sum(per_row):
+                    break
+            if best and len(best[1]) >= sum(per_row):
+                break
+        if best:
+            (axis, bands), _ = best
+            out = []
+            for k, (b, n) in enumerate(zip(bands, per_row)):
+                out += greedy_row(axis, b, n, f"row{k}")
+            plan.rects = [(q, "bench" if kind.startswith("row") else kind) for q, kind in plan.rects]
+            return out
+        return []
+
+    def interior_bands(axis, span_perp, offsets=(0.0,)):
+        lo, hi = -span_perp / 2 + A + D_b / 2, span_perp / 2 - A - D_b / 2 - max(offsets)
+        return [[b + o for o in offsets] for b in rng.permutation(np.arange(lo, hi + 1e-9, 0.25)).tolist()]
 
     if arrangement == "along_wall":
-        for wall in rng.permutation([w for w in walls if w not in shelf_walls]).tolist() + shelf_walls:
+        for wall in rng.permutation([w for w in walls if w not in door_walls]).tolist() + door_walls:  # benches come before shelving now
             if len(benches) == n_benches:
                 break
             for n in range(n_benches - len(benches), 0, -1):
@@ -348,35 +373,27 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     elif arrangement == "along_conveyor":
         bx, by = belt["xy"]
         axis = belt["axis"]
-        for side in rng.permutation([-1, 1]):
-            band = (by if axis == "x" else bx) + side * (CONVEYOR_W / 2 + A + D_b / 2)
-            for start in row_candidates(axis, band):
-                got = try_row(start, n_benches - len(benches), 0 if axis == "x" else 90)
-                if got:
-                    benches += got
-                    break
-            if len(benches) == n_benches:
-                break
-    else:
-        axis = "x" if W >= D else "y"
-        span_perp = D if axis == "x" else W
-        rows = 2 if arrangement == "facing_rows" and n_benches >= 2 else 1
-        per = [n_benches - n_benches // 2, n_benches // 2] if rows == 2 else [n_benches]
-        for band in rng.permutation(np.arange(-span_perp / 2 + A + D_b, span_perp / 2 - A - D_b, 0.3)):
-            bands = [band] if rows == 1 else [band, band + D_b + A]
-            placed_rows = []
-            for b, n in zip(bands, per):
-                for start in row_candidates(axis, b):
-                    got = try_row(start, n, 0 if axis == "x" else 90)
-                    if got:
-                        placed_rows += got
-                        break
-            benches += placed_rows
-            if len(benches) >= n_benches:
-                break
-            for (x, y), _ in placed_rows:  # partial: undo and try another band
+        c = by if axis == "x" else bx
+        off = CONVEYOR_W / 2 + A + D_b / 2 + 0.01
+        sides = [[c + s * off] for s in rng.permutation([-1, 1]).tolist()]
+        both = [[c - off, c + off]]
+        half = (n_benches + 1) // 2
+        benches += best_rows([axis], lambda ax, sp: sides, [n_benches]) or []
+        if len(benches) < n_benches:  # one side is not enough: both sides of the belt
+            for (x, y), _ in benches:
                 plan.rects = [q for q in plan.rects if not (q[1] == "bench" and abs((q[0][0] + q[0][2]) / 2 - x) < 1e-6 and abs((q[0][1] + q[0][3]) / 2 - y) < 1e-6)]
-            benches = [b for b in benches if b not in placed_rows]
+            benches = best_rows([axis], lambda ax, sp: both, [half, n_benches - half])
+    else:
+        axes = (["x", "y"] if W >= D else ["y", "x"])
+        if arrangement == "facing_rows" and n_benches >= 2:
+            per = [n_benches - n_benches // 2, n_benches // 2]
+            benches += best_rows(axes, lambda ax, sp: interior_bands(ax, sp, (0.0, D_b + A + 0.01)), per)
+        else:
+            benches += best_rows(axes, lambda ax, sp: interior_bands(ax, sp), [n_benches])
+    knobs["benches_by_arrangement"] = len(benches)  # the rest (if any) come from the fallbacks below
+    # what the layout actually shows: the drawn arrangement only if it placed every bench, else mixed (some by the fallbacks
+    # below) or fallback (none); records and analyses use this, not the drawn value
+    knobs["bench_arrangement"] = ("n/a" if not n_benches else arrangement if len(benches) == n_benches else "mixed" if benches else "fallback")
     for wall in rng.permutation(WALLS).tolist():  # fallback 1: single free wall slots
         while len(benches) < n_benches:
             got = wall_slots(wall, L_b, D_b, 1, 0.0, "bench", A)
@@ -397,34 +414,69 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
         objects.append({"id": f"bench_{asset}", "asset": asset, "count": [lo, max(lo, hi * max(1, len(benches) // 2))],
                         "placement": {"on": "benches.*.top"}, "yaw": "random"})
 
-    # ---- pallet staging next to a door (every door, both sides, two sizes)
-    staging = None
-    for di in [0] + [i for i in rng.permutation(len(openings)).tolist() if i != 0]:
-        d0 = openings[di]
-        L0 = _wall_frame(d0["wall"], W, D)[3]
-        for along, depth in ((2.6, 2.0), (2.0, 1.6)):
-            for side in rng.permutation([-1, 1]):
-                t = d0["center"] + side * (d0["width"] / 2 + 0.6 + along / 2)
-                if abs(t) > L0 / 2 - along / 2 - PAD:
-                    continue
-                xy, r, yaw = _against(d0["wall"], t, along, depth, W, D)
-                if plan.inside(r) and plan.free(r, A):
-                    plan.add(r, "staging")
-                    staging = r
-                    break
-            if staging is not None:
+    # ---- shelving
+    free_walls = [w for w in walls if w not in door_walls] or list(walls)
+    shelves, shelf_walls, shelf_runs = [], [], []
+    split = n_racks >= 2 and bool(rng.random() < 0.5)  # knob: one run, or split over two walls
+    remaining = n_racks
+    want = int(rng.integers(1, n_racks)) if split else n_racks
+    for wall in rng.permutation(free_walls).tolist() + [w for w in walls if w in door_walls]:
+        while remaining > 0:
+            n_try = min(want, remaining)
+            got = wall_slots(wall, SHELF[1], SHELF[2], n_try, 0.05, "shelf", A)
+            if got:
+                shelves += got
+                shelf_runs.append((wall, got))
+                shelf_walls.append(wall)
+                remaining -= n_try
+                want = remaining
+                break  # the rest (if any) goes on another wall
+            if n_try == 1:
                 break
-        if staging is not None:
+            want = max(1, n_try // 2)  # does not fit here: a shorter run
+        if remaining == 0:
             break
-    knobs["staging"] = None if staging is None else [round(v, 2) for v in staging]
-    if staging is not None:
-        zones.append({"id": "staging", "rect": [round(v, 3) for v in staging], "tags": ["staging"], "marking": "outline"})
-        lo, hi = props[3]
-        n_pal = int(rng.integers(lo, hi + 1))
-        objects.append({"id": "pallets", "asset": "pallet", "count": [1, n_pal], "placement": {"inside": "staging"}, "yaw": "aligned"})
-        unit = props[2]
-        objects.append({"id": "returned_units", "asset": unit, "count": [1, n_pal] if unit == "washing_machine" else [1, 2 * n_pal],
-                        "placement": {"on": "pallets.*.deck"}, "yaw": "random" if unit != "washing_machine" else {"range": [-10, 10]}})
+    for wall in rng.permutation(WALLS).tolist():  # fallback: single units on any free wall slot, so the count is respected
+        while remaining > 0:
+            got = wall_slots(wall, SHELF[1], SHELF[2], 1, 0.05, "shelf", A)
+            if not got:
+                break
+            shelves += got
+            shelf_runs.append((wall, got))
+            remaining -= 1
+    while remaining > 0:  # last resort: anywhere (the build check decides)
+        x, y = float(rng.uniform(-W / 4, W / 4)), float(rng.uniform(-D / 4, D / 4))
+        plan.add(_rect(x, y, SHELF[1], SHELF[2]), "shelf")
+        shelves.append(((x, y), 0))
+        remaining -= 1
+    knobs["shelving_walls"] = shelf_walls
+    knobs["shelving_split"] = split
+    if shelves:
+        objects.append({"id": "shelving", "asset": SHELF[0], "count": len(shelves),
+                        "placement": {"pose": [{"xy": [round(x, 3), round(y, 3)], "yaw": yaw} for (x, y), yaw in shelves]}})
+        xs = [x for (x, _), _ in shelves]
+        ys = [y for (_, y), _ in shelves]
+        for zi, (wall, run) in enumerate(shelf_runs):  # per wall run: the shelves + 0.8 m in front (a person stands there), nothing beside
+            (nx, ny) = _wall_frame(wall, W, D)[2]
+            rs = [_rect(x, y, SHELF[1], SHELF[2]) if nx == 0 else _rect(x, y, SHELF[2], SHELF[1]) for (x, y), _ in run]
+            x0, y0, x1, y1 = min(q[0] for q in rs), min(q[1] for q in rs), max(q[2] for q in rs), max(q[3] for q in rs)
+            x0, x1 = (x0, x1 + 0.8) if nx > 0 else (x0 - 0.8, x1) if nx < 0 else (x0, x1)
+            y0, y1 = (y0, y1 + 0.8) if ny > 0 else (y0 - 0.8, y1) if ny < 0 else (y0, y1)
+            zones.append({"id": f"parts_storage_{zi}", "rect": [round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3)], "tags": ["storage"]})
+        objects.append({"id": "klt_bins", "asset": "klt_bin", "count": [len(shelves), 3 * len(shelves)],
+                        "placement": {"on": "shelving.*.shelf_*"}, "yaw": {"range": [-5, 5]}})
+
+    # ---- charging station: at a wall, its parking area (2.9 m deep) reserved in front
+    charger = None
+    for wall in rng.permutation(WALLS).tolist():
+        got = wall_slots(wall, 1.8, 2.9, 1, 0.0, "charger", A)
+        if got:
+            (x, y), yaw = got[0]
+            (nx, ny) = _wall_frame(wall, W, D)[2]
+            charger = (x - nx * (2.9 / 2 - 0.15 - PAD), y - ny * (2.9 / 2 - 0.15 - PAD))
+            objects.append({"id": "charger", "asset": "charging_station", "placement": {"pose": {"xy": [round(charger[0], 3), round(charger[1], 3)], "yaw": yaw}}})
+            break
+    knobs["charging_station"] = None if charger is None else [round(v, 2) for v in charger]
 
     # ---- floor props, charging station, occluders (against free walls)
     def place_on_walls(asset, along, depth, ident, kind="prop"):
@@ -443,16 +495,6 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
         sx, sy, _ = a.footprint(a.params({})).size  # local x runs along the wall, local y is the depth (yaw from _against)
         for j in range(int(rng.integers(lo, hi + 1))):
             place_on_walls(asset, sx + 0.05, sy + 0.05, f"{asset}_{j}")
-    charger = None
-    for wall in rng.permutation(WALLS).tolist():  # the station stands at the wall; its parking area (2.9 m deep) is reserved in front
-        got = wall_slots(wall, 1.8, 2.9, 1, 0.0, "charger", A)
-        if got:
-            (x, y), yaw = got[0]
-            (nx, ny) = _wall_frame(wall, W, D)[2]
-            charger = (x - nx * (2.9 / 2 - 0.15 - PAD), y - ny * (2.9 / 2 - 0.15 - PAD))
-            objects.append({"id": "charger", "asset": "charging_station", "placement": {"pose": {"xy": [round(charger[0], 3), round(charger[1], 3)], "yaw": yaw}}})
-            break
-    knobs["charging_station"] = None if charger is None else [round(v, 2) for v in charger]
     if diff == "hard":
         for j in range(int(rng.integers(1, 3))):
             asset = str(rng.choice(OCCLUDERS))
@@ -524,44 +566,93 @@ def spec_for_row(row: dict, seed: int) -> SceneSpec:
                                 int(row["n_benches"]), int(row["n_robot_cells"]), row["conveyor"], int(row["n_racks"]), int(row["n_doors"]))
 
 
-def build_prompt(row: dict, out_dir: Path, log=print) -> dict:
-    """Build the prompt's scene with seed int(id[1:]); on a failed build / check resample with seed + 1000 k (k = 1..10)."""
+def provenance() -> dict:
+    """What a baseline was built against.  The recipe lives outside the E1 freeze, so the checkout is not the freeze commit:
+    record the freeze tag / commit, the curated-table hash and every path changed since the freeze (expected: recipes,
+    tests, docs; never the asset library, compiler or checks)."""
+    from ..datagen.runner import FREEZE_TAG, _git, freeze_info
+
+    info = freeze_info()
+    changed = _git("diff", "--name-only", FREEZE_TAG, "--").split() if info["freeze_commit"] else []
+    return {"e1_freeze_tag": info["freeze_tag"], "e1_freeze_commit": info["freeze_commit"], "baseline_commit": info["head_commit"],
+            "tree_dirty": info["tree_dirty"], "curated_table_sha256": info["curated_table_sha256"], "changed_since_freeze": changed}
+
+
+def _attempt(spec, seed: int, out_dir: Path) -> tuple[dict, Path]:
     from ..compile import compile_scene
 
+    t0 = time.time()
+    tmp = out_dir.with_name(out_dir.name + ".tmp")
+    shutil.rmtree(tmp, ignore_errors=True)
+    try:
+        res = compile_scene(spec, seed, tmp)  # static checks only (no Isaac Sim)
+        ok, codes = res.ok, sorted({i.code for i in res.issues if i.severity == "error"})
+    except Exception as e:  # noqa: BLE001 - a spec that cannot even be expressed is a failed attempt
+        ok, codes = False, [f"recipe.error:{type(e).__name__}"]
+    return {"seed": seed, "ok": ok, "errors": codes, "seconds": round(time.time() - t0, 1)}, tmp
+
+
+def _finish(out_dir: Path, tmp: Path, ok: bool):
+    shutil.rmtree(out_dir, ignore_errors=True)
+    if tmp.exists():
+        tmp.rename(out_dir)  # a failed last attempt is kept for inspection
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+
+def _record(out_dir: Path, status: dict, prov: dict) -> dict:
+    spec = json.loads((out_dir / "resolved_spec.json").read_text()) if (out_dir / "resolved_spec.json").is_file() else {}
+    status = {**status, "knobs": (spec.get("metadata") or {}).get("recipe"), "provenance": prov}
+    (out_dir / "e2_attempts.json").write_text(json.dumps(status, indent=1))
+    return status
+
+
+def build_prompt(row: dict, out_dir: Path, log=print, prov: dict | None = None) -> dict:
+    """Build the prompt's scene with seed int(id[1:]); on a failed build / check resample with seed + 1000 k (k = 1..10)."""
     base = int(row["id"][1:])
     out_dir = Path(out_dir)
     attempts = []
     for k in range(MAX_RESAMPLES + 1):
         seed = base + 1000 * k
-        t0 = time.time()
-        tmp = out_dir.with_name(out_dir.name + ".tmp")
-        shutil.rmtree(tmp, ignore_errors=True)
         try:
-            res = compile_scene(spec_for_row(row, seed), seed, tmp)
-            ok, codes = res.ok, sorted({i.code for i in res.issues if i.severity == "error"})
-        except Exception as e:  # noqa: BLE001 - a recipe that cannot even be expressed is a failed attempt
-            ok, codes = False, [f"recipe.error:{type(e).__name__}"]
-        attempts.append({"seed": seed, "ok": ok, "errors": codes, "seconds": round(time.time() - t0, 1)})
-        log(f"  {row['id']} seed {seed}: {'OK' if ok else 'FAILED ' + ','.join(codes)}")
-        if ok:
-            shutil.rmtree(out_dir, ignore_errors=True)
-            tmp.rename(out_dir)
+            spec = spec_for_row(row, seed)
+        except Exception as e:  # noqa: BLE001
+            a, tmp = {"seed": seed, "ok": False, "errors": [f"recipe.error:{type(e).__name__}"], "seconds": 0.0}, out_dir.with_name(out_dir.name + ".tmp")
+        else:
+            a, tmp = _attempt(spec, seed, out_dir)
+        attempts.append(a)
+        log(f"  {row['id']} seed {seed}: {'OK' if a['ok'] else 'FAILED ' + ','.join(a['errors'])}")
+        if a["ok"]:
             break
-    else:
-        shutil.rmtree(out_dir, ignore_errors=True)
-        if tmp.exists():
-            tmp.rename(out_dir)  # keep the last failed attempt for inspection
-    status = {"prompt_id": row["id"], "accepted": attempts[-1]["ok"], "attempts": len(attempts), "first_try": attempts[0]["ok"],
+    _finish(out_dir, tmp, attempts[-1]["ok"])
+    status = {"method": "recipe", "prompt_id": row["id"], "accepted": attempts[-1]["ok"], "attempts": len(attempts), "first_try": attempts[0]["ok"],
               "final_seed": attempts[-1]["seed"], "history": attempts}
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "e2_attempts.json").write_text(json.dumps(status, indent=1))
-    return status
+    return _record(out_dir, status, prov or provenance())
 
 
 def build_all(prompts_csv, out_root, ids=None, log=print) -> list[dict]:
     rows = [r for r in csv.DictReader(open(prompts_csv)) if not ids or r["id"] in ids]
-    out = []
-    for r in rows:
-        out.append(build_prompt(r, Path(out_root) / r["id"], log))
+    prov = provenance()
+    out = [build_prompt(r, Path(out_root) / r["id"], log, prov) for r in rows]
     (Path(out_root) / "e2_recipe_summary.json").write_text(json.dumps(out, indent=1))
+    return out
+
+
+TEMPLATE = Path(__file__).resolve().parents[3] / "specs" / "e2_template_reman_cell.json"
+
+
+def build_template(out_root, n_seeds: int = 30, spec_path=TEMPLATE, log=print) -> list[dict]:
+    """The template baseline: one fixed floor plan (based on its prompt, P08), seeds 0..n-1 vary only the props.  No
+    resampling (a failed seed stays failed); folders <prompt>_seed<NN> so worldc eval reads the prompt id from the name."""
+    spec = json.loads(Path(spec_path).read_text())
+    pid = spec["metadata"]["based_on_prompt"]
+    prov = provenance()
+    out = []
+    for seed in range(n_seeds):
+        out_dir = Path(out_root) / f"{pid}_seed{seed:02d}"
+        a, tmp = _attempt(spec, seed, out_dir)
+        log(f"  {pid} seed {seed}: {'OK' if a['ok'] else 'FAILED ' + ','.join(a['errors'])}")
+        _finish(out_dir, tmp, a["ok"])
+        status = {"method": "template", "prompt_id": pid, "accepted": a["ok"], "attempts": 1, "first_try": a["ok"], "final_seed": seed, "history": [a]}
+        out.append(_record(out_dir, status, prov))
+    (Path(out_root) / "e2_template_summary.json").write_text(json.dumps(out, indent=1))
     return out

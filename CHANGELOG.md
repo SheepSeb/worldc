@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased: E2 baselines
+
+### Added: E2 template and remanufacturing-recipe baselines (outside the E1 freeze)
+`worldc recipe remanufacturing --prompts prompts/prompts.csv --out out/e2/recipe` builds one scene per prompt (seed =
+prompt number; a failed static build resamples with seed + 1000 k, up to 10 times); `worldc recipe e2_template --out
+out/e2/template --seeds 30` builds the fixed P08 floor plan with seeds 0..29 (props only, no resampling). Static checks
+only. Sampling is balanced over the prompt set: main door wall, robot arm and bench arrangement cycle with the seed;
+pallet staging and charger are placed before benches; benches are laid out as greedy rows on either axis and either
+belt side; shelving can split over two walls. Every scene folder has `e2_attempts.json`: method, attempts, first-try
+result, the recipe knobs (with `bench_arrangement` = the *realised* arrangement, `mixed` / `fallback` when the drawn one
+could not place every bench, next to `bench_arrangement_drawn`) and provenance (E1 freeze tag and commit, baseline commit,
+curated-table sha256, files changed since the freeze).
+
 ## e1-freeze-v4 (2026-10-29)
 
 ### Fixed: moving parts of articulated SimReady assets rendered at the scene origin

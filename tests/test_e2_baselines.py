@@ -89,3 +89,23 @@ def test_template_floor_plan_is_identical_across_seeds(tmp_path):
         poses[-1]["_props"] = props
     plan0 = {k: v for k, v in poses[0].items() if k != "_props"}
     assert plan0 and plan0 == {k: v for k, v in poses[1].items() if k != "_props"}  # same floor plan
+
+
+def test_records_carry_the_realised_bench_arrangement():
+    """bench_arrangement is what the layout shows: the drawn option only if it placed every bench, else mixed / fallback."""
+    seen = set()
+    for pid, row in ROWS.items():
+        k = spec_for_row(row, int(pid[1:])).metadata["recipe"]
+        n, by = int(row["n_benches"]), k["benches_by_arrangement"]
+        want = "n/a" if not n else k["bench_arrangement_drawn"] if by == n else "mixed" if by else "fallback"
+        assert k["bench_arrangement"] == want, pid
+        seen.add(k["bench_arrangement"])
+    assert len(seen - {"mixed", "fallback", "n/a"}) >= 3  # several arrangements are realised in full across the set
+
+
+def test_baseline_provenance_names_the_e1_freeze():
+    from worldc.recipes.remanufacturing import provenance
+
+    p = provenance()
+    assert p["e1_freeze_tag"].startswith("e1-freeze") and len(p["curated_table_sha256"]) == 64
+    assert set(p) == {"e1_freeze_tag", "e1_freeze_commit", "baseline_commit", "tree_dirty", "curated_table_sha256", "changed_since_freeze"}
