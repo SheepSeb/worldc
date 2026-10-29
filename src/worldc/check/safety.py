@@ -6,8 +6,9 @@ scene means the same thing whichever model wrote the spec:
 * minimum aisle width: the widest route to each of those targets is at least ``MIN_AISLE_WIDTH_M`` wide at its narrowest;
 * robot-cell clearance: nothing outside a robot cell comes within ``ROBOT_CELL_CLEARANCE_M`` of its safety footprint;
 * human paths vs robot spawn: no person's waypoint path (polyline; loops closed) comes within
-  ``HUMAN_RADIUS_M`` + the robot's footprint radius + ``HUMAN_SPAWN_GAP_M`` of the robot spawn, i.e. the person's disk stays
-  ``HUMAN_SPAWN_GAP_M`` clear of the robot's footprint disk (a walker crossing the spawn shoves the parked robot in physics).
+  ``HUMAN_RADIUS_M`` + ``HUMAN_SPAWN_GAP_M`` of the parked robot's footprint (its measured bounds rectangle, rotated by the
+  spawn yaw), i.e. the person's disk stays ``HUMAN_SPAWN_GAP_M`` clear of the robot (a walker crossing the spawn shoves the
+  parked robot in physics).
 
 Spec ``min_clearance`` constraints are checked here too (they are declared, so they are not mandatory).  Inputs come from
 ``scene_graph.json["safety"]`` (written by the compiler) plus the stage colliders; every failure is an error-level issue
@@ -63,6 +64,61 @@ def poly_distance(P: np.ndarray, Q: np.ndarray) -> float:
     if _overlap(P, Q):
         return 0.0
     return min(_seg_dist(P, Q), _seg_dist(Q, P))
+
+
+def robot_body(rb: dict) -> np.ndarray:
+    """The parked robot's footprint at its spawn: its measured xy bounds (robot table, centred on the robot origin) as a
+    rectangle rotated by the spawn yaw; a robot without measured bounds falls back to its footprint-radius circle (16-gon)."""
+    from ..assets.robots import table
+
+    x, y = (float(v) for v in rb["spawn"][:2])
+    yaw = float(rb["spawn"][2]) if len(rb["spawn"]) > 2 else 0.0
+    info = table().get(rb.get("asset") or "")
+    if info is not None:
+        hx, hy = info.size_m[0] / 2, info.size_m[1] / 2
+        local = np.array([(-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)])
+    else:
+        r = float(rb.get("radius_m", 0.3))
+        local = np.array([(r * math.cos(a), r * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 16, endpoint=False)])
+    c, s = math.cos(yaw), math.sin(yaw)
+    return local @ np.array([[c, s], [-s, c]]) + (x, y)
+
+
+def _point_in(p: np.ndarray, poly: np.ndarray) -> bool:
+    e = np.roll(poly, -1, axis=0) - poly
+    cross = e[:, 0] * (p[1] - poly[:, 1]) - e[:, 1] * (p[0] - poly[:, 0])
+    return bool((cross >= 0).all() or (cross <= 0).all())
+
+
+def path_clearance(waypoints, loop: bool, body: np.ndarray, step: float = 0.01) -> tuple[float, np.ndarray, int]:
+    """(distance from a person's path centreline to the convex ``body`` polygon, the closest path point, the index of the
+    waypoint starting that leg).  The path is the polyline through the waypoints (``loop``: closed back to the start); 0 when
+    it touches or crosses the body."""
+    wp = np.asarray(waypoints, float)[:, :2]
+    pts = np.vstack([wp, wp[:1]]) if loop and len(wp) > 2 else wp
+    legs = [(k, pts[k], pts[k + 1]) for k in range(len(pts) - 1)] or [(0, pts[0], pts[0])]
+    best = (math.inf, pts[0], 0)
+    for k, a, b in legs:
+        n = max(1, int(math.ceil(np.linalg.norm(b - a) / step)))
+        P = a + np.linspace(0.0, 1.0, n + 1)[:, None] * (b - a)
+        inside = [i for i, p in enumerate(P) if _point_in(p, body)]
+        if inside:
+            return 0.0, P[inside[0]], k
+        d = _dists(P, body)
+        i = int(np.argmin(d))
+        if d[i] < best[0]:
+            best = (float(d[i]), P[i], k)
+    return best
+
+
+def _dists(P: np.ndarray, poly: np.ndarray) -> np.ndarray:
+    """Distance of every point in P to the edges of poly."""
+    a, b = poly, np.roll(poly, -1, axis=0)
+    e = b - a
+    L2 = np.maximum((e * e).sum(1), 1e-12)
+    t = np.clip(((P[:, None, :] - a[None]) * e[None]).sum(2) / L2[None], 0.0, 1.0)
+    q = a[None] + t[..., None] * e[None]
+    return np.sqrt(((P[:, None, :] - q) ** 2).sum(2)).min(1)
 
 
 def _bbox_gap(P: np.ndarray, Q: np.ndarray) -> float:
@@ -298,38 +354,30 @@ class SafetyCheck:
     def human_paths(self):
         rb = self.graph.get("robot") or {}
         res = []
-        if rb.get("spawn"):
+        if rb.get("spawn") and not rb.get("mounted"):
             c = np.asarray(rb["spawn"][:2], float)
-            r_robot = float(rb.get("radius_m", 0.3))
-            need = HUMAN_RADIUS_M + r_robot + HUMAN_SPAWN_GAP_M
+            body = robot_body(rb)
+            need = HUMAN_RADIUS_M + HUMAN_SPAWN_GAP_M
             agents = self._agent_ids()
             for h in self.graph.get("hazards") or []:
                 if h.get("kind") != "human" or not h.get("waypoints"):
                     continue
                 wp = np.asarray(h["waypoints"], float)[:, :2]
-                pts = np.vstack([wp, wp[:1]]) if h.get("path_mode") == "loop" and len(wp) > 2 else wp
-                if len(pts) == 1:
-                    d, q = float(np.linalg.norm(pts[0] - c)), pts[0]
-                else:
-                    a, b = pts[:-1], pts[1:]
-                    e = b - a
-                    t = np.clip(((c - a) * e).sum(1) / np.maximum((e * e).sum(1), 1e-12), 0.0, 1.0)
-                    Q = a + t[:, None] * e
-                    k = int(np.argmin(np.linalg.norm(Q - c, axis=1)))
-                    d, q = float(np.linalg.norm(Q[k] - c)), Q[k]
+                d, q, k = path_clearance(wp, h.get("path_mode") == "loop", body)
                 name = h["path"].rsplit("/", 1)[-1]
                 j = int(np.argmin(np.linalg.norm(wp - c, axis=1)))
                 res.append({"agent": name, "distance_m": round(d, 3), "required_m": round(need, 3), "ok": d >= need - 1e-6})
                 if d < need - 1e-6:
                     idx = agents.index(name) if name in agents else None
+                    what = "footprint" if len(body) > 1 else "position"
                     self.issues.append(error(
                         "check.human_path_robot_spawn",
-                        f"Person '{name}' walks within {d:.2f} m of the robot spawn ({c[0]:.2f}, {c[1]:.2f}) at ({q[0]:.2f}, {q[1]:.2f}); "
-                        f"required {need:.2f} m (person radius {HUMAN_RADIUS_M:.2f} + robot footprint radius {r_robot:.2f} + "
-                        f"{HUMAN_SPAWN_GAP_M:.2f} m gap).",
+                        f"Person '{name}' walks within {d:.2f} m of the parked robot's {what} (spawn ({c[0]:.2f}, {c[1]:.2f})) at "
+                        f"({q[0]:.2f}, {q[1]:.2f}), on the leg from waypoint {k}; required {need:.2f} m (person radius "
+                        f"{HUMAN_RADIUS_M:.2f} + {HUMAN_SPAWN_GAP_M:.2f} m gap to the robot's footprint).",
                         path=f"/agents/{idx}/path/waypoints" if idx is not None else "/agents",
                         hint=f"Move {name}'s waypoint {j} ({wp[j][0]:.2f}, {wp[j][1]:.2f}), the one closest to the spawn, or the robot spawn, "
-                             f"so the path stays at least {need:.2f} m from ({c[0]:.2f}, {c[1]:.2f}) (now {d:.2f} m).",
+                             f"so the path stays at least {need:.2f} m from the robot's footprint (now {d:.2f} m).",
                         agent=name, closest_waypoint=j, distance_m=round(d, 3), required_m=round(need, 3)))
         self.out["human_paths"] = res
 

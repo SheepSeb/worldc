@@ -37,7 +37,7 @@ def test_accepted_run_is_fully_collected(root, monkeypatch):
     assert rec.usage.est_cost_usd == 0.123 and rec.usage.tool_calls == 5 and rec.usage.cache_read_input_tokens == 1000
     assert rec.usage.repairs == 1 and rec.params["max_repairs"] == 10  # the first validate_spec came back with asset.unknown
     g = rec.generator
-    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze-v6" and g["at_freeze"] in ("true", "false")
+    assert len(g["curated_table_sha256"]) == 64 and g["freeze_tag"] == "e1-freeze-v7" and g["at_freeze"] in ("true", "false")
     assert rec.summary == "Built a 6x6 room with two pallets." and rec.record_version == RECORD_VERSION and rec.split in ("train", "val", "test")
     assert rec.validation["last_validate"]["ok"] and rec.validation["last_build"]["ok"] and rec.validation["last_build"]["check"]["passed"]
     assert any(p.startswith(f"runs/{rec.run_id}/images/") for p in rec.render_paths) and (d / "images" / "001.png").is_file()

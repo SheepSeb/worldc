@@ -176,7 +176,7 @@ def test_human_path_keeps_clear_of_the_robot_spawn(tmp_path, agent, ok):
     d["agents"] = [agent]
     r, errors, chk = build(d, tmp_path)
     hp = chk["safety"]["human_paths"]
-    need = SF.HUMAN_RADIUS_M + json.loads((tmp_path / "s" / "scene_graph.json").read_text())["robot"]["radius_m"] + SF.HUMAN_SPAWN_GAP_M
+    need = SF.HUMAN_RADIUS_M + SF.HUMAN_SPAWN_GAP_M  # from the path's centreline to the robot's footprint rectangle
     assert hp[0]["required_m"] == pytest.approx(need, abs=1e-3) and hp[0]["ok"] is ok
     bad = [e for e in errors if e.code == "check.human_path_robot_spawn"]
     if ok:
@@ -185,3 +185,20 @@ def test_human_path_keeps_clear_of_the_robot_spawn(tmp_path, agent, ok):
         (e,) = bad
         assert e.path == "/agents/0/path/waypoints" and agent["id"] in e.message and agent["id"] in e.hint
         assert f"waypoint {e.data['closest_waypoint']}" in e.hint and e.data["distance_m"] < need
+
+
+def test_spawn_clearance_is_measured_to_the_rotated_footprint_rectangle():
+    """Nova Carter is 0.73 x 0.90 m: a path 1.0 m beside the spawn clears the long side by 0.55 m (fails the 0.56 m
+    requirement) at yaw 0, and the short side by 0.64 m (passes) when the robot is turned 90 degrees."""
+    import math
+
+    import numpy as np
+
+    path = [[-3.0, 1.0], [3.0, 1.0]]
+    for yaw, ok in ((0.0, False), (math.pi / 2, True)):
+        body = SF.robot_body({"spawn": [0.0, 0.0, yaw], "asset": "nova_carter"})
+        d, q, k = SF.path_clearance(path, False, body)
+        assert (d >= SF.HUMAN_RADIUS_M + SF.HUMAN_SPAWN_GAP_M) is ok and k == 0
+    assert SF.path_clearance([[-3.0, 0.0], [3.0, 0.0]], False, SF.robot_body({"spawn": [0, 0, 0], "asset": "nova_carter"}))[0] == 0.0
+    circle = SF.robot_body({"spawn": [0, 0, 0], "asset": "no_such_robot", "radius_m": 0.4})  # no measured bounds: the radius circle
+    assert len(circle) == 16 and np.linalg.norm(circle, axis=1).max() == pytest.approx(0.4)

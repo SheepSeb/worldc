@@ -69,7 +69,7 @@ deterministic hash (80/10/10), so a held-out family never appears in train.
 ## E1 batch (`scripts/run_e1.sh`)
 
 ```
-git worktree add --detach ../worldc-e1-freeze-v6 e1-freeze-v6 && cd ../worldc-e1-freeze-v6
+git worktree add --detach ../worldc-e1-freeze-v7 e1-freeze-v7 && cd ../worldc-e1-freeze-v7
 uv sync --extra mesh --extra mcp   # a fresh worktree has its own venv: without the mcp extra every run fails (MCP server)
 scripts/run_e1.sh claude-opus-5-5 ollama:<model> ollama:<model>            # pass 1: constrained, the 3 models concurrently
 scripts/run_e1.sh --plain claude-opus-5-5 ollama:<model> ollama:<model>    # optional pass 2: plain
@@ -78,7 +78,7 @@ E1_PROMPTS=P01,P18,P24 scripts/run_e1.sh ollama:deepseek-v4.1-flash:cloud  # pil
 
 The protocol is fixed in the script (effort high, 120 turns, $20 cap, seed 0, 10 repairs as the binding limit, 1 h timeout)
 and the models are arguments, so picking them never touches the frozen checkout. Both the script and `worldc generate
---prompts-file` refuse to run unless HEAD is the `e1-freeze-v6` commit with a clean tree (untracked files included;
+--prompts-file` refuse to run unless HEAD is the `e1-freeze-v7` commit with a clean tree (untracked files included;
 `--allow-unfrozen` on `worldc generate` for trials, recorded as `at_freeze: "false"`). The script warms the curated SimReady
 cache first (`python -m worldc.assets.curated warm`; unlike `bake` it does not rewrite the frozen table), runs the models'
 generation loops concurrently and writes one dataset per model under `dataset/e1/<model>/`. Isaac Sim work is queued

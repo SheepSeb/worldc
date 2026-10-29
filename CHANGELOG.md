@@ -2,11 +2,29 @@
 
 ## e2-baselines-v3 (2026-10-29)
 
-Rechecked against `e1-freeze-v6`: all 29 template scenes pass; 20 of 30 recipe scenes failed the new
-`check.human_path_robot_spawn` (the recipe parks the robot just inside the main door and walks workers from that door to
-benches / shelving / cells, so their legs crossed the spawn by construction). The recipe now keeps every worker leg and
-endpoint at least r_human + r_robot + 0.3 m (+ 5 cm) from the spawn, as the mandatory check requires of any spec. Both
-baselines are rebuilt.
+Rechecked against `e1-freeze-v6`: all 29 template scenes passed; 20 of 30 recipe scenes failed
+`check.human_path_robot_spawn`. The recipe parked the robot on the main door's axis (2.6 m in from a swing door, 3.8 m from
+a roll-up door) and walked workers in from that door, so 27 of the 33 failing legs started at the spawn's own door. The
+recipe now parks the robot beside the main door lane: a seeded knob `robot_spawn` (`left_of_lane`, `right_of_lane`,
+`near_charger` when there is a charger; cycles across seeds, the next option when the drawn one has no valid spot), on
+free floor and clear of the lane and of every worker path by the check distance (+ 5 cm). Worker paths are as before
+(43/101 workers end within 3 m of the main door; 37/101 before), none too close to the spawn. Both baselines rebuilt
+against `e1-freeze-v7`.
+
+## e1-freeze-v7 (2026-10-29)
+
+### Changed: `check.human_path_robot_spawn` measures to the robot's footprint rectangle
+The clearance is now measured from the person's path (its centreline) to the parked robot's footprint: its measured
+xy bounds (robot table, centred on the robot origin) as a rectangle rotated by the spawn yaw; required
+`HUMAN_RADIUS_M` + `HUMAN_SPAWN_GAP_M` = 0.56 m, i.e. the person's disk stays 0.3 m clear of the robot's body. v6
+measured to the footprint-radius circle, which for Nova Carter (0.73 x 0.90 m) reaches up to 13 cm beyond the chassis
+along the sides. A robot without measured bounds falls back to its radius circle. On the 11 pilot scenes (v1, v3-v5)
+it flags v3 P18 (0.00 m) and v5 P24 (0.00 m) and passes 8; v5 P18 still fails at 0.25 m: its walker would touch the
+chassis, which the Isaac check missed only because its 6 s settle ends before the walker gets there (2.9 of 3.5 m).
+`check.json` reports per person the clearance to the footprint (`safety.human_paths`). New test: the same path passes
+or fails depending on the spawn yaw.
+
+`scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v7`.
 
 ## e1-freeze-v6 (2026-10-29)
 

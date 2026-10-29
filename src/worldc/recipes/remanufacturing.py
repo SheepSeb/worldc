@@ -39,6 +39,7 @@ BENCH_GAP = 0.6                                    # between benches in a row
 CONVEYOR_W = 0.8
 CONVEYOR_CELL_GAP = 0.7                            # conveyor end to the robot cell it feeds
 ARRANGEMENTS = ("along_wall", "single_row", "facing_rows", "along_conveyor")
+SPAWN_PLACEMENTS = ("left_of_lane", "right_of_lane", "near_charger")  # where the robot parks; near_charger only with a charger
 LIGHTING = ("indoor_industrial", "bright_day", "mixed_warm")
 WALLS = ("south", "north", "west", "east")
 ARMS = ("ur10", "fanuc_crx10ia", "fanuc_crx20ia_l", "franka")
@@ -167,6 +168,8 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
             if plan.free(r, 0.0):
                 break
         plan.add(r, "reserved")
+        if i == 0:
+            main_lane = [r]
         if rollup:  # the dock leveler plate is a real obstacle for walkers (worker paths must go round it)
             plan.add(_against(wall, t, w, 2.4, W, D, off=0.0)[1], "leveler")
         (px, py), (ax, ay), (nx, ny), _ = _wall_frame(wall, W, D)
@@ -176,7 +179,9 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
         openings.append({"id": f"door_{i}", "wall": wall, "center": round(t, 3), "width": w, "height": 3.0 if rollup else 2.2,
                          "door": "rollup_door" if rollup else "swing_door"})
     knobs["doors"] = [{"wall": o["wall"], "center": o["center"], "kind": o["door"]} for o in openings]
-    plan.add(_rect(spawn_pts[0][0], spawn_pts[0][1], 1.2, 1.2), "reserved")  # the robot spawns here
+    lane_end = _rect(spawn_pts[0][0], spawn_pts[0][1], 1.2, 1.2)
+    plan.add(lane_end, "reserved")  # the main door's lane continues past the door swing / dock: kept free of furniture
+    main_lane.append(lane_end)
 
     # ---- robot cells
     cells, cell_rects = [], []
@@ -515,37 +520,74 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     for c in cells:
         yaw = math.radians(c["yaw"])
         points.append(("cell", (c["xy"][0] + math.sin(yaw) * (c["half"] + 0.7), c["xy"][1] - math.cos(yaw) * (c["half"] + 0.7))))
-    # nobody walks over the parked robot: every leg keeps the mandatory check.human_path_robot_spawn distance from the spawn
-    from ..check.safety import HUMAN_RADIUS_M, HUMAN_SPAWN_GAP_M
-
-    spawn_clear = HUMAN_RADIUS_M + float(get("dingo").info.footprint_radius_m) + HUMAN_SPAWN_GAP_M + 0.05
-
-    def off_spawn(a, b=None):
-        a = np.asarray(a, float)
-        e = np.asarray(b if b is not None else a, float) - a
-        t = float(np.clip(np.dot(np.asarray(spawn_pts[0]) - a, e) / max(float(np.dot(e, e)), 1e-12), 0.0, 1.0))
-        return math.dist(a + t * e, spawn_pts[0]) >= spawn_clear
-
-    points = [(k, p) for k, p in points if plan.inside(_rect(p[0], p[1], 0.6, 0.6)) and plan.free(_rect(p[0], p[1], 0.6, 0.6), 0.05, ignore=("reserved",))
-              and off_spawn(p)]
+    points = [(k, p) for k, p in points if plan.inside(_rect(p[0], p[1], 0.6, 0.6)) and plan.free(_rect(p[0], p[1], 0.6, 0.6), 0.05, ignore=("reserved",))]
     pairs = [(i, j) for i in range(len(points)) for j in range(i + 1, len(points))
-             if points[i][0] != points[j][0] and math.dist(points[i][1], points[j][1]) > 1.5 and plan.segment_clear(points[i][1], points[j][1])
-             and off_spawn(points[i][1], points[j][1])]
+             if points[i][0] != points[j][0] and math.dist(points[i][1], points[j][1]) > 1.5 and plan.segment_clear(points[i][1], points[j][1])]
     agents = []
     for w in range(int(n_people)):
         if pairs:
             i, j = pairs[int(rng.integers(len(pairs)))]
             wp = [list(map(lambda v: round(float(v), 3), points[i][1])), list(map(lambda v: round(float(v), 3), points[j][1]))]
-        elif short := [p for _, p in points if off_spawn(p, (p[0] + 0.8, p[1]))]:
-            p = short[int(rng.integers(len(short)))]
+        elif points:
+            p = points[int(rng.integers(len(points)))][1]
             wp = [[round(p[0], 3), round(p[1], 3)], [round(p[0] + 0.8, 3), round(p[1], 3)]]
         else:
             wp = [[0.0, 0.0], [0.8, 0.0]]
         agents.append({"id": f"worker_{w}", "asset": "human", "path": {"waypoints": wp, "mode": "pingpong", "speed": round(float(rng.uniform(0.7, 1.0)), 2),
                                                                        "phase": round(float(rng.uniform(0, 3)), 2)}, "keep_clear_width": 0.8})
 
-    # ---- robot
-    spawn = spawn_pts[0]
+    # ---- robot: parked beside the main door lane (seeded knob), clear of the lane and of every worker path by the
+    # check.human_path_robot_spawn distance, on free floor
+    from ..assets.robots import table as robot_table
+    from ..check.safety import HUMAN_RADIUS_M, HUMAN_SPAWN_GAP_M, path_clearance, robot_body
+
+    rhx, rhy = (v / 2 for v in robot_table()["dingo"].size_m[:2])
+    r_nav = float(get("dingo").info.footprint_radius_m)
+    clear = HUMAN_RADIUS_M + HUMAN_SPAWN_GAP_M + 0.05
+    lx0, ly0 = min(q[0] for q in main_lane), min(q[1] for q in main_lane)
+    lx1, ly1 = max(q[2] for q in main_lane), max(q[3] for q in main_lane)
+    paths = [a["path"]["waypoints"] for a in agents]
+
+    def spawn_ok(x, y):
+        body = _rect(x, y, 2 * rhx, 2 * rhy)
+        nav = _rect(x, y, 2 * (r_nav + 0.1), 2 * (r_nav + 0.1))  # the solver wants footprint_radius + 2 cm of free floor
+        gap = max(lx0 - body[2], body[0] - lx1, ly0 - body[3], body[1] - ly1)
+        return (plan.inside(nav, 0.1) and plan.free(nav, 0.0, ignore=("reserved",)) and gap >= clear
+                and all(path_clearance(wp, False, robot_body({"spawn": [x, y, 0.0], "asset": "dingo"}))[0] >= clear for wp in paths))
+
+    (px, py), (ax, ay), (nx, ny), _ = _wall_frame(openings[0]["wall"], W, D)
+    t0, half_lane = openings[0]["center"], max(abs(ax) * (lx1 - lx0), abs(ay) * (ly1 - ly0)) / 2
+    lane_depth = max(abs(nx) * (lx1 - lx0), abs(ny) * (ly1 - ly0))
+    body_along, body_in = (rhx, rhy) if ax else (rhy, rhx)
+
+    def beside(side):
+        for extra in np.arange(0.0, 3.01, 0.25):
+            off = half_lane + clear + body_along + extra
+            for d in np.arange(0.5, lane_depth + 1.01, 0.25):
+                yield px + ax * (t0 + side * off) + nx * (body_in + d), py + ay * (t0 + side * off) + ny * (body_in + d)
+
+    def by_charger():
+        if charger is None:
+            return
+        for rr in np.arange(1.8, 4.01, 0.25):
+            for ang in np.linspace(0, 2 * math.pi, 16, endpoint=False):
+                yield charger[0] + rr * math.cos(ang), charger[1] + rr * math.sin(ang)
+
+    options = [k for k in SPAWN_PLACEMENTS if k != "near_charger" or charger is not None]
+    drawn = options[(int(seed) + int(seed) // 1000 + 1) % len(options)]  # cycles across seeds, like the other knobs
+    gens = {"left_of_lane": lambda: beside(-1), "right_of_lane": lambda: beside(1), "near_charger": by_charger}
+    spawn, placement = None, None
+    for k in [drawn] + [o for o in options if o != drawn]:  # the drawn option first, then the others
+        spawn = next(((x, y) for x, y in gens[k]() if spawn_ok(x, y)), None)
+        if spawn:
+            placement = k
+            break
+    if spawn is None:  # anywhere valid, nearest the main door first (the build's checks decide)
+        door = (px + ax * t0, py + ay * t0)
+        grid = sorted(((x, y) for x in np.arange(-W / 2 + 0.6, W / 2 - 0.6, 0.25) for y in np.arange(-D / 2 + 0.6, D / 2 - 0.6, 0.25)),
+                      key=lambda q: math.dist(q, door))
+        spawn, placement = next(((x, y) for x, y in grid if spawn_ok(x, y)), spawn_pts[0]), "fallback"
+    knobs["robot_spawn_drawn"], knobs["robot_spawn"] = drawn, placement
     goals = [{"id": "at_bench", "type": "place", "target": "benches.0", "distance": 0.9}]
     if cells:
         goals.append({"id": "at_cell", "type": "pick", "target": "cells.0.gate", "approach": "port"})
