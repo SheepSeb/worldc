@@ -1,0 +1,38 @@
+{
+ "template": {
+  "scenes": 30,
+  "first_try": 28,
+  "accepted": 28,
+  "mean_attempts": 1,
+  "adherence_mean": 1.0,
+  "plausibility_mean": 1.0,
+  "match_n_benches": "28/28",
+  "match_n_robot_cells": "28/28",
+  "match_conveyor": "28/28",
+  "match_n_racks": "28/28",
+  "match_n_doors": "28/28",
+  "match_n_people": "28/28",
+  "bench_access": "112/112 items, scene mean 1.0 over 28 scenes",
+  "conveyor_connected": "28/28 items, scene mean 1.0 over 28 scenes",
+  "storage_reachable": "56/56 items, scene mean 1.0 over 28 scenes",
+  "cell_not_blocking": "28/28 items, scene mean 1.0 over 28 scenes"
+ },
+ "recipe": {
+  "scenes": 30,
+  "first_try": 19,
+  "accepted": 30,
+  "mean_attempts": 1.87,
+  "adherence_mean": 1.0,
+  "plausibility_mean": 0.943,
+  "match_n_benches": "30/30",
+  "match_n_robot_cells": "30/30",
+  "match_conveyor": "30/30",
+  "match_n_racks": "30/30",
+  "match_n_doors": "29/29",
+  "match_n_people": "30/30",
+  "bench_access": "144/144 items, scene mean 1.0 over 30 scenes",
+  "conveyor_connected": "12/13 items, scene mean 0.923 over 13 scenes",
+  "storage_reachable": "76/79 items, scene mean 0.97 over 29 scenes",
+  "cell_not_blocking": "27/31 items, scene mean 0.864 over 22 scenes"
+ }
+}

@@ -1,0 +1,936 @@
+[
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 0,
+  "history": [
+   {
+    "seed": 0,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.2
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed00"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 1,
+  "history": [
+   {
+    "seed": 1,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed01"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 2,
+  "history": [
+   {
+    "seed": 2,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed02"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 3,
+  "history": [
+   {
+    "seed": 3,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed03"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 4,
+  "history": [
+   {
+    "seed": 4,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed04"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 5,
+  "history": [
+   {
+    "seed": 5,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed05"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 6,
+  "history": [
+   {
+    "seed": 6,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed06"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 7,
+  "history": [
+   {
+    "seed": 7,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed07"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 8,
+  "history": [
+   {
+    "seed": 8,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed08"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 9,
+  "history": [
+   {
+    "seed": 9,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed09"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 10,
+  "history": [
+   {
+    "seed": 10,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed10"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 11,
+  "history": [
+   {
+    "seed": 11,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed11"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 12,
+  "history": [
+   {
+    "seed": 12,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed12"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 13,
+  "history": [
+   {
+    "seed": 13,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed13"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 14,
+  "history": [
+   {
+    "seed": 14,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed14"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 15,
+  "history": [
+   {
+    "seed": 15,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed15"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 16,
+  "history": [
+   {
+    "seed": 16,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed16"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 17,
+  "history": [
+   {
+    "seed": 17,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed17"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": false,
+  "attempts": 1,
+  "first_try": false,
+  "final_seed": 18,
+  "history": [
+   {
+    "seed": 18,
+    "ok": false,
+    "errors": [
+     "check.interpenetration"
+    ],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed18"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 19,
+  "history": [
+   {
+    "seed": 19,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed19"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 20,
+  "history": [
+   {
+    "seed": 20,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed20"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 21,
+  "history": [
+   {
+    "seed": 21,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed21"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 22,
+  "history": [
+   {
+    "seed": 22,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed22"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 23,
+  "history": [
+   {
+    "seed": 23,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.7
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed23"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 24,
+  "history": [
+   {
+    "seed": 24,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed24"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 25,
+  "history": [
+   {
+    "seed": 25,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed25"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": false,
+  "attempts": 1,
+  "first_try": false,
+  "final_seed": 26,
+  "history": [
+   {
+    "seed": 26,
+    "ok": false,
+    "errors": [
+     "check.interpenetration"
+    ],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed26"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 27,
+  "history": [
+   {
+    "seed": 27,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed27"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 28,
+  "history": [
+   {
+    "seed": 28,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed28"
+ },
+ {
+  "method": "template",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 29,
+  "history": [
+   {
+    "seed": 29,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": null,
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "false",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08_seed29"
+ }
+]

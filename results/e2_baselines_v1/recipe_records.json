@@ -1,0 +1,2311 @@
+[
+ {
+  "method": "recipe",
+  "prompt_id": "P01",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 1,
+  "history": [
+   {
+    "seed": 1,
+    "ok": true,
+    "errors": [],
+    "seconds": 2.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -1.726,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      2.035,
+      1.035
+     ],
+     "arm": "franka",
+     "position": "corner"
+    }
+   ],
+   "staging": null,
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 0,
+   "bench_arrangement": "fallback",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P01"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P02",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 2,
+  "history": [
+   {
+    "seed": 2,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -2.387,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -6.88,
+    -1.21,
+    -4.88,
+    1.39
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 3,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    6.61,
+    -3.48
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P02"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P03",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 3,
+  "history": [
+   {
+    "seed": 3,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.8
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": 0.563,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -4.087,
+      -3.035
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 4.25,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    5.88,
+    1.74,
+    7.88,
+    4.34
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 1,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": [
+    3.27,
+    -4.61
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P03"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P04",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 4,
+  "history": [
+   {
+    "seed": 4,
+    "ok": true,
+    "errors": [],
+    "seconds": 8.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -8.74,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "east",
+     "center": 1.165,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      9.41,
+      4.41
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -9.41,
+      4.41
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -6.96,
+    -6.88,
+    -4.36,
+    -4.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "west",
+    "north"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    4.52,
+    -6.61
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P04"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P05",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2005,
+  "history": [
+   {
+    "seed": 5,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1005,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.inside",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2005,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "east",
+     "center": 2.324,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      5.035,
+      -2.535
+     ],
+     "arm": "franka",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -4.41,
+      1.91
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "staging": null,
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P05"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P06",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 6,
+  "history": [
+   {
+    "seed": 6,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -0.373,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -4.38,
+    0.8,
+    -2.78,
+    2.8
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P06"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P07",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 7,
+  "history": [
+   {
+    "seed": 7,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -1.882,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 3.9,
+    "feeds_cell_with": null,
+    "cell": null
+   },
+   "staging": [
+    5.38,
+    -0.71,
+    7.38,
+    1.89
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -7.11,
+    3.52
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P07"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 4,
+  "first_try": false,
+  "final_seed": 3008,
+  "history": [
+   {
+    "seed": 8,
+    "ok": false,
+    "errors": [
+     "solve.unreachable"
+    ],
+    "seconds": 0.7
+   },
+   {
+    "seed": 1008,
+    "ok": false,
+    "errors": [
+     "check.goal_unreachable"
+    ],
+    "seconds": 4.7
+   },
+   {
+    "seed": 2008,
+    "ok": false,
+    "errors": [
+     "solve.unreachable"
+    ],
+    "seconds": 0.3
+   },
+   {
+    "seed": 3008,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": 1.482,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -6.035,
+      0.094
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 4.41,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    5.88,
+    -4.32,
+    7.88,
+    -1.72
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_conveyor",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -7.61,
+    -3.98
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P08"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P09",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1009,
+  "history": [
+   {
+    "seed": 9,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1009,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.1
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -1.006,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      3.91,
+      1.91
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -6.38,
+    2.19,
+    -4.78,
+    4.19
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P09"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P10",
+  "accepted": true,
+  "attempts": 4,
+  "first_try": false,
+  "final_seed": 3010,
+  "history": [
+   {
+    "seed": 10,
+    "ok": false,
+    "errors": [
+     "check.goal_unreachable"
+    ],
+    "seconds": 10.0
+   },
+   {
+    "seed": 1010,
+    "ok": false,
+    "errors": [
+     "check.robot_cell_clearance"
+    ],
+    "seconds": 10.3
+   },
+   {
+    "seed": 2010,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.2
+   },
+   {
+    "seed": 3010,
+    "ok": true,
+    "errors": [],
+    "seconds": 9.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -6.97,
+     "kind": "rollup_door"
+    },
+    {
+     "wall": "south",
+     "center": -0.339,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      8.41,
+      3.41
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -8.41,
+      -0.585
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.46,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -3.77,
+    3.88,
+    -1.17,
+    5.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P10"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P11",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1011,
+  "history": [
+   {
+    "seed": 11,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.inside",
+     "solve.unsatisfiable.on"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1011,
+    "ok": true,
+    "errors": [],
+    "seconds": 2.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -1.969,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -0.19,
+    -3.38,
+    2.41,
+    -1.38
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P11"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P12",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 12,
+  "history": [
+   {
+    "seed": 12,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -3.72,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.41,
+      2.91
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -0.52,
+    -5.38,
+    2.08,
+    -3.38
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    4.52,
+    5.11
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P12"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P13",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 13,
+  "history": [
+   {
+    "seed": 13,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.6
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -4.02,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -7.41,
+      0.549
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 4.31,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    -2.24,
+    3.88,
+    0.36,
+    5.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 5,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "south",
+    "east"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    9.61,
+    2.52
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P13"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P14",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 14,
+  "history": [
+   {
+    "seed": 14,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.4
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 2.467,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      4.91,
+      2.41
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      2.141,
+      -3.035
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "staging": [
+    -7.38,
+    -1.91,
+    -5.38,
+    0.69
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P14"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P15",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 15,
+  "history": [
+   {
+    "seed": 15,
+    "ok": true,
+    "errors": [],
+    "seconds": 12.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -4.37,
+     "kind": "rollup_door"
+    },
+    {
+     "wall": "south",
+     "center": 1.636,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "west",
+     "center": -3.838,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -3.104,
+      5.035
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      -9.065,
+      4.41
+     ],
+     "arm": "ur10",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      10.41,
+      1.802
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 5.02,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    -12.88,
+    -2.66,
+    -10.88,
+    -0.06
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 3,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "north",
+    "east",
+    "south"
+   ],
+   "shelving_split": true,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P15"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P16",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 16,
+  "history": [
+   {
+    "seed": 16,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -2.375,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -0.6,
+    -2.88,
+    2.0,
+    -0.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 0,
+   "bench_arrangement": "fallback",
+   "shelving_walls": [
+    "west"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P16"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P17",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 17,
+  "history": [
+   {
+    "seed": 17,
+    "ok": true,
+    "errors": [],
+    "seconds": 2.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "north",
+     "center": 0.569,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    1.74,
+    1.88,
+    4.34,
+    3.88
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P17"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P18",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 18,
+  "history": [
+   {
+    "seed": 18,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 2.631,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      4.91,
+      -2.41
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -7.38,
+    -3.17,
+    -5.38,
+    -0.57
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P18"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P19",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 19,
+  "history": [
+   {
+    "seed": 19,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -1.44,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -9.035,
+      0.235
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 5.14,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    8.88,
+    1.76,
+    10.88,
+    4.36
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 5,
+   "bench_arrangement": "along_conveyor",
+   "shelving_walls": [
+    "south",
+    "north"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    -10.61,
+    4.52
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P19"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P20",
+  "accepted": true,
+  "attempts": 7,
+  "first_try": false,
+  "final_seed": 6020,
+  "history": [
+   {
+    "seed": 20,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1020,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2020,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 3020,
+    "ok": false,
+    "errors": [
+     "solve.unreachable"
+    ],
+    "seconds": 1.5
+   },
+   {
+    "seed": 4020,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 5020,
+    "ok": false,
+    "errors": [
+     "check.robot_cell_clearance"
+    ],
+    "seconds": 5.2
+   },
+   {
+    "seed": 6020,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -2.143,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      3.41,
+      0.808
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "wall_centred"
+    }
+   ],
+   "staging": [
+    -5.88,
+    -0.97,
+    -3.88,
+    1.63
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P20"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P21",
+  "accepted": true,
+  "attempts": 4,
+  "first_try": false,
+  "final_seed": 3021,
+  "history": [
+   {
+    "seed": 21,
+    "ok": false,
+    "errors": [
+     "check.aisle_too_narrow"
+    ],
+    "seconds": 1.9
+   },
+   {
+    "seed": 1021,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2021,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 3021,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.8
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "south",
+     "center": 2.271,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -0.869,
+      -1.535
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": null,
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 1,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P21"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P22",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 22,
+  "history": [
+   {
+    "seed": 22,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 0.705,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": null,
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "north",
+    "south"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    5.77,
+    4.11
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P22"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P23",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 23,
+  "history": [
+   {
+    "seed": 23,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.4
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -2.163,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -6.035,
+      3.035
+     ],
+     "arm": "franka",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 3.9,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    5.88,
+    1.04,
+    7.88,
+    3.64
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "along_conveyor",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -7.61,
+    -2.98
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P23"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P24",
+  "accepted": true,
+  "attempts": 4,
+  "first_try": false,
+  "final_seed": 3024,
+  "history": [
+   {
+    "seed": 24,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1024,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2024,
+    "ok": false,
+    "errors": [
+     "check.goal_unreachable"
+    ],
+    "seconds": 6.7
+   },
+   {
+    "seed": 3024,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -1.854,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.035,
+      -2.535
+     ],
+     "arm": "franka",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      4.41,
+      1.91
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 5.33,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": null,
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 1,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P24"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P25",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1025,
+  "history": [
+   {
+    "seed": 25,
+    "ok": false,
+    "errors": [
+     "check.aisle_too_narrow"
+    ],
+    "seconds": 10.4
+   },
+   {
+    "seed": 1025,
+    "ok": true,
+    "errors": [],
+    "seconds": 11.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -1.99,
+     "kind": "rollup_door"
+    },
+    {
+     "wall": "south",
+     "center": 2.992,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -8.313,
+      3.91
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      10.035,
+      2.575
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.46,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    4.17,
+    -6.38,
+    6.77,
+    -4.38
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "east",
+    "north"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    -3.73,
+    6.11
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P25"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P26",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1026,
+  "history": [
+   {
+    "seed": 26,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1026,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -0.87,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    2.28,
+    0.3,
+    3.88,
+    2.3
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 1,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P26"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P27",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 27,
+  "history": [
+   {
+    "seed": 27,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.4
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -0.988,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.035,
+      3.035
+     ],
+     "arm": "franka",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    4.88,
+    2.21,
+    6.88,
+    4.81
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north",
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P27"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P28",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 28,
+  "history": [
+   {
+    "seed": 28,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -7.882,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      7.41,
+      3.41
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.16,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -6.71,
+    -5.88,
+    -4.11,
+    -3.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "west"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -1.48,
+    -5.61
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P28"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P29",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 29,
+  "history": [
+   {
+    "seed": 29,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -2.019,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      3.91,
+      -1.91
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    1.18,
+    2.38,
+    3.78,
+    4.38
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "east",
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P29"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P30",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2030,
+  "history": [
+   {
+    "seed": 30,
+    "ok": false,
+    "errors": [
+     "solve.unreachable"
+    ],
+    "seconds": 2.0
+   },
+   {
+    "seed": 1030,
+    "ok": false,
+    "errors": [
+     "solve.robot_spawn_blocked"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2030,
+    "ok": true,
+    "errors": [],
+    "seconds": 12.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -2.638,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "west",
+     "center": -3.79,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "east",
+     "center": -1.042,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      9.41,
+      4.41
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -9.41,
+      4.41
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.46,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -6.41,
+    -6.88,
+    -3.81,
+    -4.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 10,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south",
+    "west"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    11.61,
+    -3.23
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v4",
+   "e1_freeze_commit": "adb19e768f101369e94b35fe6c656b2ab0d6ddfa",
+   "baseline_commit": "8adce78657148091d955dfb16d03e5389dd9a709",
+   "tree_dirty": "true",
+   "curated_table_sha256": "17db5baeb77d36bcf80a66a64c46606087cf444f52832fe76823b11885de4a8d",
+   "changed_since_freeze": [
+    "CHANGELOG.md",
+    "src/worldc/cli.py",
+    "src/worldc/recipes/remanufacturing.py",
+    "tests/test_e2_baselines.py"
+   ]
+  },
+  "scene": "P30"
+ }
+]
