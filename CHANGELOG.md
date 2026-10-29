@@ -1,5 +1,12 @@
 # Changelog
 
+## e2-baselines-v2 (2026-10-29)
+
+E2 baselines rebuilt against `e1-freeze-v5` (`results/e2_baselines_v2/`). The template's robot cell moves 0.4 m west
+(x 5.4 -> 5.0): the cage is smaller than the panel fence it replaced (whose square was rounded up to whole panels), so the
+belt outfeed ended 1.3 m from the cell and `conveyor_connected` failed in every template scene; it is now 0.9 m (>= the
+0.5 m robot-cell clearance). The recipe is unchanged.
+
 ## e1-freeze-v5 (2026-10-29)
 
 ### Changed: robot cells are always caged

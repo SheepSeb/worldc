@@ -1,0 +1,2291 @@
+[
+ {
+  "method": "recipe",
+  "prompt_id": "P01",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 1,
+  "history": [
+   {
+    "seed": 1,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -1.726,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      2.245,
+      1.245
+     ],
+     "arm": "franka",
+     "position": "corner"
+    }
+   ],
+   "staging": null,
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 0,
+   "bench_arrangement": "fallback",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P01"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P02",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 2,
+  "history": [
+   {
+    "seed": 2,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.3
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -2.387,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -6.88,
+    -1.21,
+    -4.88,
+    1.39
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 3,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    6.61,
+    -3.48
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P02"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P03",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1003,
+  "history": [
+   {
+    "seed": 3,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1003,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.8
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": 1.865,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.8,
+      -2.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 3.78,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    5.07,
+    -4.88,
+    7.66,
+    -2.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P03"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P04",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 4,
+  "history": [
+   {
+    "seed": 4,
+    "ok": true,
+    "errors": [],
+    "seconds": 8.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -8.74,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "east",
+     "center": 1.165,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      9.8,
+      4.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -9.851,
+      4.851
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -6.96,
+    -6.88,
+    -4.36,
+    -4.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "west",
+    "north"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    4.52,
+    -6.61
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P04"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P05",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2005,
+  "history": [
+   {
+    "seed": 5,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1005,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.inside",
+     "solve.unsatisfiable.on"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2005,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "east",
+     "center": 2.324,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      5.245,
+      -2.745
+     ],
+     "arm": "franka",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      0.732,
+      2.3
+     ],
+     "arm": "ur10",
+     "position": "wall_centred"
+    }
+   ],
+   "staging": null,
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P05"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P06",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 6,
+  "history": [
+   {
+    "seed": 6,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -0.373,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -4.38,
+    0.8,
+    -2.78,
+    2.8
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P06"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P07",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 7,
+  "history": [
+   {
+    "seed": 7,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.6
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -1.882,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "conveyor": {
+    "axis": "x",
+    "length_m": 3.9,
+    "feeds_cell_with": null,
+    "cell": null
+   },
+   "staging": [
+    5.38,
+    -0.71,
+    7.38,
+    1.89
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -7.11,
+    3.52
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P07"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P08",
+  "accepted": true,
+  "attempts": 7,
+  "first_try": false,
+  "final_seed": 6008,
+  "history": [
+   {
+    "seed": 8,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1008,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2008,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 3008,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 4008,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 5008,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 6008,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.4
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 1.037,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      5.682,
+      -2.682
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 3.36,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -7.88,
+    -2.74,
+    -5.88,
+    -0.14
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -1.48,
+    -4.61
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P08"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P09",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1009,
+  "history": [
+   {
+    "seed": 9,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1009,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -1.006,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      4.182,
+      2.182
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -6.38,
+    2.19,
+    -4.78,
+    4.19
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south",
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P09"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P10",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1010,
+  "history": [
+   {
+    "seed": 10,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1010,
+    "ok": true,
+    "errors": [],
+    "seconds": 9.1
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "east",
+     "center": 4.261,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "west",
+     "center": 3.087,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      9.245,
+      -4.245
+     ],
+     "arm": "franka",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      3.013,
+      3.8
+     ],
+     "arm": "ur10",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 3.33,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -10.88,
+    -0.69,
+    -8.88,
+    1.91
+   ],
+   "bench_arrangement_drawn": "along_conveyor",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south",
+    "west"
+   ],
+   "shelving_split": true,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P10"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P11",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1011,
+  "history": [
+   {
+    "seed": 11,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.inside",
+     "solve.unsatisfiable.on"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1011,
+    "ok": true,
+    "errors": [],
+    "seconds": 2.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -1.969,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -0.19,
+    -3.38,
+    2.41,
+    -1.38
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P11"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P12",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 12,
+  "history": [
+   {
+    "seed": 12,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.1
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -3.72,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.8,
+      3.3
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -0.52,
+    -5.38,
+    2.08,
+    -3.38
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    4.52,
+    5.11
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P12"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P13",
+  "accepted": true,
+  "attempts": 5,
+  "first_try": false,
+  "final_seed": 4013,
+  "history": [
+   {
+    "seed": 13,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1013,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2013,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 3013,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 4013,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "north",
+     "center": 1.421,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -7.851,
+      1.475
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 3.65,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    4.62,
+    3.88,
+    7.22,
+    5.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 5,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "west",
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -3.73,
+    5.61
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P13"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P14",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2014,
+  "history": [
+   {
+    "seed": 14,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.2
+   },
+   {
+    "seed": 1014,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2014,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.6
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "south",
+     "center": 0.284,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.3,
+      2.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -5.351,
+      -2.851
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    3.48,
+    -4.88,
+    6.08,
+    -2.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 5,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P14"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P15",
+  "accepted": true,
+  "attempts": 4,
+  "first_try": false,
+  "final_seed": 3015,
+  "history": [
+   {
+    "seed": 15,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1015,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2015,
+    "ok": false,
+    "errors": [
+     "check.robot_cell_clearance"
+    ],
+    "seconds": 10.2
+   },
+   {
+    "seed": 3015,
+    "ok": true,
+    "errors": [],
+    "seconds": 10.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -1.622,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "east",
+     "center": 0.971,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "north",
+     "center": 7.853,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -10.682,
+      4.682
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      11.245,
+      -5.245
+     ],
+     "arm": "franka",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      10.8,
+      4.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -12.88,
+    -5.4,
+    -10.88,
+    -2.8
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 12,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -4.73,
+    6.61
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P15"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P16",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 16,
+  "history": [
+   {
+    "seed": 16,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -2.375,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    -0.6,
+    -2.88,
+    2.0,
+    -0.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 0,
+   "bench_arrangement": "fallback",
+   "shelving_walls": [
+    "west"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P16"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P17",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 17,
+  "history": [
+   {
+    "seed": 17,
+    "ok": true,
+    "errors": [],
+    "seconds": 2.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "north",
+     "center": 0.569,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    1.74,
+    1.88,
+    4.34,
+    3.88
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P17"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P18",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 18,
+  "history": [
+   {
+    "seed": 18,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 2.631,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      5.182,
+      -2.682
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -7.38,
+    -3.17,
+    -5.38,
+    -0.57
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P18"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P19",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2019,
+  "history": [
+   {
+    "seed": 19,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1019,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2019,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "north",
+     "center": 8.25,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -8.851,
+      3.851
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    2.45,
+    3.88,
+    5.05,
+    5.88
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 5,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "south",
+    "east"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    2.77,
+    -5.61
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P19"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P20",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2020,
+  "history": [
+   {
+    "seed": 20,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1020,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2020,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -0.974,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      3.682,
+      -2.182
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    -5.88,
+    0.2,
+    -3.88,
+    2.8
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P20"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P21",
+  "accepted": true,
+  "attempts": 6,
+  "first_try": false,
+  "final_seed": 5021,
+  "history": [
+   {
+    "seed": 21,
+    "ok": false,
+    "errors": [
+     "solve.unreachable"
+    ],
+    "seconds": 0.3
+   },
+   {
+    "seed": 1021,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 2021,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.inside",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 3021,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 4021,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 5021,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.5
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": -1.059,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      2.682,
+      -1.182
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    -4.88,
+    0.72,
+    -2.88,
+    3.32
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 0,
+   "bench_arrangement": "fallback",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P21"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P22",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 22,
+  "history": [
+   {
+    "seed": 22,
+    "ok": true,
+    "errors": [],
+    "seconds": 3.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 0.705,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": null,
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "north",
+    "south"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    5.77,
+    4.11
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P22"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P23",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1023,
+  "history": [
+   {
+    "seed": 23,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1023,
+    "ok": true,
+    "errors": [],
+    "seconds": 4.9
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": 3.177,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -5.8,
+      -2.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 3.78,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    4.35,
+    -4.88,
+    6.95,
+    -2.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 2,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    4.02,
+    4.61
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P23"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P24",
+  "accepted": true,
+  "attempts": 7,
+  "first_try": false,
+  "final_seed": 6024,
+  "history": [
+   {
+    "seed": 24,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1024,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 2024,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 3024,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 4024,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 5024,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 6024,
+    "ok": true,
+    "errors": [],
+    "seconds": 6.2
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "west",
+     "center": 0.185,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      4.682,
+      2.182
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -5.245,
+      2.745
+     ],
+     "arm": "franka",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    -6.88,
+    -4.19,
+    -4.88,
+    -1.59
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -1.23,
+    -4.11
+   ],
+   "lighting": "indoor_industrial"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P24"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P25",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 25,
+  "history": [
+   {
+    "seed": 25,
+    "ok": true,
+    "errors": [],
+    "seconds": 9.0
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -2.587,
+     "kind": "rollup_door"
+    },
+    {
+     "wall": "west",
+     "center": -4.905,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -9.851,
+      1.923
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      1.682,
+      4.182
+     ],
+     "arm": "fanuc_crx20ia_l",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 4.01,
+    "feeds_cell_with": "outfeed",
+    "cell": 0
+   },
+   "staging": [
+    -7.79,
+    4.78,
+    -5.79,
+    6.38
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "single_row",
+   "shelving_walls": [
+    "south",
+    "east"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    11.61,
+    4.02
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P25"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P26",
+  "accepted": true,
+  "attempts": 2,
+  "first_try": false,
+  "final_seed": 1026,
+  "history": [
+   {
+    "seed": 26,
+    "ok": false,
+    "errors": [
+     "solve.goal_target",
+     "solve.unsatisfiable.on",
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.0
+   },
+   {
+    "seed": 1026,
+    "ok": true,
+    "errors": [],
+    "seconds": 1.7
+   }
+  ],
+  "knobs": {
+   "aisle_m": 2.0,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -0.87,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [],
+   "staging": [
+    2.28,
+    0.3,
+    3.88,
+    2.3
+   ],
+   "bench_arrangement_drawn": "single_row",
+   "benches_by_arrangement": 1,
+   "bench_arrangement": "mixed",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": null,
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P26"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P27",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 27,
+  "history": [
+   {
+    "seed": 27,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.1
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "east",
+     "center": -0.988,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      2.459,
+      3.245
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    }
+   ],
+   "staging": [
+    5.28,
+    2.21,
+    6.88,
+    4.21
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 4,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -6.61,
+    -1.23
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P27"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P28",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 28,
+  "history": [
+   {
+    "seed": 28,
+    "ok": true,
+    "errors": [],
+    "seconds": 7.1
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.6,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -7.882,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      7.8,
+      3.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -6.71,
+    -5.88,
+    -4.11,
+    -3.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "north"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -9.61,
+    0.27
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P28"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P29",
+  "accepted": true,
+  "attempts": 1,
+  "first_try": true,
+  "final_seed": 29,
+  "history": [
+   {
+    "seed": 29,
+    "ok": true,
+    "errors": [],
+    "seconds": 5.6
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "north",
+     "center": -2.019,
+     "kind": "rollup_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      4.351,
+      -2.351
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "staging": [
+    1.18,
+    2.38,
+    3.78,
+    4.38
+   ],
+   "bench_arrangement_drawn": "facing_rows",
+   "benches_by_arrangement": 6,
+   "bench_arrangement": "facing_rows",
+   "shelving_walls": [
+    "east"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    -5.48,
+    4.11
+   ],
+   "lighting": "mixed_warm"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P29"
+ },
+ {
+  "method": "recipe",
+  "prompt_id": "P30",
+  "accepted": true,
+  "attempts": 3,
+  "first_try": false,
+  "final_seed": 2030,
+  "history": [
+   {
+    "seed": 30,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.1
+   },
+   {
+    "seed": 1030,
+    "ok": false,
+    "errors": [
+     "solve.unsatisfiable.pose"
+    ],
+    "seconds": 0.3
+   },
+   {
+    "seed": 2030,
+    "ok": true,
+    "errors": [],
+    "seconds": 11.8
+   }
+  ],
+  "knobs": {
+   "aisle_m": 1.3,
+   "doors": [
+    {
+     "wall": "south",
+     "center": -2.638,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "west",
+     "center": -3.79,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "east",
+     "center": -1.042,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      9.8,
+      4.8
+     ],
+     "arm": "ur10",
+     "position": "corner"
+    },
+    {
+     "xy": [
+      -9.851,
+      4.851
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "corner"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 2.0,
+    "feeds_cell_with": "infeed",
+    "cell": 0
+   },
+   "staging": [
+    -6.41,
+    -6.88,
+    -3.81,
+    -4.88
+   ],
+   "bench_arrangement_drawn": "along_wall",
+   "benches_by_arrangement": 10,
+   "bench_arrangement": "along_wall",
+   "shelving_walls": [
+    "south",
+    "west"
+   ],
+   "shelving_split": true,
+   "charging_station": [
+    11.61,
+    -3.23
+   ],
+   "lighting": "bright_day"
+  },
+  "provenance": {
+   "e1_freeze_tag": "e1-freeze-v5",
+   "e1_freeze_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "baseline_commit": "3f692596503920ab7a0743a2a957da4624f9e58a",
+   "tree_dirty": "false",
+   "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+   "changed_since_freeze": []
+  },
+  "scene": "P30"
+ }
+]
