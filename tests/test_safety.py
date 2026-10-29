@@ -158,3 +158,30 @@ def test_unfenced_franka_cell_is_a_keepout(tmp_path):
     st = Usd.Stage.Open(str(r.usd))
     arm = next(p for p in st.Traverse() if p.GetName() == "Arm")
     assert arm.GetAttribute("physxArticulation:articulationEnabled").Get() is False
+
+
+def walker(aid, waypoints, mode="pingpong"):
+    return {"id": aid, "asset": "human", "path": {"waypoints": waypoints, "mode": mode, "speed": 0.8}}
+
+
+@pytest.mark.parametrize("agent, ok", [
+    (walker("crosser", [[-2.5, -2.0], [2.5, -2.0]]), False),           # walks straight over the spawn
+    (walker("clear", [[-2.5, 1.5], [2.5, 1.5]]), True),                # 3.5 m away
+    (walker("looper", [[-2.5, -2.4], [-2.5, 1.5], [2.5, 1.5], [2.5, -2.4]], "loop"), False),  # only the closing leg passes the spawn
+    (walker("pacer", [[-2.5, -2.4], [-2.5, 1.5], [2.5, 1.5], [2.5, -2.4]]), True),             # same points, ping-pong: no closing leg
+])
+def test_human_path_keeps_clear_of_the_robot_spawn(tmp_path, agent, ok):
+    d = room([TABLE], size=(8, 8))
+    d["robot"] = {"asset": "dingo", "spawn": {"pose": {"xy": [0.0, -2.0], "yaw": 0}}}
+    d["agents"] = [agent]
+    r, errors, chk = build(d, tmp_path)
+    hp = chk["safety"]["human_paths"]
+    need = SF.HUMAN_RADIUS_M + json.loads((tmp_path / "s" / "scene_graph.json").read_text())["robot"]["radius_m"] + SF.HUMAN_SPAWN_GAP_M
+    assert hp[0]["required_m"] == pytest.approx(need, abs=1e-3) and hp[0]["ok"] is ok
+    bad = [e for e in errors if e.code == "check.human_path_robot_spawn"]
+    if ok:
+        assert not bad
+    else:
+        (e,) = bad
+        assert e.path == "/agents/0/path/waypoints" and agent["id"] in e.message and agent["id"] in e.hint
+        assert f"waypoint {e.data['closest_waypoint']}" in e.hint and e.data["distance_m"] < need

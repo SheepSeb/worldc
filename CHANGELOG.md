@@ -1,5 +1,19 @@
 # Changelog
 
+## e1-freeze-v6 (2026-10-29)
+
+### Added: mandatory check `check.human_path_robot_spawn`
+Every person's waypoint path (the polyline through its waypoints; `loop` paths include the closing leg back to the
+start; a single waypoint is a point) must keep at least `HUMAN_RADIUS_M` (0.26) + the robot's footprint radius +
+`HUMAN_SPAWN_GAP_M` (0.30) from the robot spawn, i.e. the person's disk stays 0.3 m clear of the robot's footprint disk
+(Nova Carter: 1.14 m from the spawn centre). A walker crossing the spawn shoves the parked robot in physics, which until
+now only the Isaac Sim check caught (`physics.robot_unstable`: pilot P24 on v5, P18 on v3). The error names the person,
+the closest point and the waypoint nearest the spawn, and points at `/agents/<i>/path/waypoints`; `check.json` lists
+every person's distance under `safety.human_paths`, and the threshold is in `safety.thresholds`. Tests: a path over the
+spawn, a clear path, and a loop whose closing leg passes the spawn (the same points in ping-pong pass).
+
+`scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v6`.
+
 ## e2-baselines-v2 (2026-10-29)
 
 E2 baselines rebuilt against `e1-freeze-v5` (`results/e2_baselines_v2/`). The template's robot cell moves 0.4 m west

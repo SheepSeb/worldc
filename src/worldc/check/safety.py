@@ -4,7 +4,10 @@ scene means the same thing whichever model wrote the spec:
 * human reachability: from the main door, every workbench front, storage zone and other exit is reachable on the
   occupancy grid inflated by ``HUMAN_RADIUS_M`` (robot-cell safety footprints count as obstacles);
 * minimum aisle width: the widest route to each of those targets is at least ``MIN_AISLE_WIDTH_M`` wide at its narrowest;
-* robot-cell clearance: nothing outside a robot cell comes within ``ROBOT_CELL_CLEARANCE_M`` of its safety footprint.
+* robot-cell clearance: nothing outside a robot cell comes within ``ROBOT_CELL_CLEARANCE_M`` of its safety footprint;
+* human paths vs robot spawn: no person's waypoint path (polyline; loops closed) comes within
+  ``HUMAN_RADIUS_M`` + the robot's footprint radius + ``HUMAN_SPAWN_GAP_M`` of the robot spawn, i.e. the person's disk stays
+  ``HUMAN_SPAWN_GAP_M`` clear of the robot's footprint disk (a walker crossing the spawn shoves the parked robot in physics).
 
 Spec ``min_clearance`` constraints are checked here too (they are declared, so they are not mandatory).  Inputs come from
 ``scene_graph.json["safety"]`` (written by the compiler) plus the stage colliders; every failure is an error-level issue
@@ -25,9 +28,11 @@ from . import nav as NV
 HUMAN_RADIUS_M = 0.26
 MIN_AISLE_WIDTH_M = 1.20  # E1 protocol (the constrained prompts ask for 1.2 m walking aisles); grid precision ~ one 5 cm cell
 ROBOT_CELL_CLEARANCE_M = 0.50
+HUMAN_SPAWN_GAP_M = 0.30  # clear gap between a walking person's disk and the robot's footprint disk at its spawn
 REACH_TOL_M = 0.30  # a target counts as reached when a free cell lies within this distance of it
 MIN_CLEARANCE_TOL_M = 0.01
-THRESHOLDS = {"human_radius_m": HUMAN_RADIUS_M, "min_aisle_width_m": MIN_AISLE_WIDTH_M, "robot_cell_clearance_m": ROBOT_CELL_CLEARANCE_M}
+THRESHOLDS = {"human_radius_m": HUMAN_RADIUS_M, "min_aisle_width_m": MIN_AISLE_WIDTH_M, "robot_cell_clearance_m": ROBOT_CELL_CLEARANCE_M,
+              "human_spawn_gap_m": HUMAN_SPAWN_GAP_M}
 EIGHT = np.ones((3, 3), bool)
 
 
@@ -105,6 +110,7 @@ class SafetyCheck:
         self.out["ran"] = True
         self.robot_cells()
         self.human()
+        self.human_paths()
         self.min_clearance()
         return self.out, self.issues
 
@@ -277,6 +283,55 @@ class SafetyCheck:
                           + (f" by moving {names}" if names else "") + ", or open another route.",
                      target=t["id"], target_kind=t["kind"], spec_id=t.get("spec_id"), narrowest_m=round(width, 3),
                      at=[round(float(where[0]), 2), round(float(where[1]), 2)], blockers=paths)
+
+    def _agent_ids(self) -> list:
+        """Spec agent ids in order (for the issue path), from the scene's resolved_spec.json when there is one."""
+        import json
+        from pathlib import Path
+
+        try:
+            return [a.get("id") for a in json.loads((Path(self.sd.directory) / "resolved_spec.json").read_text()).get("agents") or []]
+        except (OSError, TypeError, ValueError):
+            return []
+
+    # ---- human paths vs the robot spawn --------------------------------------------------------------------------
+    def human_paths(self):
+        rb = self.graph.get("robot") or {}
+        res = []
+        if rb.get("spawn"):
+            c = np.asarray(rb["spawn"][:2], float)
+            r_robot = float(rb.get("radius_m", 0.3))
+            need = HUMAN_RADIUS_M + r_robot + HUMAN_SPAWN_GAP_M
+            agents = self._agent_ids()
+            for h in self.graph.get("hazards") or []:
+                if h.get("kind") != "human" or not h.get("waypoints"):
+                    continue
+                wp = np.asarray(h["waypoints"], float)[:, :2]
+                pts = np.vstack([wp, wp[:1]]) if h.get("path_mode") == "loop" and len(wp) > 2 else wp
+                if len(pts) == 1:
+                    d, q = float(np.linalg.norm(pts[0] - c)), pts[0]
+                else:
+                    a, b = pts[:-1], pts[1:]
+                    e = b - a
+                    t = np.clip(((c - a) * e).sum(1) / np.maximum((e * e).sum(1), 1e-12), 0.0, 1.0)
+                    Q = a + t[:, None] * e
+                    k = int(np.argmin(np.linalg.norm(Q - c, axis=1)))
+                    d, q = float(np.linalg.norm(Q[k] - c)), Q[k]
+                name = h["path"].rsplit("/", 1)[-1]
+                j = int(np.argmin(np.linalg.norm(wp - c, axis=1)))
+                res.append({"agent": name, "distance_m": round(d, 3), "required_m": round(need, 3), "ok": d >= need - 1e-6})
+                if d < need - 1e-6:
+                    idx = agents.index(name) if name in agents else None
+                    self.issues.append(error(
+                        "check.human_path_robot_spawn",
+                        f"Person '{name}' walks within {d:.2f} m of the robot spawn ({c[0]:.2f}, {c[1]:.2f}) at ({q[0]:.2f}, {q[1]:.2f}); "
+                        f"required {need:.2f} m (person radius {HUMAN_RADIUS_M:.2f} + robot footprint radius {r_robot:.2f} + "
+                        f"{HUMAN_SPAWN_GAP_M:.2f} m gap).",
+                        path=f"/agents/{idx}/path/waypoints" if idx is not None else "/agents",
+                        hint=f"Move {name}'s waypoint {j} ({wp[j][0]:.2f}, {wp[j][1]:.2f}), the one closest to the spawn, or the robot spawn, "
+                             f"so the path stays at least {need:.2f} m from ({c[0]:.2f}, {c[1]:.2f}) (now {d:.2f} m).",
+                        agent=name, closest_waypoint=j, distance_m=round(d, 3), required_m=round(need, 3)))
+        self.out["human_paths"] = res
 
     # ---- declared min_clearance --------------------------------------------------------------------------------
     def _group(self, ref: str):
