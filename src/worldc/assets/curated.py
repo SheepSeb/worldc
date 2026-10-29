@@ -265,7 +265,7 @@ def bake_one(alias: str) -> tuple[str, dict]:
         return alias, _bake_arm(e)
     from .catalog import catalog_asset
     from .mesh.import_mesh import detect_top_anchor, load_parts
-    from .mesh.mesh_asset import load_hulls
+    from .mesh.mesh_asset import load_hulls, planning_polygon
 
     mesh.cache_clear()
     m = catalog_asset(e["path"], overrides(alias, e), root=root_url(e), rev=e["rev"], source_tags=("catalog", "simready"))
@@ -276,7 +276,8 @@ def bake_one(alias: str) -> tuple[str, dict]:
     top = detect_top_anchor(parts, sc.footprint)  # the importer's own top, measured afresh (the cached sidecar may be patched)
     if top is not None and not e.get("work_top"):
         importer.append(top.model_dump(mode="json", exclude_defaults=True))
-    out = {"footprint": [list(map(float, p)) for p in sc.footprint], "bounds": [list(sc.bounds.min), list(sc.bounds.max)],
+    # the solver plans with this footprint: cover the collision hulls too (what PhysX and check_scene's overlap test see)
+    out = {"footprint": [list(map(float, p)) for p in planning_polygon(sc, m.collision_file)], "bounds": [list(sc.bounds.min), list(sc.bounds.max)],
            "size": [round(v, 4) for v in sc.bounds.size], "mass_kg": sc.mass_kg, "n_hulls": sc.collision.n_hulls,
            "anchors": [a for a in (fit_support(a, hulls) for a in importer) if a is not None]}
     if e.get("work_top"):

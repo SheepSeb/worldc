@@ -125,6 +125,7 @@ class Solver:
     def __init__(self, spec: SceneSpec, seed: int, base_dir: Path | None = None):
         self.spec, self.seed, self.base_dir = spec, seed, base_dir
         self.issues: list[Issue] = []
+        self._miss: str | None = None
         self.index = Index()
         self.placed: dict[str, Placed] = {}
         self.order: list[str] = []
@@ -410,9 +411,10 @@ class Solver:
             irng = rng_for(self.seed, o.id, i, "place")
             ok = False
             for attempt in range(K_SAMPLES if rel in ("inside", "near", "on", "against", "next_to") else 1):
+                self._miss = None  # why _sample found no candidate, when it can tell (on: support_missing / too_big_for_surface)
                 cand = self._sample(o, rel, asset, p, irng, i, attempt)
                 if cand is None:
-                    reasons["does_not_fit" if rel in ("inside", "on", "against") else "no_candidate"] += 1
+                    reasons[self._miss or ("does_not_fit" if rel in ("inside", "on", "against") else "no_candidate")] += 1
                     if rel in ("pose", "attach_to", "layout"):
                         break
                     continue
@@ -449,8 +451,17 @@ class Solver:
             "pose": "Move the pose to free space (blocked by the objects listed) or remove the conflicting object.",
             "attach_to": "Check the port reference and that nothing else occupies the opening.",
         }
-        self.err(f"solve.unsatisfiable.{rel}", f"Placed {placed} of {n_req} required '{o.id}' instances ({rel}); rejected candidates "
-                 f"were blocked by: {top}.", path, hints.get(rel, ""), placed=placed, required=n_req, blockers=dict(reasons))
+        if rel == "on" and set(reasons) == {"support_missing"}:  # repair the support, not these props
+            self.err("solve.unsatisfiable.on", f"Placed {placed} of {n_req} required '{o.id}' instances (on): the support "
+                     f"'{o.placement.on}' has no placed instance (its object could not be placed, see its own error, or the reference "
+                     "matches nothing).", path, "Make room for the support object or fix the reference; the props themselves are fine.",
+                     placed=placed, required=n_req, blockers=dict(reasons), cause="support_missing")
+            return
+        msg = (f"Placed {placed} of {n_req} required '{o.id}' instances ({rel}); rejected candidates were blocked by: {top}." if rel != "on" else
+               f"Placed {placed} of {n_req} required '{o.id}' instances (on): the support surface is full or too small; rejected candidates "
+               f"were blocked by: {top}.")
+        self.err(f"solve.unsatisfiable.{rel}", msg, path, hints.get(rel, ""), placed=placed, required=n_req, blockers=dict(reasons),
+                 **({"cause": "surface_full"} if rel == "on" else {}))
 
     def _sample(self, o, rel, asset, p, rng, i, attempt):
         """-> (pose, parent_key, anchor_name, floor, meta) or None."""
@@ -512,6 +523,7 @@ class Solver:
         if rel == "on":
             hits = self._anchors(pl.on, "support")
             if not hits:
+                self._miss = "support_missing"
                 return None
             inst, a = hits[int(rng.integers(len(hits)))]
             poly = np.asarray(a.polygon, float)
@@ -528,6 +540,7 @@ class Solver:
                 lx, ly = (plo + phi) / 2 - (lo + hi) / 2
             else:
                 if plo[0] - lo[0] > phi[0] - hi[0] or plo[1] - lo[1] > phi[1] - hi[1]:
+                    self._miss = "too_big_for_surface"
                     return None
                 lx, ly = rng.uniform(plo[0] - lo[0], phi[0] - hi[0]), rng.uniform(plo[1] - lo[1], phi[1] - hi[1])
             wx, wy = transform([(lx, ly)], a.pos[0], a.pos[1], a_yaw)[0]

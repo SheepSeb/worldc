@@ -109,3 +109,16 @@ def test_baseline_provenance_names_the_e1_freeze():
     p = provenance()
     assert p["e1_freeze_tag"].startswith("e1-freeze") and len(p["curated_table_sha256"]) == 64
     assert set(p) == {"e1_freeze_tag", "e1_freeze_commit", "baseline_commit", "tree_dirty", "curated_table_sha256", "changed_since_freeze"}
+
+
+@pytest.mark.parametrize("seed", [18, 26])
+def test_template_props_on_one_surface_never_overlap(tmp_path, seed):
+    """Template seeds 18 / 26 failed check_scene on 4 mm overlaps of sibling props (monitors, KLT bins): the solver planned
+    with the visual footprint while the check tests the collision hulls.  Planning with hull-covering footprints fixes it."""
+    from worldc.assets import curated
+    from worldc.compile import compile_scene
+
+    if any(curated.cached_mesh(a) is None for a in ("workbench_steel", "parts_shelf", "monitor", "klt_bin")):
+        pytest.skip("curated assets not cached (python -m worldc.assets.curated warm)")
+    r = compile_scene(json.loads(TEMPLATE.read_text()), seed, tmp_path / "s")
+    assert r.ok and not [i for i in r.issues if i.code == "check.interpenetration"], [str(i) for i in r.issues if i.severity == "error"]

@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from worldc.assets import curated, get, list_assets, registry
-from worldc.assets.procedural.robot_cell import RobotCell, panel_dims, reach_of
+from worldc.assets.procedural.robot_cell import RobotCell, reach_of
 
 
 def test_table_is_pinned_and_licensed():
@@ -90,25 +90,22 @@ def test_fanuc_arms_are_baked_for_robot_cell():
         assert reach_of(alias) == reach
 
 
-def test_robot_cell_panel_fence_geometry():
+def test_robot_cell_is_always_caged():
+    """Cells are fenced by the wire-mesh cage (the SimReady barrier-rail panels were dropped in e1-freeze-v5)."""
+    from worldc.assets.base import ParamError
+
     cell = RobotCell()
     p = cell.params({"arm": "fanuc_crx10ia"})
-    w, d, _ = panel_dims()
     h = cell.half(p)
-    assert h >= reach_of("fanuc_crx10ia") + p.safety_margin
-    n = round((2 * h - d) / (w + 0.02))
-    panels = cell.panels(p)
-    assert len(panels) == 4 * n - 1  # one panel left out as the gate opening
-    xs = [x for x, y, _ in panels if y < -h + d]  # south side
-    assert not any(abs(x - cell.gate_x(p)) < 1e-6 for x in xs)
+    assert p.fence_style == "cage" and h == pytest.approx(reach_of("fanuc_crx10ia") + p.safety_margin)
     assert {a.name for a in cell.anchors(p)} == {"inside", "gate", "front"}
-    poly = cell.safety_polygon(p)
-    assert poly[2][0] == pytest.approx(h) and cell.keepouts(p) == []
-    fp = cell.footprint(p)
-    assert len(fp.pieces()) == len(panels) + 1 and fp.size[0] == pytest.approx(2 * h, abs=0.01)
-    assert p.fence_layers == 2 and fp.z1 == pytest.approx(2 * panel_dims()[2], abs=0.01)  # two panels high, ~2.1 m
-    # cage and unfenced styles are unchanged
-    assert cell.half(cell.params({"arm": "ur10", "fence_style": "cage"})) == pytest.approx(1.6)
+    assert cell.safety_polygon(p)[2][0] == pytest.approx(h + 0.06)  # the cage's outer face
+    assert cell.footprint(p).z1 >= p.fence_height  # cage incl. its gate track
+    with pytest.raises(ParamError):
+        cell.params({"fence_style": "panels"})
+    with pytest.raises(ParamError):
+        cell.params({"fence_layers": 2})
+    assert cell.half(cell.params({"arm": "ur10"})) == pytest.approx(1.6)
     assert [k.tag for k in cell.keepouts(cell.params({"fence": False}))] == ["robot_cell"]
     assert math.isclose(cell.pedestal(cell.params({"arm": "fanuc_crx20ia_l"}))[0], 0.75)
 

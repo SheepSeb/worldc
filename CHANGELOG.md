@@ -1,6 +1,30 @@
 # Changelog
 
-## Unreleased: E2 baselines
+## e1-freeze-v5 (2026-10-29)
+
+### Changed: robot cells are always caged
+`robot_cell` drops the `panels` fence style (and `fence_layers`): the SimReady `barrier_fence_metal_a02` sections it stacked
+are an open tubular barrier rail, which does not read as robot guarding. Every fenced cell now uses the wire-mesh cage
+with a sliding gate (`fence_style` accepts only `cage`, the default); unfenced keep-out cells are unchanged. The
+`safety_fence_panel` asset stays in the library as a standalone barrier.
+
+### Fixed: the solver plans props with footprints that cover their collision hulls
+The solver separated props by their visual footprint (margin 0) while `check_scene`'s overlap test uses the convex
+collision hulls (3 mm tolerance); in 15 of 23 dynamic curated assets the hulls reach more than 3 mm past the visual
+(monitor 14 mm, KLT bin 8 mm, electric motor 56 mm), so siblings on one surface could be placed overlapping and the build
+then failed the check (E2 template seeds 18 and 26). Mesh assets now plan with the convex hull of the visual footprint
+and the collision hulls (`mesh_asset.planning_polygon`); the curated table's baked footprints are re-baked the same way
+(only `baked.footprint` changes; table sha256 changes). New test: template seeds 18 / 26 build without overlaps.
+
+### Changed: `solve.unsatisfiable.on` says why
+Repair feedback distinguished nothing: a prop whose support object was never placed got "blocked by: does_not_fit",
+which reads as "the surface is too small". The error now names the cause (`data.cause`): `support_missing` ("the
+support '<ref>' has no placed instance ...; the props themselves are fine") or `surface_full` (the surface is full or too
+small; the blockers are listed, `too_big_for_surface` when a prop exceeds the surface).
+
+`scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v5`.
+
+## e2-baselines-v1 (2026-10-29)
 
 ### Added: E2 template and remanufacturing-recipe baselines (outside the E1 freeze)
 `worldc recipe remanufacturing --prompts prompts/prompts.csv --out out/e2/recipe` builds one scene per prompt (seed =

@@ -133,5 +133,6 @@ def test_library_example_registered():
     assert a.source == "mesh" and a.sidecar.collision.n_hulls >= 1
     d = registry.describe("example_crate")
     json.dumps(d)
-    assert d["footprint_at_defaults"]["size"] == pytest.approx([0.6, 0.4, 0.3], abs=1e-3)
+    sx, sy, sz = d["footprint_at_defaults"]["size"]  # planning footprint covers the collision hulls (a few mm past the visual)
+    assert 0.6 <= sx <= 0.61 and 0.4 <= sy <= 0.41 and sz == pytest.approx(0.3, abs=1e-3)
     assert sum(f.stat().st_size for f in ma.DEFAULT_LIBRARY.rglob("*") if f.is_file() and "catalog" not in f.parts) < 200_000

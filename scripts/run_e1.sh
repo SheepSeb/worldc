@@ -20,7 +20,7 @@ MAX_BUDGET_USD=20    # Claude Code's spend cap (Anthropic pricing; not meaningfu
 SEED=0               # every build_scene of a run uses this seed, whatever the model passes
 MAX_REPAIRS=10       # stop after 10 validate_spec / build_scene calls that returned errors
 TIMEOUT_S=3600
-FREEZE_TAG=e1-freeze-v4
+FREEZE_TAG=e1-freeze-v5
 # ----------------------------------------------------------------------------------------------------------------------
 
 VARIANT=constrained

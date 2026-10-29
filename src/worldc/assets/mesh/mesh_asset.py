@@ -157,6 +157,25 @@ def load_hulls(file: Path) -> tuple:
     return _load_hulls(str(file), os.path.getmtime(file))
 
 
+@functools.lru_cache(maxsize=256)
+def _planning_polygon(file: str, mtime: float, footprint: tuple) -> tuple:
+    from .import_mesh import footprint_polygon
+
+    pts = [(x, y, 0.0) for x, y in footprint] + [tuple(q) for pts, _, _ in _load_hulls(file, mtime) for q in pts]
+    return tuple(footprint_polygon(np.asarray(pts, float)))
+
+
+def planning_polygon(sc: "MeshSidecar", collision_file: Path) -> list:
+    """The footprint the solver plans with: the convex hull of the visual footprint and the collision hulls' xy projection.
+    Convex decomposition bulges past the visual by up to a few cm (monitor 14 mm, KLT bin 8 mm), and the hulls are what
+    PhysX and check_scene's overlap test see; planning with the visual footprint alone let siblings on one surface
+    overlap by more than the check's 3 mm tolerance."""
+    f = Path(collision_file)
+    if not f.is_file():
+        return list(sc.footprint)
+    return list(_planning_polygon(str(f), os.path.getmtime(f), tuple(map(tuple, sc.footprint))))
+
+
 def _rect(sx, sy):
     return [(-sx / 2, -sy / 2), (sx / 2, -sy / 2), (sx / 2, sy / 2), (-sx / 2, sy / 2)]
 
@@ -198,7 +217,7 @@ class MeshAsset(Asset):
     # -- planning
     def footprint(self, p) -> Footprint:
         s, b = p.scale, self.sidecar.bounds
-        return Footprint([(x * s, y * s) for x, y in self.sidecar.footprint], b.min[2] * s, b.max[2] * s)
+        return Footprint([(x * s, y * s) for x, y in planning_polygon(self.sidecar, self.collision_file)], b.min[2] * s, b.max[2] * s)
 
     def anchors(self, p) -> list[Anchor]:
         return [a.to_anchor(p.scale) for a in self.sidecar.anchors]

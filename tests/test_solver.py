@@ -71,6 +71,23 @@ def test_unsatisfiable_inside_reports_counts_and_hint():
     assert "of 30 required" in iss[0].message and "big" in iss[0].message and iss[0].hint
 
 
+def test_on_failure_says_whether_the_support_is_missing_or_full():
+    """Repair feedback: a missing / blocked support is not a full surface (shrinking the props would not help)."""
+    blocked = room([
+        {"id": "crate", "asset": "cardboard_box", "params": {"size": [5.0, 4.0, 1.0]}, "placement": {"pose": {"xy": [1, 0]}}},
+        {"id": "belt", "asset": "conveyor_belt", "placement": {"pose": {"xy": [2, 0], "yaw": 0}}},  # no room left for it
+        {"id": "items", "asset": "cardboard_box", "count": 2, "params": {"size": [0.3, 0.3, 0.2]}, "placement": {"on": "belt.surface"}},
+    ])
+    iss = {i.data.get("cause"): i for i in solve(blocked, 0).issues if i.code == "solve.unsatisfiable.on"}
+    assert set(iss) == {"support_missing"} and "has no placed instance" in iss["support_missing"].message
+    full = room([
+        {"id": "belt", "asset": "conveyor_belt", "params": {"length": 1.0}, "placement": {"pose": {"xy": [2, 0], "yaw": 0}}},
+        {"id": "items", "asset": "cardboard_box", "count": 12, "params": {"size": [0.4, 0.4, 0.2]}, "placement": {"on": "belt.surface"}},
+    ])
+    iss = [i for i in solve(full, 0).issues if i.code == "solve.unsatisfiable.on"]
+    assert iss and iss[0].data["cause"] == "surface_full" and "full or too small" in iss[0].message
+
+
 def test_optional_instances_dropped_silently():
     spec = room([{"id": "big", "asset": "pallet_load", "count": [1, 40], "params": {"variant": "empty"}, "placement": {"inside": "tiny"}}],
                 zones=[{"id": "tiny", "rect": [-2, -2, 2, 2]}])

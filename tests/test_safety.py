@@ -113,7 +113,7 @@ def test_min_clearance_object_level_wall_and_unresolved(tmp_path):
 
 
 # ---------------------------------------------------------------------------------------------------- robot cell
-CELL = {"id": "cell", "asset": "robot_cell", "params": {"arm": "ur10", "fence_style": "cage"},  # cage: offline (panels download SimReady meshes)
+CELL = {"id": "cell", "asset": "robot_cell", "params": {"arm": "ur10"},  # caged (offline)
         "placement": {"pose": {"xy": [0.0, 0.5], "yaw": 0}}}
 
 

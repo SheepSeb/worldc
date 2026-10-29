@@ -6,9 +6,9 @@ their rigid bodies, joints and articulation root switched off by overrides.  The
 driven robot.  UR10 stands on NVIDIA's ``ur10_mount`` (``Isaac/Props/Mounts/ur10_mount.usd``, 0.515 m, top at its origin) by
 default; every other arm on a procedural steel column.
 
-Fence (``fence_style``): ``panels`` = SimReady ``safety_fence_panel`` sections (1.07 m) stacked ``fence_layers`` high (default
-2, ~2.1 m) in a pinwheel square (each side runs from one corner to the next minus the panel depth, so corners close without
-overlaps), one panel column left out on the front (-y) as the gate opening; ``cage`` = the procedural wire-mesh cage with a sliding gate.  The safeguarded square (half-size >= reach
+Fence: the procedural wire-mesh safety cage with a sliding gate on the front (-y).  (A fence of stacked SimReady
+``safety_fence_panel`` sections was the default until e1-freeze-v5; that asset is an open tubular barrier rail, which does
+not read as robot guarding, so cells are always caged now.)  The safeguarded square (half-size >= reach
 + ``safety_margin``) is recorded as ``safety_polygon`` on the ``robot_cell`` scene-graph record, which ``check_scene``'s
 mandatory robot-cell clearance reads; unfenced cells make it a keep-out the solver keeps free.  Children placed on the
 cell's ``inside`` anchor (fixtures, workpieces) count as part of the cell.
@@ -21,7 +21,7 @@ from typing import Literal
 from pydantic import Field
 
 from ...geom import Q_IDENT, qyaw
-from ..base import Anchor, Asset, Built, Footprint, Keepout, Params, PhysicsInfo, Pose
+from ..base import Anchor, Asset, Built, Footprint, Keepout, Params, PhysicsInfo
 from ..registry import get, register
 
 UR10_MOUNT = "Isaac/Props/Mounts/ur10_mount.usd"
@@ -38,8 +38,6 @@ FRANKA_LINKS = ["panda_link0", "panda_link1", "panda_link2", "panda_link3", "pan
 FRANKA_JOINTS = ["rootJoint", "panda_link0/panda_joint1", "panda_link1/panda_joint2", "panda_link2/panda_joint3", "panda_link3/panda_joint4",
                  "panda_link4/panda_joint5", "panda_link5/panda_joint6", "panda_link6/panda_joint7", "panda_link7/panda_hand_joint",
                  "panda_hand/panda_finger_joint1", "panda_hand/panda_finger_joint2"]
-PANEL = "safety_fence_panel"
-PANEL_GAP = 0.02  # between neighbouring panels along a side
 
 
 def reach_of(arm: str) -> float:
@@ -50,14 +48,6 @@ def reach_of(arm: str) -> float:
     return curated_arm(arm)["reach_m"]
 
 
-def panel_dims() -> tuple[float, float, float]:
-    """(width along the fence, depth incl. feet, height) of the SimReady fence panel, from the curated table."""
-    from ..curated import table
-
-    e = table()[PANEL]
-    return tuple((e.get("baked") or {}).get("size") or e["size_m"])
-
-
 class RobotCellParams(Params):
     arm: Literal["ur10", "franka", "fanuc_crx10ia", "fanuc_crx20ia_l"] = Field(
         "ur10", description="Arm on the pedestal (non-driven visual): Isaac UR10 / Franka, or SimReady FANUC CRX-10iA / CRX-20iA/L")
@@ -65,20 +55,17 @@ class RobotCellParams(Params):
     pedestal_height: float | None = Field(None, ge=0.3, le=1.5, description="Pedestal height (m). Default: UR10 on the Isaac ur10_mount "
                                           "(0.515 m), other arms on a 0.75 m steel column. Setting it uses a steel column for any arm")
     fence: bool = Field(True, description="Fenced cell with a gate opening on the front (-y); False = unfenced keep-out zone")
-    fence_style: Literal["panels", "cage"] = Field("panels", description="panels: SimReady metal safety fence panels stacked "
-                                                   "fence_layers high; cage: procedural wire-mesh cage with a sliding gate")
-    fence_layers: int = Field(2, ge=1, le=3, description="panels style: panels stacked this many high (1.07 m each; 2 = ~2.1 m)")
+    fence_style: Literal["cage"] = Field("cage", description="cage: procedural wire-mesh safety cage with a sliding gate (the only style)")
     safety_margin: float = Field(0.3, ge=0.0, le=2.0, description="Added to the arm reach for the safeguarded square (m)")
-    fence_height: float = Field(2.0, ge=1.4, le=3.0, description="cage style only")
-    gate_width: float = Field(1.0, ge=0.8, le=2.0, description="cage style only (panels: the gate is one panel wide)")
+    fence_height: float = Field(2.0, ge=1.4, le=3.0, description="Cage height (m)")
+    gate_width: float = Field(1.0, ge=0.8, le=2.0, description="Sliding gate opening (m)")
 
 
 @register
 class RobotCell(Asset):
     id = "robot_cell"
     description = ("Static robot work cell (e.g. disassembly): an arm (Isaac UR10 / Franka or SimReady FANUC CRX) on a pedestal as a "
-                   "non-driven visual, inside a fence of SimReady safety panels (default; gate opening on the front, -y), a wire-mesh "
-                   "cage, or an unfenced keep-out square of half-size >= reach + safety_margin. The safeguarded footprint is checked "
+                   "non-driven visual, inside a wire-mesh safety cage (default; sliding gate on the front, -y) or an unfenced keep-out square of half-size >= reach + safety_margin. The safeguarded footprint is checked "
                    "for 0.5 m clearance to everything else. Fenced cells expose an 'inside' support (fixtures / workpieces) and a "
                    "'gate' port; all have a 'front' port outside. Not the scene robot: the mobile `robot` stays the only driven one.")
     tags = frozenset({"robot_cell", "robot", "arm", "cell", "fence", "safety", "industrial", "disassembly", "isaac", "simready", "static"})
@@ -89,13 +76,8 @@ class RobotCell(Asset):
     # ---- geometry --------------------------------------------------------------------------------------------
     @staticmethod
     def half(p) -> float:
-        """Half-size of the safeguarded square (panels: rounded up to whole panels)."""
-        h = reach_of(p.arm) + p.safety_margin
-        if p.fence and p.fence_style == "panels":
-            w, d, _ = panel_dims()
-            n = max(2, math.ceil((2 * h - d) / (w + PANEL_GAP)))
-            return (n * (w + PANEL_GAP) + d) / 2
-        return h
+        """Half-size of the safeguarded square."""
+        return reach_of(p.arm) + p.safety_margin
 
     @staticmethod
     def pedestal(p) -> tuple[float, bool]:
@@ -104,32 +86,7 @@ class RobotCell(Asset):
             return (UR10_MOUNT_SIZE[2], True) if p.arm == "ur10" else (COLUMN_HEIGHT, False)
         return p.pedestal_height, False
 
-    def panels(self, p) -> list[tuple[float, float, float]]:
-        """Local (x, y, yaw) of each fence panel, pinwheel order S, E, N, W; the gate gap is left out on the south side."""
-        w, d, _ = panel_dims()
-        S = 2 * self.half(p)
-        n = round((S - d) / (w + PANEL_GAP))
-        step = w + PANEL_GAP
-        out = []
-        for side, yaw in enumerate((0.0, math.pi / 2, math.pi, -math.pi / 2)):
-            for i in range(n):
-                t = -S / 2 + step * (i + 0.5)  # along the side, starting at its first corner
-                if side == 0 and i == self.gate_index(n):
-                    continue
-                x, y = {0: (t, -S / 2 + d / 2), 1: (S / 2 - d / 2, t), 2: (-t, S / 2 - d / 2), 3: (-S / 2 + d / 2, -t)}[side]
-                out.append((x, y, yaw))
-        return out
-
-    @staticmethod
-    def gate_index(n: int) -> int:
-        return n - 2 if n >= 3 else n - 1
-
     def gate_x(self, p) -> float:
-        if p.fence_style == "panels":
-            w, d, _ = panel_dims()
-            S = 2 * self.half(p)
-            n = round((S - d) / (w + PANEL_GAP))
-            return -S / 2 + (w + PANEL_GAP) * (self.gate_index(n) + 0.5)
         return self.half(p) - p.gate_width / 2 - 0.25
 
     def cage_params(self, p):
@@ -138,39 +95,26 @@ class RobotCell(Asset):
                                    "gate_offset": h - p.gate_width / 2 - 0.25, "gate_travel": min(p.gate_width + 0.2, 4.0)})
 
     def safety_polygon(self, p) -> list[tuple[float, float]]:
-        h = self.half(p) + (0.06 if p.fence and p.fence_style == "cage" else 0.0)  # cage: the fence's outer face
+        h = self.half(p) + (0.06 if p.fence else 0.0)  # the cage's outer face
         return [(-h, -h), (h, -h), (h, h), (-h, h)]
 
     def footprint(self, p):
         ped = Footprint.rect(0.4, 0.4, self.pedestal(p)[0] + 1.2)
         if not p.fence:
             return ped
-        if p.fence_style == "cage":
-            return Footprint.union(get("cage").footprint(self.cage_params(p)).pieces() + [ped])
-        w, d, ht = panel_dims()
-        ht *= p.fence_layers
-        pieces = []
-        for x, y, yaw in self.panels(p):
-            along_x = abs(math.sin(yaw)) < 0.5
-            pieces.append(Footprint.rect(w if along_x else d, d if along_x else w, ht, x, y))
-        return Footprint.union(pieces + [ped])
+        return Footprint.union(get("cage").footprint(self.cage_params(p)).pieces() + [ped])
 
     def keepouts(self, p):
         if not p.fence:
             return [Keepout(self.safety_polygon(p), "robot_cell", (0.0, 2.5))]
-        return get("cage").keepouts(self.cage_params(p)) if p.fence_style == "cage" else []
+        return get("cage").keepouts(self.cage_params(p))
 
     def anchors(self, p):
         h = self.half(p)
         front = Anchor("front", "port", (0.0, -h - 1.0, 0.0), qyaw(math.pi / 2), port_kind="approach")
         if not p.fence:
             return [front]
-        if p.fence_style == "cage":
-            return [a for a in get("cage").anchors(self.cage_params(p)) if a.name in ("inside", "gate")] + [front]
-        d = panel_dims()[1]
-        r = h - d - 0.2
-        return [Anchor("inside", "support", (0, 0, 0), polygon=[(-r, -r), (r, -r), (r, r), (-r, r)]),
-                Anchor("gate", "port", (self.gate_x(p), -h - 0.6, 0.0), qyaw(math.pi / 2), port_kind="approach"), front]
+        return [a for a in get("cage").anchors(self.cage_params(p)) if a.name in ("inside", "gate")] + [front]
 
     # ---- build -----------------------------------------------------------------------------------------------
     def _arm(self, ctx, path, pose, p, z_top):
@@ -215,7 +159,7 @@ class RobotCell(Asset):
         from ..catalog import catalog_url
 
         k, m = ctx.kit, ctx.mats
-        k.xform(path)  # identity: children carry world poses, so the cage / panels can be built as is
+        k.xform(path)  # identity: children carry world poses, so the cage can be built as is
         ph, isaac_mount = self.pedestal(p)
         ped = k.xform(f"{path}/Pedestal", pose.pos, pose.quat)
         if isaac_mount:
@@ -234,17 +178,9 @@ class RobotCell(Asset):
         reach = self._arm(ctx, path, pose, p, ph)
 
         keepouts, bodies = [], []
-        if p.fence and p.fence_style == "cage":
+        if p.fence:
             cb = get("cage").build(ctx, f"{path}/Fence", pose, self.cage_params(p), rng)
             keepouts, bodies = cb.keepouts, cb.bodies
-        elif p.fence:
-            panel = get(PANEL)
-            k.xform(f"{path}/Fence")
-            ph_ = panel_dims()[2]
-            for i, (x, y, yaw) in enumerate(self.panels(p)):
-                for layer in range(p.fence_layers):  # stacked: each layer's feet stand on the top rail below
-                    wp, wq = pose.world((x, y, layer * ph_), qyaw(yaw))
-                    panel.build(ctx, f"{path}/Fence/Panel_{i:02d}_{layer}", Pose(wp, wq), panel.params({}), rng)
         else:
             keepouts = [("robot_cell", pose.world_xy(self.safety_polygon(p)).tolist())]
             sq = self.safety_polygon(p)
@@ -255,7 +191,7 @@ class RobotCell(Asset):
         poly = pose.world_xy(self.safety_polygon(p)).tolist()
         h = self.half(p)
         gate = pose.world((self.gate_x(p), -h - 0.6, 0.0))[0] if p.fence else None
-        height = (p.fence_height if p.fence_style == "cage" else panel_dims()[2] * p.fence_layers) if p.fence else ph
+        height = p.fence_height if p.fence else ph
         ctx.record(path, "robot_cell", pose.pos, pose.quat, "static", size=(2 * h, 2 * h, height), arm=p.arm, reach_m=reach,
                    fenced=p.fence, fence_style=p.fence_style if p.fence else None,
                    safety_polygon=[[round(float(x), 4), round(float(y), 4)] for x, y in poly],
