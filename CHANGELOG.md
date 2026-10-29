@@ -24,6 +24,11 @@ chassis, which the Isaac check missed only because its 6 s settle ends before th
 `check.json` reports per person the clearance to the footprint (`safety.human_paths`). New test: the same path passes
 or fails depending on the spawn yaw.
 
+### Documented: the physics settle covers only a 6 s window
+The Isaac Sim settle in the final check simulates 6 s with people and forklifts moving from their start phase, so it
+only exercises the first few metres of each path; a contact later in a path (v5 P18) is not seen there. A physics pass
+is not evidence that a path is clear; whole-path interactions are checked statically (docs/DATAGEN.md, docs/MCP.md).
+
 `scripts/run_e1.sh` and the runner's freeze check point at `e1-freeze-v7`.
 
 ## e1-freeze-v6 (2026-10-29)

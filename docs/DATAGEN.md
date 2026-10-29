@@ -18,6 +18,12 @@ After the model finishes, the runner re-checks what was actually built, independ
 checks, an Isaac Sim physics settle, and **Isaac Sim RTX renders of every scene camera plus two auto-framed views**
 (`auto_overview`, `auto_topdown`).
 
+The physics settle simulates a short window (6 s, people and forklifts moving along their paths from their start
+phase). Anything that only happens later in a path is not exercised: a walker that would reach the parked robot after
+3.5 m of a 0.65 m/s path never gets there in 6 s (pilot v5 P18 passed physics that way). Interactions that matter
+over a whole path are therefore checked statically on the full path, e.g. `check.human_path_robot_spawn`; a physics
+pass is not evidence that a path is clear.
+
 ## What is collected
 
 ```

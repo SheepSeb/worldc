@@ -42,6 +42,8 @@ or a file path. `render` additionally returns the image as MCP image content.
 * `import_asset` registers the asset only for the lifetime of the server process. For a spec that must replay later, use
   `{"file": path}` in the spec instead.
 * `check_scene`'s `ok` is the pure-Python checks plus "bodies settled" (>= 95% moved under 2 cm, nothing fell or ran away).
-  A conveyor cargo that misses belt speed in a short run is a warning (`physics.conveyor_speed`), not a failure.
+  A conveyor cargo that misses belt speed in a short run is a warning (`physics.conveyor_speed`), not a failure. The
+  settle covers only `sim_seconds` (6 s in the final check): people and forklifts move along just the first few metres of
+  their paths, so later contacts are not exercised there (the static checks cover whole paths).
 * A typical loop is in the server's instructions: search assets, write a spec, `validate_spec`, `build_scene`,
   `check_scene`, `render`, then `edit_scene` to refine.
