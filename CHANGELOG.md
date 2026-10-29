@@ -1,5 +1,16 @@
 # Changelog
 
+## e3-policies-v1 (2026-10-29)
+
+### Frozen: E3 policy definitions
+- **Frozen policies:** blind, fields (ISO 3691-4-style, with the ISO 13855-style approach term) and human-aware are
+  frozen at tag `e3-policies-v1`.
+- **Provenance:** every trial row records `e3_policies`, `e3_policies_commit`, `code_commit` and `policies_at_tag`.
+  `summary.json` carries the same under `provenance`.
+- **Findings, not fixes:**
+  - fields: collisions from behind, and people crossing into the side of the field while the robot brakes.
+  - human-aware: freezing in the hard tier.
+
 ## e3-fields-3 (2026-10-29)
 
 ### Changed: E3 protective field includes an ISO 13855-style human approach

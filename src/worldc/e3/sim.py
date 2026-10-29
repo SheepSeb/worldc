@@ -62,7 +62,24 @@ MOVING_V, MOVING_W = 0.05, 0.2  # m/s, rad/s
 STATIONARY_NEAR_M = 1.0  # time stationary within this gap of a person
 FROZEN_S, FROZEN_M = 30.0, 0.10
 POLICIES = ("blind", "fields", "aware")
+# Frozen policy definitions: the git tag of the commit that fixed them.  Every trial row records it (``policy_provenance``);
+# changing a policy means a new tag, not an edit under this one.
+POLICIES_TAG = "e3-policies-v1"
+POLICY_FILES = ("src/worldc/e3/sim.py", "src/worldc/assets/library/robots/isaac_5.1_robots.json")
 OUTCOMES = ("success", "collision", "frozen", "timeout", "goal_unreachable", "goal_missed")
+
+
+def policy_provenance() -> dict:
+    """The frozen policy tag, the commit it names, the code commit and whether the policy files differ from the tag."""
+    import subprocess
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    git = lambda *a: subprocess.run(["git", "-C", str(root), *a], capture_output=True, text=True)  # noqa: E731
+    tag = git("rev-parse", "--verify", "--quiet", f"{POLICIES_TAG}^{{commit}}").stdout.strip()
+    changed = git("diff", "--name-only", tag, "--", *POLICY_FILES).stdout.split() if tag else list(POLICY_FILES)
+    return {"e3_policies": POLICIES_TAG, "e3_policies_commit": tag[:12] or None, "code_commit": git("rev-parse", "HEAD").stdout.strip()[:12],
+            "policies_changed_since_tag": changed}
 
 
 def wrap(a: float) -> float:

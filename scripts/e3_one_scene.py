@@ -177,6 +177,11 @@ def main():
               f"timeout {timeouts[variant]:.0f} s; robot {w.robot}")
     timeout = max(timeouts.values())  # one timeout for every tier
 
+    prov = S.policy_provenance()
+    if prov["policies_changed_since_tag"]:
+        print(f"WARNING: policy files differ from {S.POLICIES_TAG}: {prov['policies_changed_since_tag']}", file=sys.stderr)
+    prov_row = {"e3_policies": prov["e3_policies"], "e3_policies_commit": prov["e3_policies_commit"], "code_commit": prov["code_commit"],
+                "policies_at_tag": not prov["policies_changed_since_tag"]}
     rows, keep = [], {}
     with open(out / "trials.jsonl", "w") as jf:
         for tier, (variant, n) in TIERS.items():
@@ -186,7 +191,7 @@ def main():
                 for pol in S.POLICIES:
                     t2 = time.time()
                     res = S.run_trial(world, H, pol, legs[variant], timeout)
-                    row = {"scene": a.name, "variant": variant, "tier": tier, "workers": n, "seed": seed, "timeout_s": round(timeout, 1),
+                    row = {**prov_row, "scene": a.name, "variant": variant, "tier": tier, "workers": n, "seed": seed, "timeout_s": round(timeout, 1),
                            "wall_s": round(time.time() - t2, 2),
                            **{k: v for k, v in res.items() if k not in ("events", "arrivals", "trajectory")}}
                     rows.append(row)
@@ -205,7 +210,7 @@ def main():
         w_.writeheader()
         w_.writerows(rows)
     summary = summarize(rows)
-    (out / "summary.json").write_text(json.dumps(summary, indent=1))
+    (out / "summary.json").write_text(json.dumps({"provenance": prov, **summary}, indent=1))
     md = table(summary)
     (out / "summary.md").write_text(md + "\n")
 
