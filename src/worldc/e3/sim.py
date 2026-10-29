@@ -47,7 +47,7 @@ FIELDS = {  # the ``fields`` policy, in one place; a_brake comes from the robot 
     "t_react_s": 0.1,  # detection to braking
     "margin_m": 0.25,  # added to the stopping distance
     "warning_extra_m": 1.0,  # warning length = protective length + this
-    "side_margin_m": 0.10,  # each side, beyond the footprint's half-width across the travel heading
+    "side_margin_m": 0.25,  # each side, beyond the footprint's half-width across the travel heading
     "turn_widen_m": 0.15,  # extra each side while turning
     "warning_scale": 0.5,  # speed factor (linear and angular) while a person is in the warning field
     "resume_clear_s": 1.0,  # protective field clear this long before resuming
@@ -211,7 +211,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
                 moving_behind += int(moving and ahead_x[i] < 0)
                 events.append({"type": "collision", "t": round(t, 2), "worker": int(i), "xy": [round(x, 2), round(y, 2)],
                                "robot_v": round(v, 2), "robot_w": round(w, 2), "robot_moving": bool(moving),
-                               "ahead_x": round(float(ahead_x[i]), 2), "from_behind": bool(ahead_x[i] < 0)})
+                               "ahead_x": round(float(ahead_x[i]), 2), "from_behind": bool(ahead_x[i] < 0),
+                               "robot_holding": bool(holding), "state": state})
             in_contact = hit
             if len(Hk) > 1:
                 dd = np.hypot(*(Hk[:, None, :] - Hk[None, :, :]).transpose(2, 0, 1))

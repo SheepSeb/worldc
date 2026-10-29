@@ -1,5 +1,15 @@
 # Changelog
 
+## e3-fields-2 (2026-10-29)
+
+### Changed: E3 fields parameters
+- **Nova Carter `brake_decel_mps2`:** 1.5 m/s², a conservative assumption, not a vendor spec (was 3.0).
+- **Side margin:** 0.25 m per side (was 0.10), plus 0.15 m while turning.
+- **Collision events:** they now carry `robot_holding` and `state`.
+- **P18 rerun** (90 trials): fields has 0.2 / 0.8 / 1.5 robot-moving collisions (easy / medium / hard). 13 of 25 hit the
+  front or side while the robot is already braking in a protective stop, because the fields do not cover a person's
+  approach during the stop. 12 are from behind.
+
 ## e3-fields (2026-10-29)
 
 ### Changed: E3 stop-and-wait becomes an ISO 3691-4-style field policy (`fields`)
