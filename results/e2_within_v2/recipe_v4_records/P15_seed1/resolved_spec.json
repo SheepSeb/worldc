@@ -1,0 +1,1295 @@
+{
+ "spec_version": "1.0",
+ "name": "e2_recipe_engine_gearbox_reman_seed3016",
+ "description": "E2 recipe baseline: 26 x 14 m engine gearbox reman (hard).",
+ "seed": 3016,
+ "environment": {
+  "kind": "indoor",
+  "footprint": {
+   "type": "rect",
+   "size": [
+    26.0,
+    14.0
+   ]
+  },
+  "height": 5.0,
+  "floor": {
+   "material": "concrete",
+   "wear": 0.32,
+   "markings": "auto",
+   "extra_markings": [],
+   "slope_zones": []
+  },
+  "walls": {
+   "thickness": 0.3,
+   "material": "wall",
+   "openings": [
+    {
+     "id": "door_0",
+     "wall": "south",
+     "center": 7.552,
+     "width": 2.4,
+     "height": 3.0,
+     "sill": 0.0,
+     "door": "rollup_door",
+     "door_params": {}
+    },
+    {
+     "id": "door_1",
+     "wall": "east",
+     "center": 4.281,
+     "width": 1.15,
+     "height": 2.2,
+     "sill": 0.0,
+     "door": "swing_door",
+     "door_params": {}
+    },
+    {
+     "id": "door_2",
+     "wall": "west",
+     "center": -4.958,
+     "width": 1.15,
+     "height": 2.2,
+     "sill": 0.0,
+     "door": "swing_door",
+     "door_params": {}
+    }
+   ]
+  },
+  "roof": true,
+  "apron_depth": 0.0,
+  "ground_margin": 10.0
+ },
+ "zones": [
+  {
+   "id": "staging",
+   "rect": [
+    0.752,
+    -6.88,
+    3.352,
+    -4.88
+   ],
+   "tags": [
+    "staging"
+   ],
+   "keep_clear": false,
+   "marking": "outline"
+  },
+  {
+   "id": "parts_storage_0",
+   "rect": [
+    11.47,
+    -1.63,
+    12.88,
+    0.26
+   ],
+   "tags": [
+    "storage"
+   ],
+   "keep_clear": false,
+   "marking": "none"
+  },
+  {
+   "id": "parts_storage_1",
+   "rect": [
+    -12.88,
+    0.12,
+    -11.47,
+    2.01
+   ],
+   "tags": [
+    "storage"
+   ],
+   "keep_clear": false,
+   "marking": "none"
+  }
+ ],
+ "objects": [
+  {
+   "id": "cells",
+   "asset": "robot_cell",
+   "count": 3,
+   "params": {},
+   "instance_params": [
+    {
+     "arm": "franka",
+     "arm_yaw": 90.0,
+     "pedestal_height": null,
+     "fence": true,
+     "fence_style": "cage",
+     "safety_margin": 0.3,
+     "fence_height": 2.0,
+     "gate_width": 1.0
+    },
+    {
+     "arm": "ur10",
+     "arm_yaw": 90.0,
+     "pedestal_height": null,
+     "fence": true,
+     "fence_style": "cage",
+     "safety_margin": 0.3,
+     "fence_height": 2.0,
+     "gate_width": 1.0
+    },
+    {
+     "arm": "fanuc_crx10ia",
+     "arm_yaw": 0.0,
+     "pedestal_height": null,
+     "fence": true,
+     "fence_style": "cage",
+     "safety_margin": 0.3,
+     "fence_height": 2.0,
+     "gate_width": 1.0
+    }
+   ],
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -9.79,
+       5.245
+      ],
+      "yaw": 89.99999999999999
+     },
+     {
+      "xy": [
+       5.825,
+       4.8
+      ],
+      "yaw": -89.99999999999999
+     },
+     {
+      "xy": [
+       -2.911,
+       4.851
+      ],
+      "yaw": 0.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": []
+  },
+  {
+   "id": "belt",
+   "asset": "conveyor_belt",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       5.342,
+       -3.59
+      ],
+      "yaw": 0.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "length": 6.58,
+     "width": 0.6,
+     "top_z": 0.8,
+     "speed": 0.4,
+     "end_stop": true
+    }
+   ]
+  },
+  {
+   "id": "pallets",
+   "asset": "pallet",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       2.4639454708338433,
+       -5.889520387233142
+      ],
+      "yaw": 0.0,
+      "zone": "staging"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "mass_kg": null
+    }
+   ]
+  },
+  {
+   "id": "returned_units",
+   "asset": "electric_motor",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       2.751993549184182,
+       -5.84584434581966
+      ],
+      "yaw": 150.12627486385873,
+      "support": "pallets.0.deck"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "benches",
+   "asset": "workbench_steel",
+   "count": 12,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       2.206,
+       -2.711
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -0.194,
+       -2.711
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -2.594,
+       -2.711
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -4.994,
+       -2.711
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       2.539,
+       -0.701
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       0.139,
+       -0.701
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -2.261,
+       -0.701
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -4.661,
+       -0.701
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       2.225,
+       1.309
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -0.175,
+       1.309
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -2.575,
+       1.309
+      ],
+      "yaw": 0.0
+     },
+     {
+      "xy": [
+       -4.975,
+       1.309
+      ],
+      "yaw": 0.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "bench_electric_motor",
+   "asset": "electric_motor",
+   "count": 5,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -2.4638737303249627,
+       -2.7087956993914935
+      ],
+      "yaw": -2.9630857463258504,
+      "support": "benches.2.top"
+     },
+     {
+      "xy": [
+       2.620610160939356,
+       1.2518096571820485
+      ],
+      "yaw": -78.6881448731556,
+      "support": "benches.8.top"
+     },
+     {
+      "xy": [
+       -4.130955626492068,
+       -0.6914552470982424
+      ],
+      "yaw": -175.23015122444613,
+      "support": "benches.7.top"
+     },
+     {
+      "xy": [
+       -2.6107657036871315,
+       -0.6572643286434797
+      ],
+      "yaw": -98.44032258658949,
+      "support": "benches.6.top"
+     },
+     {
+      "xy": [
+       -4.654556722650355,
+       1.2595519598204197
+      ],
+      "yaw": 81.08128445967722,
+      "support": "benches.11.top"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "bench_transfer_case",
+   "asset": "transfer_case",
+   "count": 5,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -5.248057485142065,
+       1.3581561022085256
+      ],
+      "yaw": -70.37539075278885,
+      "support": "benches.11.top"
+     },
+     {
+      "xy": [
+       -2.544266014434323,
+       1.2867936760708665
+      ],
+      "yaw": 3.5510672433970125,
+      "support": "benches.10.top"
+     },
+     {
+      "xy": [
+       -4.95731564504692,
+       -0.7373183551977045
+      ],
+      "yaw": -11.2538965414209,
+      "support": "benches.7.top"
+     },
+     {
+      "xy": [
+       -0.8338456867691878,
+       -2.7993315740080154
+      ],
+      "yaw": -162.30073524188575,
+      "support": "benches.1.top"
+     },
+     {
+      "xy": [
+       -1.831420956313524,
+       -0.6968553129906578
+      ],
+      "yaw": 58.48647273110069,
+      "support": "benches.6.top"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "bench_planetary_gearbox",
+   "asset": "planetary_gearbox",
+   "count": 4,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -4.575553731932336,
+       -0.8615603391514963
+      ],
+      "yaw": -19.488827895349083,
+      "support": "benches.7.top"
+     },
+     {
+      "xy": [
+       0.39258878687426746,
+       -2.6737194398143664
+      ],
+      "yaw": 59.91169251918512,
+      "support": "benches.1.top"
+     },
+     {
+      "xy": [
+       -1.9678867524252268,
+       -2.7445552415058345
+      ],
+      "yaw": -60.06234561330049,
+      "support": "benches.2.top"
+     },
+     {
+      "xy": [
+       2.8332877622974335,
+       -2.8612035360053403
+      ],
+      "yaw": -68.84370245244605,
+      "support": "benches.0.top"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "shelving",
+   "asset": "parts_shelf",
+   "count": 4,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       12.575,
+       -1.17
+      ],
+      "yaw": 89.99999999999999
+     },
+     {
+      "xy": [
+       12.575,
+       -0.2
+      ],
+      "yaw": 89.99999999999999
+     },
+     {
+      "xy": [
+       -12.575,
+       0.58
+      ],
+      "yaw": -89.99999999999999
+     },
+     {
+      "xy": [
+       -12.575,
+       1.55
+      ],
+      "yaw": -89.99999999999999
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "klt_bins",
+   "asset": "klt_bin",
+   "count": 8,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       12.545599249403923,
+       -1.3501832596084957
+      ],
+      "yaw": 4.556528268846655,
+      "support": "shelving.0.shelf_4"
+     },
+     {
+      "xy": [
+       12.591071832919953,
+       -0.25364255569781907
+      ],
+      "yaw": -3.4818732282587517,
+      "support": "shelving.1.shelf_0"
+     },
+     {
+      "xy": [
+       -12.585005054569754,
+       0.6171468481112135
+      ],
+      "yaw": 2.289897507159112,
+      "support": "shelving.2.shelf_0"
+     },
+     {
+      "xy": [
+       12.598176914079312,
+       -1.2275868846689206
+      ],
+      "yaw": -3.234314626182382,
+      "support": "shelving.0.shelf_0"
+     },
+     {
+      "xy": [
+       -12.543231275550587,
+       1.513800886650613
+      ],
+      "yaw": 2.539078799033275,
+      "support": "shelving.3.shelf_0"
+     },
+     {
+      "xy": [
+       -12.552491156429783,
+       1.4994624417788962
+      ],
+      "yaw": -3.260201633697208,
+      "support": "shelving.3.shelf_4"
+     },
+     {
+      "xy": [
+       12.56060087496842,
+       -0.2503398056099341
+      ],
+      "yaw": 3.600117695694967,
+      "support": "shelving.1.shelf_4"
+     },
+     {
+      "xy": [
+       12.600776392232474,
+       -0.3145319158000005
+      ],
+      "yaw": -0.7036616722685256,
+      "support": "shelving.1.shelf_3"
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    },
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "charger",
+   "asset": "charging_station",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       11.02,
+       -6.61
+      ],
+      "yaw": 0.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "pad_offset": 1.8,
+     "pad": true
+    }
+   ]
+  },
+  {
+   "id": "parts_washer_0",
+   "asset": "parts_washer",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       12.308,
+       2.39
+      ],
+      "yaw": 89.99999999999999
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "drum_steel_0",
+   "asset": "drum_steel",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -6.53,
+       6.523
+      ],
+      "yaw": 180.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "drum_steel_1",
+   "asset": "drum_steel",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       12.523,
+       5.97
+      ],
+      "yaw": 89.99999999999999
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "occluder_0",
+   "asset": "crate_plywood",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       -6.35,
+       -6.346
+      ],
+      "yaw": 0.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "occluder_1",
+   "asset": "flammables_cabinet",
+   "count": 1,
+   "params": {},
+   "placement": {
+    "pose": [
+     {
+      "xy": [
+       9.837,
+       6.406
+      ],
+      "yaw": 180.0
+     }
+    ]
+   },
+   "tags": [],
+   "constraints": [],
+   "instance_params": [
+    {
+     "scale": 1.0,
+     "mass_kg": null,
+     "body": null
+    }
+   ]
+  }
+ ],
+ "constraints": [
+  {
+   "hard": true,
+   "type": "reachable",
+   "from": "robot.spawn",
+   "to": [
+    "*"
+   ]
+  }
+ ],
+ "agents": [
+  {
+   "id": "worker_0",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -11.62,
+      1.55
+     ],
+     [
+      -2.911,
+      2.602
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.73,
+    "phase": 2.35
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_1",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -4.661,
+      0.299
+     ],
+     [
+      -11.62,
+      1.55
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.91,
+    "phase": 1.27
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_2",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -0.175,
+      2.309
+     ],
+     [
+      3.525,
+      4.8
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.93,
+    "phase": 0.54
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_3",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -12.2,
+      -4.958
+     ],
+     [
+      2.206,
+      -3.711
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.79,
+    "phase": 1.83
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_4",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -12.2,
+      -4.958
+     ],
+     [
+      -11.62,
+      1.55
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 0.99,
+    "phase": 0.09
+   },
+   "keep_clear_width": 0.8
+  },
+  {
+   "id": "worker_5",
+   "asset": "human",
+   "params": {},
+   "path": {
+    "waypoints": [
+     [
+      -11.62,
+      1.55
+     ],
+     [
+      -2.911,
+      2.602
+     ]
+    ],
+    "mode": "pingpong",
+    "speed": 1.0,
+    "phase": 2.46
+   },
+   "keep_clear_width": 0.8
+  }
+ ],
+ "robot": {
+  "asset": "dingo",
+  "params": {},
+  "spawn": {
+   "pose": {
+    "xy": [
+     11.02,
+     -3.31
+    ],
+    "yaw": 0.0
+   }
+  },
+  "nav_goals": [
+   {
+    "id": "at_bench",
+    "type": "place",
+    "target": "benches.0",
+    "approach": "any",
+    "distance": 0.9,
+    "extra": {}
+   },
+   {
+    "id": "at_cell",
+    "type": "pick",
+    "target": "cells.0.gate",
+    "approach": "port",
+    "distance": 0.9,
+    "extra": {}
+   },
+   {
+    "id": "at_shelving",
+    "type": "place",
+    "target": "shelving.0",
+    "approach": "any",
+    "distance": 0.9,
+    "extra": {}
+   }
+  ]
+ },
+ "cameras": [
+  {
+   "id": "topdown",
+   "mode": "top_down",
+   "position": [
+    0.0,
+    0.0,
+    28.6
+   ],
+   "focal_mm": 10.5,
+   "aperture_mm": [
+    20.955,
+    11.79
+   ],
+   "clip": [
+    0.05,
+    200.0
+   ],
+   "hide": [
+    "roof"
+   ]
+  },
+  {
+   "id": "overview",
+   "mode": "perspective",
+   "position": [
+    -12.2,
+    -6.2,
+    3.4
+   ],
+   "look_at": [
+    0.0,
+    0.0,
+    0.6
+   ],
+   "focal_mm": 14.0,
+   "aperture_mm": [
+    20.955,
+    11.79
+   ],
+   "clip": [
+    0.05,
+    200.0
+   ],
+   "hide": []
+  }
+ ],
+ "lighting": {
+  "preset": "mixed_warm",
+  "scale": 1.0
+ },
+ "physics": {
+  "hz": 120,
+  "solver": "TGS",
+  "gravity": 9.81
+ },
+ "output": {
+  "usd_name": "scene.usd",
+  "namespace": "scene"
+ },
+ "metadata": {
+  "baseline": "e2_recipe",
+  "recipe": {
+   "aisle_m": 1.3,
+   "rules": {
+    "prompt_id": "P15",
+    "ids": [
+     "benches.three_rows",
+     "cells.north_wall",
+     "conveyor.from_south_door",
+     "conveyor.to_central_row",
+     "shelving.east_west"
+    ]
+   },
+   "doors": [
+    {
+     "wall": "south",
+     "center": 7.552,
+     "kind": "rollup_door"
+    },
+    {
+     "wall": "east",
+     "center": 4.281,
+     "kind": "swing_door"
+    },
+    {
+     "wall": "west",
+     "center": -4.958,
+     "kind": "swing_door"
+    }
+   ],
+   "robot_cells": [
+    {
+     "xy": [
+      -9.79,
+      5.245
+     ],
+     "arm": "franka",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      5.825,
+      4.8
+     ],
+     "arm": "ur10",
+     "position": "wall_centred"
+    },
+    {
+     "xy": [
+      -2.911,
+      4.851
+     ],
+     "arm": "fanuc_crx10ia",
+     "position": "wall_centred"
+    }
+   ],
+   "conveyor": {
+    "axis": "y",
+    "length_m": 6.58,
+    "feeds_cell_with": null,
+    "cell": null
+   },
+   "staging": [
+    0.75,
+    -6.88,
+    3.35,
+    -4.88
+   ],
+   "bench_arrangement_drawn": "rules",
+   "benches_by_arrangement": 12,
+   "bench_arrangement": "rules",
+   "shelving_walls": [
+    "east",
+    "west"
+   ],
+   "shelving_split": false,
+   "charging_station": [
+    11.02,
+    -6.61
+   ],
+   "lighting": "mixed_warm",
+   "robot_spawn_drawn": "near_charger",
+   "robot_spawn": "near_charger"
+  },
+  "resolved_from": "705c693086b715e9"
+ }
+}

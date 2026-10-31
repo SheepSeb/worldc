@@ -1,0 +1,334 @@
+{
+ "_about": "Spatial rules for the E2 within-prompt study, P05/P08/P15/P16/P23 (v1, approved with edits). Transcribed from prompts.csv text_constrained: only what the text names is a rule; everything else is free (seed-drawn for the recipe). Counts are NOT here (count adherence covers them). Distances are edge-to-edge. A rule with several instances scores the fraction of instances satisfied; spatial adherence = mean over rules. Every scene is scored in the SW-origin frame derived from its own room bounds.",
+ "_frame": "Room frame: x east (width_m), y north (depth_m), origin at the south-west corner, as P23's text states. The recipe builds around the room centre, so code shifts by (-W/2, -D/2). Walls: north y=D, south y=0, east x=W, west x=0.",
+ "_thresholds": {
+  "near_m": 2.0,
+  "near_note": "'by', 'near', 'next to': edge-to-edge distance <= near_m (for a door: to the door opening)",
+  "against_wall_m": 0.5,
+  "along_wall_m": 1.0,
+  "along_wall_note": "'along' a wall (robot cells): footprint edge <= along_wall_m from the wall's inner face",
+  "conveyor_end_to_cell_m": 1.5,
+  "pinned_tol_m": 0.25,
+  "middle_note": "'in the middle': object centre inside the central third of both axes"
+ },
+ "P05": {
+  "room_m": [
+   14.0,
+   9.0
+  ],
+  "doors": {
+   "count": 1,
+   "walls": "free",
+   "text": "'the single door'"
+  },
+  "rules": [
+   {
+    "id": "cells.side_by_side",
+    "what": "robot_cell",
+    "relation": "side_by_side",
+    "text": "'two fenced robot cells side by side': adjacent, centres share one axis coordinate within 1.0 m, gap between them <= near_m; wall free"
+   },
+   {
+    "id": "benches.long_walls",
+    "what": "bench",
+    "walls": [
+     "north",
+     "south"
+    ],
+    "per_wall_min": 2,
+    "all_on_listed_walls": true,
+    "text": "'six workbenches split between both long walls' (long walls = north and south, as 14 > 9): every bench within along_wall_m of the north or south wall, at least 2 on each"
+   },
+   {
+    "id": "shelving.middle",
+    "what": "shelving",
+    "position": "middle",
+    "text": "'in the middle'"
+   },
+   {
+    "id": "staging.by_door",
+    "what": "pallet_staging",
+    "relation": "near",
+    "to": "door",
+    "text": "'pallet staging spot ... by the single door'"
+   },
+   {
+    "id": "palletjack.by_door",
+    "what": "pallet_jack",
+    "relation": "near",
+    "to": "door",
+    "text": "'a pallet jack is parked by the door'"
+   }
+  ],
+  "free": [
+   "door wall and position",
+   "robot-cell wall/corner",
+   "charging station position"
+  ]
+ },
+ "P08": {
+  "room_m": [
+   16.0,
+   10.0
+  ],
+  "doors": {
+   "count": 1,
+   "walls": [
+    "west"
+   ],
+   "text": "'the west door' (the only door)"
+  },
+  "rules": [
+   {
+    "id": "pallets.by_west_door",
+    "what": "pallet_load",
+    "relation": "near",
+    "to": "door",
+    "text": "'pallets of returned monitors and desktop PCs near the west door'"
+   },
+   {
+    "id": "conveyor.axis_east",
+    "what": "conveyor",
+    "axis": "x",
+    "direction": "east",
+    "text": "'a conveyor running east': axis x, flows to larger x"
+   },
+   {
+    "id": "benches.conveyor_north",
+    "what": "bench",
+    "relation": "north_of_along",
+    "to": "conveyor",
+    "text": "'four workbenches ... along the conveyor's north side': centre y > conveyor y, centre x inside the conveyor's x span, edge gap <= near_m"
+   },
+   {
+    "id": "cell.conveyor_east_end",
+    "what": "robot_cell",
+    "relation": "at_end",
+    "to": "conveyor",
+    "end": "east",
+    "text": "'a fenced robot cell at its east end': cell within near_m of the conveyor's east end"
+   },
+   {
+    "id": "shelving.east_wall",
+    "what": "shelving",
+    "walls": [
+     "east"
+    ],
+    "text": "'by the east wall': within along_wall_m of the east wall"
+   },
+   {
+    "id": "recycling.next_to_shelving",
+    "what": "recycling_container",
+    "relation": "near",
+    "to": "shelving",
+    "text": "'next to recycling containers'"
+   }
+  ],
+  "free": [
+   "conveyor y position and length",
+   "conveyor start x",
+   "bench positions along the conveyor",
+   "robot-cell y",
+   "pallet positions beyond 'near the door'"
+  ]
+ },
+ "P15": {
+  "room_m": [
+   26.0,
+   14.0
+  ],
+  "doors": {
+   "count": 3,
+   "named": [
+    {
+     "wall": "south",
+     "text": "'the south door'"
+    }
+   ],
+   "others": "free (2 doors, any wall)"
+  },
+  "rules": [
+   {
+    "id": "cells.north_wall",
+    "what": "robot_cell",
+    "walls": [
+     "north"
+    ],
+    "all": true,
+    "text": "'three fenced robot cells along the north wall': all three within along_wall_m of the north wall"
+   },
+   {
+    "id": "benches.three_rows",
+    "what": "bench",
+    "relation": "rows",
+    "rows": 3,
+    "per_row": 4,
+    "axis": "x",
+    "position": "middle",
+    "text": "'twelve workbenches ... in three rows across the middle': three rows running along x (the long axis), 4 each, row centres inside the central half of y. Orientation along x is my reading of 'across'."
+   },
+   {
+    "id": "shelving.east_west",
+    "what": "shelving",
+    "walls": [
+     "east",
+     "west"
+    ],
+    "per_wall": 2,
+    "all_on_listed_walls": true,
+    "text": "'two shelving units along each of the east and west walls': 2 within along_wall_m of east, 2 of west"
+   },
+   {
+    "id": "conveyor.from_south_door",
+    "what": "conveyor",
+    "relation": "starts_at",
+    "to": "door:south",
+    "axis": "y",
+    "text": "'a conveyor from the south door to the central row': one end near_m of the south door, axis y, other end at the central bench row"
+   },
+   {
+    "id": "conveyor.to_central_row",
+    "what": "conveyor",
+    "relation": "ends_at",
+    "to": "bench_row:central",
+    "text": "far end within near_m of the middle bench row"
+   }
+  ],
+  "free": [
+   "the other two door walls and positions",
+   "cell x positions along the north wall",
+   "row spacing",
+   "staging and washer positions"
+  ]
+ },
+ "P16": {
+  "room_m": [
+   9.0,
+   6.0
+  ],
+  "doors": {
+   "count": 1,
+   "walls": [
+    "south"
+   ],
+   "text": "'a roll-up door on the south wall'"
+  },
+  "rules": [
+   {
+    "id": "benches.north_wall",
+    "what": "bench",
+    "walls": [
+     "north"
+    ],
+    "all": true,
+    "against": true,
+    "text": "'two workbenches against the north wall'"
+   },
+   {
+    "id": "shelving.east_wall",
+    "what": "shelving",
+    "walls": [
+     "east"
+    ],
+    "against": true,
+    "text": "'on the east wall'"
+   },
+   {
+    "id": "washer.own_pallet",
+    "what": "washing_machine",
+    "on": "pallet",
+    "one_per_pallet": true,
+    "text": "'a returned washing machine waiting on a pallet of its own'"
+   },
+   {
+    "id": "scrap.near_door",
+    "what": "scrap_container",
+    "relation": "near",
+    "to": "door",
+    "text": "'a scrap container near the door'"
+   }
+  ],
+  "free": [
+   "door x position along the south wall",
+   "bench x positions",
+   "shelving y position",
+   "pallet position"
+  ]
+ },
+ "P23": {
+  "room_m": [
+   16.0,
+   10.0
+  ],
+  "doors": {
+   "count": "free",
+   "walls": "free",
+   "text": "no door is named (n_doors = -1, seed/LLM-drawn)"
+  },
+  "rules": [
+   {
+    "id": "conveyor.pinned",
+    "what": "conveyor",
+    "pinned": {
+     "y": 5.0,
+     "x": [
+      1.0,
+      11.0
+     ]
+    },
+    "text": "'a conveyor runs along y 5 from x 1 to x 11': axis x, centre line y=5, x extent 1..11, flows east"
+   },
+   {
+    "id": "cell.pinned",
+    "what": "robot_cell",
+    "pinned": {
+     "x": [
+      12.0,
+      15.0
+     ],
+     "y": [
+      3.0,
+      7.0
+     ]
+    },
+    "text": "'a fenced robot cell at x 12-15, y 3-7'"
+   },
+   {
+    "id": "conveyor.ends_at_cell",
+    "what": "conveyor",
+    "relation": "ends_at",
+    "to": "robot_cell",
+    "text": "'ends at a fenced robot cell' (follows from the pinned extents; checked as a gap <= near_m)"
+   },
+   {
+    "id": "recycling.south_of_cell",
+    "what": "recycling_container",
+    "relation": "south_of",
+    "to": "robot_cell",
+    "text": "'recycling containers ... stand south of the cell': centre y < 3, centre x within the cell's x span +/- 1.0 m"
+   },
+   {
+    "id": "benches.north_of_conveyor",
+    "what": "bench",
+    "relation": "north_of_along",
+    "to": "conveyor",
+    "text": "'two inspection workbenches ... north of the conveyor': centre y > 5, centre x inside the conveyor's x span"
+   },
+   {
+    "id": "shelving.north_wall",
+    "what": "shelving",
+    "walls": [
+     "north"
+    ],
+    "against": true,
+    "text": "'lines the north wall'"
+   }
+  ],
+  "free": [
+   "door count/walls/positions",
+   "bench positions north of the conveyor",
+   "recycling container x/y within 'south of the cell'",
+   "shelving x position"
+  ]
+ }
+}

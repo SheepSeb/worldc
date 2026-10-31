@@ -1,0 +1,12 @@
+method,prompt_id,samples,accepted,pairs,median_iou
+llm,P05,5,5,10,0.1811
+llm,P08,5,5,10,0.137
+llm,P15,5,5,10,0.0653
+llm,P16,5,5,10,0.216
+llm,P23,5,5,10,0.3407
+recipe,P05,5,5,10,0.1136
+recipe,P08,5,5,10,0.0692
+recipe,P15,5,5,10,0.1035
+recipe,P16,5,5,10,0.0486
+recipe,P23,5,5,10,0.0186
+template,P08,5,5,10,1.0

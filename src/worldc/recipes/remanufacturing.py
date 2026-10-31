@@ -59,6 +59,22 @@ PROPS = {
 }
 PROPS["engine_gearbox_reman"] = PROPS["motor_gearbox_reman"]
 OCCLUDERS = ("crate_plywood", "ibc_tank", "flammables_cabinet")  # extra storage for hard cells (not counted as shelving)
+SCRAP = ("scrap_bin", "scrap_bin_wheeled")         # the 'recycling / scrap containers' of the prompts
+RULES_PATH = Path(__file__).resolve().parents[3] / "prompts" / "spatial_rules_e2_within.json"
+
+
+class RuleUnsat(Exception):
+    """A spatial rule could not be satisfied for this seed; the batch build then resamples with seed + 1000 k."""
+
+
+def load_rules(prompt_id: str, path=RULES_PATH) -> dict:
+    """The recipe v4 constraints of one prompt, read from the rules file (``rules=None`` everywhere = the v3 recipe)."""
+    d = json.loads(Path(path).read_text())
+    e = d[prompt_id]
+    doors = e["doors"]
+    named = doors["walls"] if isinstance(doors.get("walls"), list) else [n["wall"] for n in doors.get("named", [])]
+    return {"prompt_id": prompt_id, "ids": {r["id"] for r in e["rules"]}, "rules": {r["id"]: r for r in e["rules"]},
+            "door_walls": named, "thr": d["_thresholds"]}
 
 
 # ---------------------------------------------------------------------------------------------------- planner
@@ -135,9 +151,149 @@ def _face_yaw(cx, cy):
     return 180 if cy < 0 else 0
 
 
+def _rule_cell(R, ids, rng, plan, c, h, cells, W, D, A):
+    """Robot-cell placement under the prompt's rules for cell ``c`` (half size ``h``): (kind, cx, cy, rect) or None (= the v3 draw)."""
+    thr = R["thr"]
+    ok = lambda r: plan.inside(r, CELL_WALL_GAP - 0.01) and plan.free(r, A)  # noqa: E731
+    if "cell.pinned" in ids:  # explicit coordinates: centred in the stated extent (room frame: SW corner -> room centre)
+        pin = R["rules"]["cell.pinned"]["pinned"]
+        cx, cy = (pin["x"][0] + pin["x"][1]) / 2 - W / 2, (pin["y"][0] + pin["y"][1]) / 2 - D / 2
+        return "pinned", cx, cy, _rect(cx, cy, 2 * h, 2 * h)
+    if "cell.conveyor_east_end" in ids:  # on the east wall; the conveyor then runs west -> east into it
+        L = _wall_frame("east", W, D)[3]
+        for _ in range(80):
+            m = max(0.0, L / 2 - h - CELL_WALL_GAP - 1.0)
+            # the bench row on the belt's north side (belt width / 2 + aisle + bench depth) and an aisle to the wall must still fit
+            top = min(m, D / 2 - A - BENCH[2] - (CONVEYOR_W / 2 + A + 0.01)) if "benches.conveyor_north" in ids else m
+            cx, cy = W / 2 - h - CELL_WALL_GAP, float(rng.uniform(-m, max(-m, top)))
+            r = _rect(cx, cy, 2 * h, 2 * h)
+            if ok(r):
+                return "wall_centred", cx, cy, r
+        raise RuleUnsat("cell.conveyor_east_end")
+    if "cells.north_wall" in ids:  # edge 0.6 m from the north wall (<= along_wall_m)
+        for _ in range(300):
+            cx, cy = float(rng.uniform(-W / 2 + h + CELL_WALL_GAP, W / 2 - h - CELL_WALL_GAP)), D / 2 - h - CELL_WALL_GAP
+            r = _rect(cx, cy, 2 * h, 2 * h)
+            if ok(r):
+                return "wall_centred", cx, cy, r
+        raise RuleUnsat("cells.north_wall")
+    if "cells.side_by_side" in ids and c == 0:  # on the west / east wall, so the north and south walls stay free for the bench runs
+        for _ in range(80):
+            # in a corner of that wall, so the second cell fits beside it along the wall (a 9 m wall holds two cells only from an end)
+            cx, cy = float(rng.choice([-1, 1])) * (W / 2 - h - CELL_WALL_GAP), float(rng.choice([-1, 1])) * (D / 2 - h - CELL_WALL_GAP)
+            r = _rect(cx, cy, 2 * h, 2 * h)
+            if ok(r):
+                return "corner", cx, cy, r
+        raise RuleUnsat("cells.side_by_side (first)")
+    if "cells.side_by_side" in ids and c > 0:  # next to cell 0, centres aligned, edge gap A..A+0.5 (<= near_m)
+        p0 = cells[0]
+        for _ in range(12):
+            # along the wall first (keeps the middle of the room free), then towards the interior
+            for k in rng.permutation([2, 3]).tolist() + rng.permutation([0, 1]).tolist():
+                dx, dy = ((1, 0), (-1, 0), (0, 1), (0, -1))[int(k)]
+                gap = A + float(rng.uniform(0.0, max(0.0, min(0.5, thr["near_m"] - 0.05 - A))))
+                cx, cy = p0["xy"][0] + dx * (p0["half"] + gap + h), p0["xy"][1] + dy * (p0["half"] + gap + h)
+                # keep the cross-axis offset of the centres under 1.0 m while staying inside the wall gap
+                if dx:
+                    cy = min(max(p0["xy"][1], -(D / 2 - h - CELL_WALL_GAP)), D / 2 - h - CELL_WALL_GAP)
+                else:
+                    cx = min(max(p0["xy"][0], -(W / 2 - h - CELL_WALL_GAP)), W / 2 - h - CELL_WALL_GAP)
+                if abs(cy - p0["xy"][1]) > 1.0 if dx else abs(cx - p0["xy"][0]) > 1.0:
+                    continue
+                r = _rect(cx, cy, 2 * h, 2 * h)
+                if ok(r):
+                    return "wall_centred", cx, cy, r
+        raise RuleUnsat("cells.side_by_side")
+    return None
+
+
+def _rule_shelf_walls(ids, n_racks):
+    if "shelving.middle" in ids:
+        return [("middle", n_racks)]
+    if "shelving.east_west" in ids:
+        return [("east", n_racks // 2), ("west", n_racks - n_racks // 2)]
+    return [("east" if "shelving.east_wall" in ids else "north", n_racks)]
+
+
+def _rule_benches(R, ids, rng, plan, n, belt, rows_state, A, W, D, wall_slots, near):
+    """Bench poses under the prompt's rules; raises RuleUnsat when they do not fit (the build resamples)."""
+    L_b, D_b = BENCH[1], BENCH[2]
+    pitch = L_b + (0.05 if "benches.conveyor_north" in ids else BENCH_GAP)  # four benches beside the belt need a tighter row
+
+    def put(cx, cy, tag="bench"):
+        r = _rect(cx, cy, L_b, D_b)
+        if not (plan.inside(r, A) and plan.free(r, A, ignore=("bench",))):  # benches in a row / adjacent rows are spaced by construction
+            return False
+        plan.add(r, tag)
+        return True
+
+    def row(y, xs_lo, xs_hi, k):
+        """k benches in a row at y, all centres in [xs_lo, xs_hi]: the first free start in a random order."""
+        starts = [float(v) for v in np.arange(xs_lo, xs_hi - (k - 1) * pitch + 1e-9, 0.25)]
+        for s0 in (rng.permutation(starts).tolist() if starts else []):
+            mark = len(plan.rects)
+            if all(put(s0 + j * pitch, y) for j in range(k)):
+                return [((s0 + j * pitch, y), 0) for j in range(k)]
+            del plan.rects[mark:]
+        return None
+
+    if "benches.north_wall" in ids:  # against the north wall
+        got = wall_slots("north", L_b, D_b, n, BENCH_GAP, "bench", A)
+        if len(got) != n:
+            raise RuleUnsat("benches.north_wall")
+        return got
+    if "benches.long_walls" in ids:  # north and south walls, >= 2 on each
+        for k in rng.permutation(list(range(2, n - 1))).tolist():
+            mark = len(plan.rects)
+            a = wall_slots("north", L_b, D_b, k, BENCH_GAP, "bench", A)
+            b = wall_slots("south", L_b, D_b, n - k, BENCH_GAP, "bench", A) if a else []
+            if a and b:
+                return a + b
+            del plan.rects[mark:]
+        raise RuleUnsat("benches.long_walls")
+    if "benches.conveyor_north" in ids or "benches.north_of_conveyor" in ids:  # one row on the belt's north side, centres in its span
+        r = belt["rect"]
+        y = r[3] + A + D_b / 2 + 0.01
+        got = row(y, r[0], r[2], n)  # the rule is on the bench centres: they stay inside the belt's x span
+        if got is None or (y - r[3] - D_b / 2) > near:
+            raise RuleUnsat("benches north of the conveyor")
+        return got
+    # benches.three_rows: three rows along x, 4 each, row centres in the central half of y, the middle row ends 'at' the belt
+    yc, p, side = rows_state["yc"], rows_state["pitch"], rows_state["side"]
+    per = [n // 3] * 3
+    per[1] += n - sum(per)
+    belt_r = belt["rect"]
+    for d in rng.permutation([-1.0, 1.0]).tolist():  # rows grow away from the belt towards d
+        g = float(rng.uniform(A + 0.01, near))
+        edge = belt_r[2] + g if d > 0 else belt_r[0] - g
+        mark = len(plan.rects)
+        out, ok = [], True
+        for k, (y, m) in enumerate(zip((yc - p, yc, yc + p), per)):
+            shift = 0.0 if k == 1 else float(rng.uniform(0.0, 1.0))
+            first = edge + d * (shift + L_b / 2)
+            pos = [first + d * j * pitch for j in range(m)]
+            if not all(put(x, y) for x in pos):
+                ok = False
+                break
+            out += [((x, y), 0) for x in pos]
+        if ok:
+            return out
+        del plan.rects[mark:]
+    raise RuleUnsat("benches.three_rows")
+
+
+def _rect_gap(a, b):
+    """Edge-to-edge distance of two axis-aligned rectangles (0 when they touch or overlap)."""
+    return math.hypot(max(a[0] - b[2], b[0] - a[2], 0.0), max(a[1] - b[3], b[1] - a[3], 0.0))
+
+
+def _rect_pt(r, p):
+    return math.hypot(max(r[0] - p[0], p[0] - r[2], 0.0), max(r[1] - p[1], p[1] - r[3], 0.0))
+
+
 # ---------------------------------------------------------------------------------------------------- recipe
 def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_people, n_benches, n_robot_cells, conveyor, n_racks,
-                         n_doors) -> SceneSpec:
+                         n_doors, rules: dict | None = None) -> SceneSpec:
     from ..assets.procedural.robot_cell import RobotCell
 
     rng = np.random.default_rng(seed)
@@ -151,22 +307,46 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     has_conveyor = str(conveyor).lower() == "true" if not isinstance(conveyor, bool) else conveyor
     props = PROPS.get(cell_type, PROPS["electronics_weee"])
     plan, knobs, objects, zones = Plan(W, D), {"aisle_m": A}, [], []
+    R = rules
+    ids = R["ids"] if R else set()
+    thr = R["thr"] if R else {}
+    near = float(thr.get("near_m", 2.0)) - 0.05        # margins under the scoring thresholds
+    if R:
+        knobs["rules"] = {"prompt_id": R["prompt_id"], "ids": sorted(ids)}
+
+    pinned_gap = 0.0
+    if "conveyor.pinned" in ids:  # explicit coordinates: the doors (and their lanes / gates) must keep clear of the pinned objects
+        pin_c, pin_k = R["rules"]["conveyor.pinned"]["pinned"], R["rules"]["cell.pinned"]["pinned"]
+        for pin in (pin_c, pin_k):
+            x0, x1 = pin["x"] if isinstance(pin["x"], list) else (0, 0)
+            y0, y1 = pin["y"] if isinstance(pin["y"], list) else (pin["y"] - CONVEYOR_W / 2, pin["y"] + CONVEYOR_W / 2)
+            plan.add((x0 - W / 2, y0 - D / 2, x1 - W / 2, y1 - D / 2), "pinned")
+        pinned_gap = 0.7
 
     # ---- doors
     first = WALLS[(int(seed) + int(seed) // 1000) % 4]  # the main door's wall cycles over the four walls across seeds
     walls = [first] + [w for w in rng.permutation(WALLS).tolist() if w != first]
+    if "conveyor.pinned" in ids:  # the east wall is taken by the pinned cell, whose extent leaves no room for a door lane
+        walls = [w for w in walls if w not in ("east", "north")] + ["north", "east"]  # north: the bench row and shelving lie there
+    if R and R["door_walls"]:  # the walls the prompt names come first (the main door is the first named one)
+        walls = list(R["door_walls"]) + [w for w in walls if w not in R["door_walls"]]
     door_walls = [walls[i % 4] for i in range(max(1, n_doors))]
     openings, door_pts, spawn_pts = [], [], []
     for i, wall in enumerate(door_walls):
         L = _wall_frame(wall, W, D)[3]
         rollup = i == 0 and min(W, D) >= 9 and rng.random() < 0.6
+        if rollup and ids & {"staging.by_door", "pallets.by_west_door"}:
+            rollup = False  # the dock leveler and its lane would keep the staging pallets further than near_m from the opening
         w = 2.4 if rollup else 1.15
         for _ in range(20):
             t = float(rng.uniform(-L / 2 + w / 2 + 1.0, L / 2 - w / 2 - 1.0))
             depth = 3.4 if rollup else 2.2
             (cx, cy), r, _ = _against(wall, t, w + 1.2, depth, W, D, off=0.0)
-            if plan.free(r, 0.0):
+            if plan.free(r, pinned_gap):
                 break
+        else:
+            if pinned_gap:
+                raise RuleUnsat("door vs pinned objects")
         plan.add(r, "reserved")
         if i == 0:
             main_lane = [r]
@@ -183,13 +363,27 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     plan.add(lane_end, "reserved")  # the main door's lane continues past the door swing / dock: kept free of furniture
     main_lane.append(lane_end)
 
+    # ---- a free-standing shelving unit 'in the middle' is placed first, so the cells cannot take the middle of the room
+    mid_shelf = None
+    if "shelving.middle" in ids:
+        x, y, yaw = float(rng.uniform(-W / 6, W / 6)), float(rng.uniform(-D / 6, D / 6)), int(rng.choice([0, 90, 180, -90]))
+        rr = _rect(x, y, SHELF[1], SHELF[2]) if yaw in (0, 180) else _rect(x, y, SHELF[2], SHELF[1])
+        plan.add(rr, "shelf")
+        mid_shelf = (((x, y), yaw), rr)
+
     # ---- robot cells
     cells, cell_rects = [], []
     for c in range(n_cells):
         fits = [a for a in ARMS if 2 * RobotCell().half(RobotCell().params({"arm": a})) + 2 * CELL_WALL_GAP + A <= min(W, D)]
+        if "cell.pinned" in ids:  # the stated footprint is 3 x 4 m: the cell must fit inside it (+ tolerance)
+            pin = R["rules"]["cell.pinned"]["pinned"]
+            fits = [a for a in fits if 2 * RobotCell().half(RobotCell().params({"arm": a})) <= min(pin["x"][1] - pin["x"][0], pin["y"][1] - pin["y"][0]) + 2 * thr["pinned_tol_m"]] or fits
         # cycles over the arms whose cell (+ wall gaps + an aisle) fits, across seeds and cells (balanced over the prompt set)
         arm = fits[(int(seed) + c + int(seed) // 1000) % len(fits)] if fits else "franka"
         h = RobotCell().half(RobotCell().params({"arm": arm}))
+        rule_placed = None
+        if R:
+            rule_placed = _rule_cell(R, ids, rng, plan, c, h, cells, W, D, A)
         cands = []
         for sx in (-1, 1):
             for sy in (-1, 1):
@@ -199,8 +393,8 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
             t = float(rng.uniform(-max(0.0, L / 2 - h - CELL_WALL_GAP - 1.0), max(0.0, L / 2 - h - CELL_WALL_GAP - 1.0)))
             cands.append(("wall_centred", px + ax * t + nx * (h + CELL_WALL_GAP), py + ay * t + ny * (h + CELL_WALL_GAP)))
         order = rng.permutation(len(cands))
-        placed = None
-        for k in order:
+        placed = rule_placed
+        for k in (order if placed is None else []):
             kind, cx, cy = cands[k]
             r = _rect(cx, cy, 2 * h, 2 * h)
             if plan.inside(r, CELL_WALL_GAP - 0.01) and plan.free(r, A):
@@ -212,7 +406,14 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
         kind, cx, cy, r = placed
         plan.add(r, "cell")
         cell_rects.append(r)
-        cells.append({"xy": [round(cx, 3), round(cy, 3)], "yaw": _face_yaw(cx, cy), "arm": arm, "position": kind, "half": h})
+        yaw = _face_yaw(cx, cy)
+        if ids & {"conveyor.axis_east", "conveyor.pinned"}:
+            # the belt reaches the cell from the west: the gate must face along the wall (north / south), not into the belt
+            yaw = 180 if (cy < 0 or "recycling.south_of_cell" in ids) else 0
+            fr = (cx - h, cy + h, cx + h, cy + h + 1.0) if yaw == 180 else (cx - h, cy - h - 1.0, cx + h, cy - h)
+            if plan.inside(fr, 0.0):
+                plan.add(fr, "reserved")  # the gate's approach
+        cells.append({"xy": [round(cx, 3), round(cy, 3)], "yaw": yaw, "arm": arm, "position": kind, "half": h})
     if cells:
         objects.append({"id": "cells", "asset": "robot_cell", "count": len(cells),
                         "instance_params": [{"arm": c["arm"], "arm_yaw": float(rng.choice([0, 90, 180, -90]))} for c in cells],
@@ -221,21 +422,65 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
 
     # ---- conveyor
     belt = None
-    if has_conveyor:
+    rows_state = {}
+    if has_conveyor and "conveyor.from_south_door" in ids:
+        # P15: the conveyor stands beside the south door (outside its lane) and runs north to the middle bench row
+        pitch = BENCH[2] + A + 0.01
+        hi = D / 4 - pitch  # row centres stay in the central half of y
+        south = [q[1] for q, kind in plan.rects if kind == "cell"]
+        if south:  # the north row must keep an aisle to the robot cells along the north wall
+            hi = min(hi, min(south) - A - BENCH[2] / 2 - pitch)
+        if hi < -(D / 4 - pitch):
+            raise RuleUnsat("benches.three_rows: no room below the cells")
+        yc = float(rng.uniform(-(D / 4 - pitch), hi))
+        o0 = openings[0]
+        side = float(rng.choice([-1.0, 1.0]))
+        bx = o0["center"] + side * (o0["width"] / 2 + 0.6 + CONVEYOR_W / 2 + 0.01)
+        y0, y1 = -D / 2 + PAD, yc + 0.4
+        L, by, axis, yaw = y1 - y0, (y0 + y1) / 2, "y", 0
+        if L < 2.0 or not (0.0 < L <= 30.0):
+            raise RuleUnsat("conveyor.from_south_door")
+        knobs["conveyor"] = {"axis": axis, "length_m": round(L, 2), "feeds_cell_with": None, "cell": None}
+        r = _rect(bx, by, CONVEYOR_W, L)
+        plan.add(r, "conveyor")
+        belt = {"xy": (bx, by), "axis": axis, "rect": r}
+        rows_state = {"yc": yc, "pitch": pitch, "side": side}
+        objects.append({"id": "belt", "asset": "conveyor_belt", "params": {"length": round(L, 2), "speed": 0.4},
+                        "placement": {"pose": {"xy": [round(bx, 3), round(by, 3)], "yaw": yaw}}})
+    elif has_conveyor:
         if cells:
             c0, r0 = cells[0], cell_rects[0]
             cx, cy = c0["xy"]
             axes = [ax for ax in ("x", "y") if (ax == "x" and abs(cx) > 0.5) or (ax == "y" and abs(cy) > 0.5)] or ["x"]
             axis = str(rng.choice(axes))
+            if "conveyor.axis_east" in ids or "conveyor.pinned" in ids:
+                axis = "x"
             sign = -np.sign(cx) if axis == "x" else -np.sign(cy)  # from the cell towards the room centre
             sign = sign or 1.0
             room_len = W if axis == "x" else D
             start = (r0[2] if sign > 0 else r0[0]) if axis == "x" else (r0[3] if sign > 0 else r0[1])
             free_len = (room_len / 2 - PAD - A) - sign * start if sign > 0 else (room_len / 2 - PAD - A) + sign * start
             L = float(min(rng.uniform(3.0, 6.0), max(2.0, abs(free_len) - CONVEYOR_CELL_GAP)))
+            if "conveyor.axis_east" in ids:  # long enough for the bench row beside it; free_len from the real room edge
+                room_free = (start - (-room_len / 2 + PAD + A)) if sign < 0 else ((room_len / 2 - PAD - A) - start)
+                # four benches at 2.2 m pitch need >= 6.6 m of belt under their centres; its far end stays 3.7 m from the wall
+                # (the pallet staging by the door, 2.0 m deep, + the 1.6 m aisle)
+                east_end = start + sign * CONVEYOR_CELL_GAP
+                L_hi = min(room_free - CONVEYOR_CELL_GAP, east_end - (-room_len / 2 + 3.7))
+                if L_hi < 7.4:
+                    raise RuleUnsat("conveyor.axis_east: no room")
+                L = float(rng.uniform(7.4, L_hi))
             mid = start + sign * (CONVEYOR_CELL_GAP + L / 2)
             bx, by = (mid, cy) if axis == "x" else (cx, mid)
             feeds = str(rng.choice(["outfeed", "infeed"]))
+            if "conveyor.axis_east" in ids or "conveyor.pinned" in ids:
+                feeds = "outfeed"  # flows east, into the cell at its east end
+            if "conveyor.pinned" in ids:  # 'along y 5 from x 1 to x 11' (room frame -> centred frame)
+                pin = R["rules"]["conveyor.pinned"]["pinned"]
+                L = float(pin["x"][1] - pin["x"][0])
+                bx, by = (pin["x"][0] + pin["x"][1]) / 2 - W / 2, pin["y"] - D / 2
+                if abs(sign) != 1 or sign > 0:
+                    raise RuleUnsat("conveyor.pinned: cell is not east of the conveyor")
             # conveyor local +y is the outfeed end: point it at the cell when the outfeed feeds the cell
             toward = -sign
             if axis == "x":
@@ -280,8 +525,9 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     for di in [0] + [i for i in rng.permutation(len(openings)).tolist() if i != 0]:
         d0 = openings[di]
         L0 = _wall_frame(d0["wall"], W, D)[3]
-        for along, depth in ((2.6, 2.0), (2.0, 1.6), (1.6, 1.3)):
-            for shift in (0.6, 1.2, 2.0, 3.0):
+        tight = "staging.by_door" in ids or "pallets.by_west_door" in ids  # pallets within near_m of the door opening
+        for along, depth in (((2.0, 1.6), (1.8, 1.5)) if tight else ((2.6, 2.0), (2.0, 1.6), (1.6, 1.3))):
+            for shift in ((0.6, 0.9) if tight else (0.6, 1.2, 2.0, 3.0)):
                 for side in rng.permutation([-1, 1]):
                     t = d0["center"] + side * (d0["width"] / 2 + shift + along / 2)
                     if abs(t) > L0 / 2 - along / 2 - PAD:
@@ -297,6 +543,8 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
                 break
         if staging is not None:
             break
+    if staging is None and ("staging.by_door" in ids or "pallets.by_west_door" in ids):
+        raise RuleUnsat("staging by the door")
     knobs["staging"] = None if staging is None else [round(v, 2) for v in staging]
     if staging is not None:
         zones.append({"id": "staging", "rect": [round(v, 3) for v in staging], "tags": ["staging"], "marking": "outline"})
@@ -366,7 +614,13 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
         lo, hi = -span_perp / 2 + A + D_b / 2, span_perp / 2 - A - D_b / 2 - max(offsets)
         return [[b + o for o in offsets] for b in rng.permutation(np.arange(lo, hi + 1e-9, 0.25)).tolist()]
 
-    if arrangement == "along_wall":
+    rb = None
+    if R and ids & {"benches.long_walls", "benches.north_wall", "benches.conveyor_north", "benches.north_of_conveyor", "benches.three_rows"}:
+        rb = _rule_benches(R, ids, rng, plan, n_benches, belt, rows_state, A, W, D, wall_slots, near)
+        knobs["bench_arrangement_drawn"] = "rules"
+    if rb is not None:
+        benches += rb
+    elif arrangement == "along_wall":
         for wall in rng.permutation([w for w in walls if w not in door_walls]).tolist() + door_walls:  # benches come before shelving now
             if len(benches) == n_benches:
                 break
@@ -398,7 +652,7 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     knobs["benches_by_arrangement"] = len(benches)  # the rest (if any) come from the fallbacks below
     # what the layout actually shows: the drawn arrangement only if it placed every bench, else mixed (some by the fallbacks
     # below) or fallback (none); records and analyses use this, not the drawn value
-    knobs["bench_arrangement"] = ("n/a" if not n_benches else arrangement if len(benches) == n_benches else "mixed" if benches else "fallback")
+    knobs["bench_arrangement"] = ("n/a" if not n_benches else "rules" if rb is not None else arrangement if len(benches) == n_benches else "mixed" if benches else "fallback")
     for wall in rng.permutation(WALLS).tolist():  # fallback 1: single free wall slots
         while len(benches) < n_benches:
             got = wall_slots(wall, L_b, D_b, 1, 0.0, "bench", A)
@@ -425,6 +679,20 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
     split = n_racks >= 2 and bool(rng.random() < 0.5)  # knob: one run, or split over two walls
     remaining = n_racks
     want = int(rng.integers(1, n_racks)) if split else n_racks
+    if R and ids & {"shelving.middle", "shelving.east_wall", "shelving.east_west", "shelving.north_wall"}:
+        for wall, n in _rule_shelf_walls(ids, n_racks):
+            if wall == "middle":
+                got, zr = [mid_shelf[0]], mid_shelf[1]
+                zones.append({"id": "parts_storage_mid", "rect": [round(v, 3) for v in (zr[0] - 0.8, zr[1] - 0.8, zr[2] + 0.8, zr[3] + 0.8)], "tags": ["storage"]})
+            else:
+                got = wall_slots(wall, SHELF[1], SHELF[2], n, 0.05, "shelf", A)
+                if got:
+                    shelf_runs.append((wall, got))
+                    shelf_walls.append(wall)
+            if len(got) != n:
+                raise RuleUnsat(f"shelving on {wall}")
+            shelves += got
+        remaining = 0
     for wall in rng.permutation(free_walls).tolist() + [w for w in walls if w in door_walls]:
         while remaining > 0:
             n_try = min(want, remaining)
@@ -495,11 +763,46 @@ def remanufacturing_cell(seed: int, width_m, depth_m, cell_type, difficulty, n_p
 
     from ..assets import get
 
+    scrap_rule = next((i for i in ("recycling.next_to_shelving", "scrap.near_door", "recycling.south_of_cell") if i in ids), None)
+    n_scrap = 0
+
+    def place_scrap(asset, along, depth, ident):
+        """Scrap / recycling containers where the prompt puts them (next to the shelving, near a door, south of the cell)."""
+        if scrap_rule == "recycling.next_to_shelving":
+            tgt = [q for q, kind in plan.rects if kind == "shelf"]
+            walls_, pred = [shelf_runs[0][0]] if shelf_runs else [], lambda r: any(_rect_gap(r, q) <= near for q in tgt)
+        elif scrap_rule == "scrap.near_door":
+            pts = []
+            for o in openings:
+                (px_, py_), (ax_, ay_), _, _ = _wall_frame(o["wall"], W, D)
+                pts += [(px_ + ax_ * (o["center"] + f * o["width"] / 2), py_ + ay_ * (o["center"] + f * o["width"] / 2)) for f in (-1, 0, 1)]
+            walls_, pred = list(WALLS), lambda r: any(_rect_pt(r, p) <= near for p in pts)
+        else:  # south of the cell: centre y below the cell, centre x within 1.0 m of its x span
+            c0 = cell_rects[0]
+            walls_, pred = ["south"], lambda r: (r[1] + r[3]) / 2 < c0[1] and c0[0] - 1.0 <= (r[0] + r[2]) / 2 <= c0[2] + 1.0
+        cands = []
+        for wall in walls_:
+            Lw = _wall_frame(wall, W, D)[3]
+            cands += [(wall, float(t)) for t in np.arange(-Lw / 2 + along / 2 + PAD, Lw / 2 - along / 2 - PAD + 1e-9, 0.1)]
+        for k in rng.permutation(len(cands)) if cands else []:
+            wall, t = cands[int(k)]
+            xy, rr, yaw = _against(wall, t, along, depth, W, D)
+            if plan.inside(rr) and plan.free(rr, 0.05) and pred(rr):
+                plan.add(rr, "prop")
+                objects.append({"id": ident, "asset": asset, "placement": {"pose": {"xy": [round(xy[0], 3), round(xy[1], 3)], "yaw": yaw}}})
+                return xy
+        return None
+
     for asset, (lo, hi) in props[1]:
         a = get(asset)
         sx, sy, _ = a.footprint(a.params({})).size  # local x runs along the wall, local y is the depth (yaw from _against)
         for j in range(int(rng.integers(lo, hi + 1))):
-            place_on_walls(asset, sx + 0.05, sy + 0.05, f"{asset}_{j}")
+            if scrap_rule and asset in SCRAP:
+                n_scrap += place_scrap(asset, sx + 0.05, sy + 0.05, f"{asset}_{j}") is not None
+            else:
+                place_on_walls(asset, sx + 0.05, sy + 0.05, f"{asset}_{j}")
+    if scrap_rule and n_scrap == 0:
+        raise RuleUnsat(scrap_rule)
     if diff == "hard":
         for j in range(int(rng.integers(1, 3))):
             asset = str(rng.choice(OCCLUDERS))
@@ -616,9 +919,9 @@ ROW_ARGS = ("width_m", "depth_m", "cell_type", "difficulty", "n_people", "n_benc
 MAX_RESAMPLES = 10
 
 
-def spec_for_row(row: dict, seed: int) -> SceneSpec:
+def spec_for_row(row: dict, seed: int, rules: dict | None = None) -> SceneSpec:
     return remanufacturing_cell(seed, float(row["width_m"]), float(row["depth_m"]), row["cell_type"], row["difficulty"], int(row["n_people"]),
-                                int(row["n_benches"]), int(row["n_robot_cells"]), row["conveyor"], int(row["n_racks"]), int(row["n_doors"]))
+                                int(row["n_benches"]), int(row["n_robot_cells"]), row["conveyor"], int(row["n_racks"]), int(row["n_doors"]), rules=rules)
 
 
 def provenance() -> dict:

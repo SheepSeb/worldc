@@ -1,0 +1,41 @@
+{
+ "title": "within-prompt IoU, prompts P05, P08, P15, P16, P23",
+ "prompts": [
+  "P05",
+  "P08",
+  "P15",
+  "P16",
+  "P23"
+ ],
+ "grid": 64,
+ "boot": 2000,
+ "methods": {
+  "llm": {
+   "prompts": 5,
+   "pairs": 50,
+   "median_iou": 0.21915407796809258,
+   "ci95": [
+    0.0696629213483146,
+    0.3018242122719735
+   ]
+  },
+  "recipe": {
+   "prompts": 5,
+   "pairs": 50,
+   "median_iou": 0.08413753285998575,
+   "ci95": [
+    0.03741496598639456,
+    0.10709987966305656
+   ]
+  },
+  "template": {
+   "prompts": 1,
+   "pairs": 10,
+   "median_iou": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ]
+  }
+ }
+}

@@ -1,0 +1,224 @@
+{
+ "methods": {
+  "claude-sonnet-5-5": {
+   "kind": "llm",
+   "scenes": 25,
+   "prompts": 5,
+   "pairs": 50,
+   "iou": [
+    0.26504762781955105,
+    0.15043334256938312,
+    0.5150115473441108
+   ],
+   "spatial": [
+    0.8528888888888889,
+    0.7552222222222222,
+    0.9429583333333323
+   ],
+   "acceptance": {
+    "runs": 55,
+    "accepted": 25
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 5.2
+  },
+  "deepseek-v4.1-flash_cloud": {
+   "kind": "llm",
+   "scenes": 25,
+   "prompts": 5,
+   "pairs": 50,
+   "iou": [
+    0.19834876890715497,
+    0.05913797313797314,
+    0.34762110564094856
+   ],
+   "spatial": [
+    0.8022222222222223,
+    0.7133333333333333,
+    0.9042222222222221
+   ],
+   "acceptance": {
+    "runs": 40,
+    "accepted": 25
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 5.2
+  },
+  "glm-5.3-flash_cloud": {
+   "kind": "llm",
+   "scenes": 25,
+   "prompts": 5,
+   "pairs": 50,
+   "iou": [
+    0.19900077745693018,
+    0.09359224158230987,
+    0.38305231301340253
+   ],
+   "spatial": [
+    0.8558888888888889,
+    0.8117777777777776,
+    0.9285555555555556
+   ],
+   "acceptance": {
+    "runs": 36,
+    "accepted": 25
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 5.08
+  },
+  "recipe_v4": {
+   "kind": "recipe",
+   "scenes": 25,
+   "prompts": 5,
+   "pairs": 50,
+   "iou": [
+    0.220480027299226,
+    0.12287334593572778,
+    0.5820448877805486
+   ],
+   "spatial": [
+    0.96,
+    0.88,
+    1.0
+   ],
+   "acceptance": {
+    "runs": 25,
+    "accepted": 25,
+    "attempts": 77,
+    "attempts_ok": 25
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 5.0
+  },
+  "recipe_v3": {
+   "kind": "recipe",
+   "scenes": 25,
+   "prompts": 5,
+   "pairs": 50,
+   "iou": [
+    0.054756005230917476,
+    0.03220524017467249,
+    0.07428302773859896
+   ],
+   "spatial": [
+    0.19366666666666663,
+    0.09,
+    0.30966666666666665
+   ],
+   "acceptance": {
+    "runs": 25,
+    "accepted": 25,
+    "attempts": 65,
+    "attempts_ok": 25
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 4.8
+  },
+  "template": {
+   "kind": "template",
+   "scenes": 5,
+   "prompts": 1,
+   "pairs": 10,
+   "iou": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "spatial": [
+    0.875,
+    0.875,
+    0.875
+   ],
+   "acceptance": {
+    "runs": 30,
+    "accepted": 29
+   },
+   "room_mismatch_scenes": 0,
+   "rules_present_mean": 6.0
+  }
+ },
+ "recipe_footprints": {
+  "recipe_v4/P05": [
+   [
+    14.0,
+    9.0
+   ]
+  ],
+  "recipe_v4/P08": [
+   [
+    16.0,
+    10.0
+   ]
+  ],
+  "recipe_v4/P15": [
+   [
+    26.0,
+    14.0
+   ]
+  ],
+  "recipe_v4/P16": [
+   [
+    9.0,
+    6.0
+   ]
+  ],
+  "recipe_v4/P23": [
+   [
+    16.0,
+    10.0
+   ]
+  ],
+  "recipe_v3/P05": [
+   [
+    14.0,
+    9.0
+   ]
+  ],
+  "recipe_v3/P08": [
+   [
+    16.0,
+    10.0
+   ]
+  ],
+  "recipe_v3/P15": [
+   [
+    26.0,
+    14.0
+   ]
+  ],
+  "recipe_v3/P16": [
+   [
+    9.0,
+    6.0
+   ]
+  ],
+  "recipe_v3/P23": [
+   [
+    16.0,
+    10.0
+   ]
+  ]
+ },
+ "grid_extent_m": {
+  "P05": [
+   14.0,
+   9.0
+  ],
+  "P08": [
+   16.0,
+   10.0
+  ],
+  "P15": [
+   26.0,
+   14.0
+  ],
+  "P16": [
+   9.0,
+   6.0
+  ],
+  "P23": [
+   16.0,
+   10.0
+  ]
+ }
+}

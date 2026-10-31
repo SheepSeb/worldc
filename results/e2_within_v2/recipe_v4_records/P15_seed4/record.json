@@ -1,0 +1,193 @@
+{
+ "method": "recipe_v4",
+ "prompt_id": "P15",
+ "sample": 4,
+ "accepted": true,
+ "attempts": 5,
+ "first_try": false,
+ "final_seed": 4019,
+ "history": [
+  {
+   "seed": 19,
+   "ok": false,
+   "errors": [
+    "recipe.error:RuleUnsat"
+   ],
+   "seconds": 0.0
+  },
+  {
+   "seed": 1019,
+   "ok": false,
+   "errors": [
+    "recipe.error:RuleUnsat"
+   ],
+   "seconds": 0.0
+  },
+  {
+   "seed": 2019,
+   "ok": false,
+   "errors": [
+    "recipe.error:RuleUnsat"
+   ],
+   "seconds": 0.0
+  },
+  {
+   "seed": 3019,
+   "ok": false,
+   "errors": [
+    "recipe.error:RuleUnsat"
+   ],
+   "seconds": 0.0
+  },
+  {
+   "seed": 4019,
+   "ok": true,
+   "errors": [],
+   "seconds": 11.2
+  }
+ ],
+ "scene_dir": "/home/sebnae/ws/ws_startup/claude_scene_generator/out/e2_within/recipe_v4/P15_seed4",
+ "knobs": {
+  "aisle_m": 1.3,
+  "rules": {
+   "prompt_id": "P15",
+   "ids": [
+    "benches.three_rows",
+    "cells.north_wall",
+    "conveyor.from_south_door",
+    "conveyor.to_central_row",
+    "shelving.east_west"
+   ]
+  },
+  "doors": [
+   {
+    "wall": "south",
+    "center": 3.838,
+    "kind": "swing_door"
+   },
+   {
+    "wall": "east",
+    "center": -0.956,
+    "kind": "swing_door"
+   },
+   {
+    "wall": "west",
+    "center": -1.209,
+    "kind": "swing_door"
+   }
+  ],
+  "robot_cells": [
+   {
+    "xy": [
+     8.133,
+     5.245
+    ],
+    "arm": "franka",
+    "position": "wall_centred"
+   },
+   {
+    "xy": [
+     -0.22,
+     4.8
+    ],
+    "arm": "ur10",
+    "position": "wall_centred"
+   },
+   {
+    "xy": [
+     -7.464,
+     4.851
+    ],
+    "arm": "fanuc_crx10ia",
+    "position": "wall_centred"
+   }
+  ],
+  "conveyor": {
+   "axis": "y",
+   "length_m": 6.72,
+   "feeds_cell_with": null,
+   "cell": null
+  },
+  "staging": [
+   0.06,
+   -6.88,
+   2.66,
+   -4.88
+  ],
+  "bench_arrangement_drawn": "rules",
+  "benches_by_arrangement": 12,
+  "bench_arrangement": "rules",
+  "shelving_walls": [
+   "east",
+   "west"
+  ],
+  "shelving_split": true,
+  "charging_station": [
+   12.61,
+   -4.23
+  ],
+  "lighting": "mixed_warm",
+  "robot_spawn_drawn": "right_of_lane",
+  "robot_spawn": "right_of_lane"
+ },
+ "provenance": {
+  "e1_freeze_tag": "e1-freeze-v7",
+  "e1_freeze_commit": "6f9647d2f45695e56f84c2282c8b2b0c30907b57",
+  "baseline_commit": "d0ae72495ef5bbb0b82065f25f3c21dff86c3130",
+  "tree_dirty": "true",
+  "curated_table_sha256": "936a418b4d89c4054141a6945e77778c3a2cb5792c42213e8615eb44cbcdc433",
+  "changed_since_freeze": [
+   "CHANGELOG.md",
+   "docs/E3.md",
+   "results/e2_baselines_v3/README.md",
+   "results/e2_baselines_v3/e2_summary.json",
+   "results/e2_baselines_v3/eval_recipe.csv",
+   "results/e2_baselines_v3/eval_template.csv",
+   "results/e2_baselines_v3/recipe_records.json",
+   "results/e2_baselines_v3/template_records.json",
+   "results/e2_prelim/README.md",
+   "results/e2_prelim/eval_e1.csv",
+   "results/e2_prelim/fig4_iou_violins.pdf",
+   "results/e2_prelim/fig4_iou_violins.png",
+   "results/e2_prelim/iou_pairs.csv",
+   "results/e2_prelim/sanity_pairs.png",
+   "results/e2_prelim/scenes.csv",
+   "results/e2_prelim/summary.json",
+   "results/e2_prelim/table1_e2.md",
+   "results/e2_prelim/table1_e2.tex",
+   "results/e2_samples/README.md",
+   "results/e3_prototype_P18/README.md",
+   "results/e3_prototype_P18/analysis/scatter.svg",
+   "results/e3_prototype_P18/analysis/scatter_points.csv",
+   "results/e3_prototype_P18/analysis/stats.json",
+   "results/e3_prototype_P18/analysis/table2.md",
+   "results/e3_prototype_P18/analysis/table2.tex",
+   "results/e3_prototype_P18/analysis/tests.csv",
+   "results/e3_prototype_P18/analysis/tests.md",
+   "results/e3_prototype_P18/base_variant.json",
+   "results/e3_prototype_P18/hard_aware_seed0.png",
+   "results/e3_prototype_P18/hard_blind_seed4.png",
+   "results/e3_prototype_P18/hard_fields_seed5.png",
+   "results/e3_prototype_P18/hard_variant.json",
+   "results/e3_prototype_P18/map_base.png",
+   "results/e3_prototype_P18/map_hard.png",
+   "results/e3_prototype_P18/summary.json",
+   "results/e3_prototype_P18/summary.md",
+   "results/e3_prototype_P18/trials.csv",
+   "scripts/e2_prelim.py",
+   "scripts/e2_samples.sh",
+   "scripts/e3_analysis.py",
+   "scripts/e3_one_scene.py",
+   "scripts/e3_select_scenes.py",
+   "src/worldc/assets/library/robots/isaac_5.1_robots.json",
+   "src/worldc/assets/robots.py",
+   "src/worldc/e3/__init__.py",
+   "src/worldc/e3/sim.py",
+   "src/worldc/e3/tiers.py",
+   "src/worldc/e3/walkers.py",
+   "src/worldc/e3/world.py",
+   "src/worldc/recipes/remanufacturing.py",
+   "tests/test_e3.py"
+  ]
+ }
+}
