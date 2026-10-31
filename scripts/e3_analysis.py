@@ -14,6 +14,9 @@ Input: the ``trials.csv`` of every scene (``scripts/e3_one_scene.py``), one row 
   pairs. p-values are Holm-corrected within each metric over all tiers and pairs.
 * **Outputs**: ``table2.md``, ``table2.tex``, ``tests.csv``, ``tests.md``, ``scatter.svg`` and ``scatter_points.csv``
   (moving collisions per trial against median time to goal, one point per policy x tier, with CIs), and ``stats.json``.
+* **Supplementary breakdowns** (``supp_by_size.md/.csv``, ``supp_by_scene.md/.csv``, ``supp_by_model.md/.csv``): the same estimates
+  (moving collisions per trial, success, time to goal) per room size S / M / L, per scene and per source model, using the ``size``,
+  ``scene`` and ``model`` columns of the trial rows; the CI resamples the scenes of the group (a single scene: the seeds only).
 """
 from __future__ import annotations
 
@@ -270,6 +273,31 @@ def _marker(kind, x, y, c):
     return f'<polygon points="{x:.1f},{y - 6.5:.1f} {x - 6:.1f},{y + 4.5:.1f} {x + 6:.1f},{y + 4.5:.1f}" fill="{c}"/>'
 
 
+SUPP = [("Moving coll./trial", "moving_collisions", 2, False), ("Success (%)", "success", 0, True), ("Frozen (%)", "frozen", 0, True),
+        ("Time to goal (s)", "time_to_goal", 0, False)]
+
+
+def supplementary(rows, key, B, seed, out: Path, title):
+    """One row per (group, tier, policy): the SUPP metrics with cluster-bootstrap CIs, written as <out>.md and <out>.csv."""
+    groups = sorted({r[key] for r in rows if r.get(key) is not None}, key=lambda g: ({"S": 0, "M": 1, "L": 2}.get(g, 9), str(g)))
+    head = [title, "Scenes", "Tier", "Policy"] + [c[0] for c in SUPP]
+    md = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+    flat = [["group", "scenes", "tier", "policy"] + [f"{m}_{k}" for _, m, _, _ in SUPP for k in ("point", "lo", "hi")]]
+    for g in groups:
+        sub = [r for r in rows if r.get(key) == g]
+        est = estimate(sub, B, seed)
+        n_sc = len({r["scene"] for r in sub})
+        for t in TIERS:
+            for i, p in enumerate(POLICIES):
+                md.append(f"| {g if (t == TIERS[0] and i == 0) else ''} | {n_sc if (t == TIERS[0] and i == 0) else ''} | {t if i == 0 else ''} | {POLICY_LABEL[p]} | "
+                          + " | ".join(fmt(*est[m][(t, p)][:3], digits=d, pct=pc) for _, m, d, pc in SUPP) + " |")
+                flat.append([g, n_sc, t, p] + [round(float(v), 4) for _, m, _, _ in SUPP for v in est[m][(t, p)][:3]])
+    (out.with_suffix(".md")).write_text("\n".join(md) + "\n\nPoint estimate [95 % cluster-bootstrap CI over the scenes of the group, then seeds]; a group of one scene resamples seeds only. "
+                                       "Time to goal: median over finished trials.\n")
+    with open(out.with_suffix(".csv"), "w", newline="") as f:
+        csv.writer(f).writerows(flat)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("trials", nargs="+", help="trials.csv of each scene")
@@ -297,6 +325,9 @@ def main():
                    f"{r['median_diff']:.2f} | {r['p']:.3g} | {r['p_holm']:.3g} |")
     (out / "tests.md").write_text("\n".join(tmd) + "\n")
     pts = scatter_svg(est, out / "scatter.svg")
+    for key, name, title in (("size", "supp_by_size", "Size"), ("scene", "supp_by_scene", "Scene"), ("model", "supp_by_model", "Source model")):
+        if any(r.get(key) is not None for r in rows):
+            supplementary(rows, key, a.boot, a.seed, out / name, title)
     with open(out / "scatter_points.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["tier", "policy", "time_to_goal_median_s", "ttg_lo", "ttg_hi", "moving_collisions_per_trial", "mc_lo", "mc_hi"])

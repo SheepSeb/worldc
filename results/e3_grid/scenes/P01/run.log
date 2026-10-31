@@ -1,0 +1,6 @@
+base from resolved_spec.json failed (["solve.unsatisfiable.pose: Placed 1 of 4 required 'battery_crates' instances (pose); rejected candidates were blocked by: battery_crates (1x)."]); trying the run's spec.json
+base: ok (0.8 s)
+hard: up to 4 occluders from 6 candidate poses
+hard attempt 0: 1 occluders [[-1.209, 2.301]] (rejected {'spacing': 2, 'blocks_aisle_or_goal': 3, 'solver': 0}) -> ok
+done P01: 270 trials (270 new) in 25 s
+done P01: 270 trials (0 new) in 1 s

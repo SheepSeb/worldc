@@ -1,0 +1,44 @@
+{
+ "base_scene": "dataset/e1/glm-5.3-flash_cloud/runs/20261030T030001_1b71d579/scene",
+ "robot_frame": {
+  "travel_heading_rad": 0.001,
+  "source": "Isaac drive calibration (dataset/e1/glm-5.3-flash_cloud/runs/20261030T030001_1b71d579/scene/drive/drive_result.json)"
+ },
+ "agents_removed": 1,
+ "spec_source": "resolved_spec.json",
+ "tier": "hard",
+ "transform_seed": 0,
+ "occluder_asset": "parts_shelf",
+ "occluder_count": 0,
+ "task_points": 6,
+ "task_points_off_aisle_network_in_base": 2,
+ "occluders": [],
+ "candidates": 4,
+ "rejected": {
+  "spacing": 0,
+  "blocks_aisle_or_goal": 0,
+  "solver": 4
+ },
+ "attempts": [
+  {
+   "attempt": 0,
+   "count": 0,
+   "units": [],
+   "rejected": {
+    "spacing": 0,
+    "blocks_aisle_or_goal": 0,
+    "solver": 4
+   },
+   "check": {
+    "ok": true,
+    "seconds": 0.7,
+    "errors": []
+   }
+  }
+ ],
+ "check": {
+  "ok": true,
+  "seconds": 0.7,
+  "errors": []
+ }
+}

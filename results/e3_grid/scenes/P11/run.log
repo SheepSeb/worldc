@@ -1,0 +1,5 @@
+base: ok (1.8 s)
+hard: up to 4 occluders from 64 candidate poses
+hard attempt 0: 0 occluders [] (rejected {'spacing': 0, 'blocks_aisle_or_goal': 0, 'solver': 64}) -> ok
+done P11: 270 trials (270 new) in 57 s
+done P11: 270 trials (0 new) in 2 s

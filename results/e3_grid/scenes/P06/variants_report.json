@@ -1,0 +1,41 @@
+{
+ "scene": "P06",
+ "model": "deepseek-v4.1-flash_cloud",
+ "source_run": "20261029T150501_c3a558df",
+ "occluder_count": 1,
+ "occluder_candidates": 19,
+ "occluders_rejected": {
+  "spacing": 18,
+  "blocks_aisle_or_goal": 0,
+  "solver": 0
+ },
+ "build_attempts_hard": 1,
+ "base": {
+  "goals": 5,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 1,
+   "bench": 5,
+   "storage": 1,
+   "cell_gate": 1
+  },
+  "task_points_off_aisle_network": 3,
+  "task_points_reachable": true
+ },
+ "hard": {
+  "goals": 5,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 1,
+   "bench": 5,
+   "storage": 1,
+   "cell_gate": 1
+  },
+  "task_points_off_aisle_network": 3,
+  "task_points_lost_vs_base": [],
+  "task_points_reachable": true
+ },
+ "six_workers_plan": "ok",
+ "ok": true,
+ "replay_hard_seed0_blind": "identical"
+}

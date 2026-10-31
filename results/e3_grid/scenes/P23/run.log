@@ -1,0 +1,6 @@
+base from resolved_spec.json failed (["solve.unsatisfiable.pose: Placed 0 of 2 required 'returned_monitors' instances (pose); rejected candidates were blocked by: benches (1x)."]); trying the run's spec.json
+base: ok (2.0 s)
+hard: up to 4 occluders from 39 candidate poses
+hard attempt 0: 1 occluders [[1.637, 1.077]] (rejected {'spacing': 13, 'blocks_aisle_or_goal': 10, 'solver': 15}) -> ok
+done P23: 270 trials (270 new) in 28 s
+done P23: 270 trials (0 new) in 2 s

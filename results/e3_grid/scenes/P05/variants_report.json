@@ -1,0 +1,41 @@
+{
+ "scene": "P05",
+ "model": "glm-5.3-flash_cloud",
+ "source_run": "20261030T000824_3f5c9b00",
+ "occluder_count": 4,
+ "occluder_candidates": 156,
+ "occluders_rejected": {
+  "spacing": 60,
+  "blocks_aisle_or_goal": 2,
+  "solver": 3
+ },
+ "build_attempts_hard": 1,
+ "base": {
+  "goals": 8,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 1,
+   "bench": 18,
+   "storage": 1,
+   "cell_gate": 2
+  },
+  "task_points_off_aisle_network": 10,
+  "task_points_reachable": true
+ },
+ "hard": {
+  "goals": 8,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 1,
+   "bench": 18,
+   "storage": 1,
+   "cell_gate": 2
+  },
+  "task_points_off_aisle_network": 10,
+  "task_points_lost_vs_base": [],
+  "task_points_reachable": true
+ },
+ "six_workers_plan": "ok",
+ "ok": true,
+ "replay_hard_seed0_blind": "identical"
+}

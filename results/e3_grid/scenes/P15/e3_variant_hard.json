@@ -1,0 +1,102 @@
+{
+ "base_scene": "dataset/e1/claude-sonnet-5-5/runs/20261030T095745_91fdb0bb/scene",
+ "robot_frame": {
+  "travel_heading_rad": 0.0,
+  "source": "assumed +x (no Isaac drive calibration)"
+ },
+ "agents_removed": 6,
+ "spec_source": "resolved_spec.json",
+ "tier": "hard",
+ "transform_seed": 0,
+ "occluder_asset": "parts_shelf",
+ "occluder_count": 4,
+ "task_points": 54,
+ "task_points_off_aisle_network_in_base": 0,
+ "occluders": [
+  {
+   "xy": [
+    -0.78,
+    0.685
+   ],
+   "yaw_deg": 0.0
+  },
+  {
+   "xy": [
+    -6.752,
+    -6.119
+   ],
+   "yaw_deg": 0.0
+  },
+  {
+   "xy": [
+    -4.905,
+    0.349
+   ],
+   "yaw_deg": -180.0
+  },
+  {
+   "xy": [
+    5.534,
+    -0.204
+   ],
+   "yaw_deg": -180.0
+  }
+ ],
+ "candidates": 638,
+ "rejected": {
+  "spacing": 2,
+  "blocks_aisle_or_goal": 0,
+  "solver": 0
+ },
+ "attempts": [
+  {
+   "attempt": 0,
+   "count": 4,
+   "units": [
+    {
+     "xy": [
+      -0.78,
+      0.685
+     ],
+     "yaw_deg": 0.0
+    },
+    {
+     "xy": [
+      -6.752,
+      -6.119
+     ],
+     "yaw_deg": 0.0
+    },
+    {
+     "xy": [
+      -4.905,
+      0.349
+     ],
+     "yaw_deg": -180.0
+    },
+    {
+     "xy": [
+      5.534,
+      -0.204
+     ],
+     "yaw_deg": -180.0
+    }
+   ],
+   "rejected": {
+    "spacing": 2,
+    "blocks_aisle_or_goal": 0,
+    "solver": 0
+   },
+   "check": {
+    "ok": true,
+    "seconds": 3.8,
+    "errors": []
+   }
+  }
+ ],
+ "check": {
+  "ok": true,
+  "seconds": 3.8,
+  "errors": []
+ }
+}

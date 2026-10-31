@@ -1,0 +1,102 @@
+{
+ "base_scene": "dataset/e1/glm-5.3-flash_cloud/runs/20261030T000824_3f5c9b00/scene",
+ "robot_frame": {
+  "travel_heading_rad": 0.0,
+  "source": "assumed +x (no Isaac drive calibration)"
+ },
+ "agents_removed": 5,
+ "spec_source": "resolved_spec.json",
+ "tier": "hard",
+ "transform_seed": 0,
+ "occluder_asset": "parts_shelf",
+ "occluder_count": 4,
+ "task_points": 22,
+ "task_points_off_aisle_network_in_base": 10,
+ "occluders": [
+  {
+   "xy": [
+    0.893,
+    -1.418
+   ],
+   "yaw_deg": -90.0
+  },
+  {
+   "xy": [
+    3.685,
+    -1.124
+   ],
+   "yaw_deg": 180.0
+  },
+  {
+   "xy": [
+    6.199,
+    -2.081
+   ],
+   "yaw_deg": -90.0
+  },
+  {
+   "xy": [
+    -1.503,
+    -0.576
+   ],
+   "yaw_deg": -90.0
+  }
+ ],
+ "candidates": 156,
+ "rejected": {
+  "spacing": 60,
+  "blocks_aisle_or_goal": 2,
+  "solver": 3
+ },
+ "attempts": [
+  {
+   "attempt": 0,
+   "count": 4,
+   "units": [
+    {
+     "xy": [
+      0.893,
+      -1.418
+     ],
+     "yaw_deg": -90.0
+    },
+    {
+     "xy": [
+      3.685,
+      -1.124
+     ],
+     "yaw_deg": 180.0
+    },
+    {
+     "xy": [
+      6.199,
+      -2.081
+     ],
+     "yaw_deg": -90.0
+    },
+    {
+     "xy": [
+      -1.503,
+      -0.576
+     ],
+     "yaw_deg": -90.0
+    }
+   ],
+   "rejected": {
+    "spacing": 60,
+    "blocks_aisle_or_goal": 2,
+    "solver": 3
+   },
+   "check": {
+    "ok": true,
+    "seconds": 1.3,
+    "errors": []
+   }
+  }
+ ],
+ "check": {
+  "ok": true,
+  "seconds": 1.3,
+  "errors": []
+ }
+}

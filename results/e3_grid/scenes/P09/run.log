@@ -1,0 +1,6 @@
+base from resolved_spec.json failed (["solve.unsatisfiable.pose: Placed 0 of 8 required 'bench_klts' instances (pose); rejected candidates were blocked by: benches (1x)."]); trying the run's spec.json
+base: ok (1.8 s)
+hard: up to 4 occluders from 58 candidate poses
+hard attempt 0: 4 occluders [[-4.107, 1.402], [-0.135, 1.33], [4.118, -2.473], [-5.79, -4.032]] (rejected {'spacing': 7, 'blocks_aisle_or_goal': 1, 'solver': 0}) -> ok
+done P09: 270 trials (270 new) in 64 s
+done P09: 270 trials (0 new) in 2 s
