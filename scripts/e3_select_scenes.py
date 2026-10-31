@@ -1,6 +1,7 @@
 """Propose the E3 scene set: accepted E1 scenes covering every cell type and the S / M / L sizes.
 
     uv run python scripts/e3_select_scenes.py dataset/e1/<model> [more datasets] --n 10 --out results/e3_scene_selection
+    uv run python scripts/e3_select_scenes.py dataset/e1/<m1> dataset/e1/<m2> dataset/e1/<m3> --n 10 --max-per-model 5     # pooled
 
 Light: it reads the E1 records and loads each candidate's 2D world (no Isaac Sim, no trials), so it is safe to run
 while E1 is running.
@@ -11,6 +12,8 @@ while E1 is running.
   graph has a door, at least two kinds of task point, and at least two robot goals, every one statically reachable.
 * **Families:** ``engine_gearbox_reman`` and ``motor_gearbox_reman`` count as one, ``gearbox_reman``, which gives 6
   cell types.
+* **Pooled across models:** every accepted run of every dataset is a candidate; the scene's ``model`` is its dataset's folder name and is
+  kept on the pick. ``--max-per-model`` caps the picks of one model and, below the cap, the model with fewer picks is preferred.
 * **Greedy pick, one scene per prompt:**
   1. Cover every family and every size.
   2. Then add (family, size) combinations not yet chosen.
@@ -55,7 +58,7 @@ def candidates(datasets, prompts_csv, check: bool) -> tuple[list[dict], list[dic
                 rejected.append({**row, "why": "prompt not in prompts.csv"})
                 continue
             p, variant = hit
-            row.update(variant=variant, cell_type=p["cell_type"], family=FAMILY.get(p["cell_type"], p["cell_type"]), size=p["size"],
+            row.update(model=ds.name, variant=variant, cell_type=p["cell_type"], family=FAMILY.get(p["cell_type"], p["cell_type"]), size=p["size"],
                        difficulty=p["difficulty"], n_people=int(p["n_people"]), width_m=float(p["width_m"]), depth_m=float(p["depth_m"]),
                        scene=str(ds / r["scene_dir"]) if r.get("scene_dir") else None)
             physics = (r.get("final_checks") or {}).get("physics_status")
@@ -89,14 +92,18 @@ def usable(scene) -> str | None:
     return f"unreachable robot goals {bad}" if bad else None
 
 
-def select(cands: list[dict], n: int) -> list[dict]:
+def select(cands: list[dict], n: int, max_per_model: int | None = None) -> list[dict]:
     pool = {}
-    for c in sorted(cands, key=lambda c: (c["prompt"], c["dataset"])):  # one scene per prompt: the first dataset given wins
-        pool.setdefault(c["prompt"], c)
+    for c in sorted(cands, key=lambda c: (c["prompt"], c["dataset"])):  # one run per (prompt, model): the first one in the records
+        pool.setdefault((c["prompt"], c["model"]), c)
     pool = list(pool.values())
     families = sorted({c["family"] for c in pool})
     chosen: list[dict] = []
     while pool and len(chosen) < n:
+        mod = Counter(c["model"] for c in chosen)
+        pool = [c for c in pool if max_per_model is None or mod[c["model"]] < max_per_model]
+        if not pool:
+            break
         fam = Counter(c["family"] for c in chosen)
         have_f, have_s = set(fam), {c["size"] for c in chosen}
         have_fs = {(c["family"], c["size"]) for c in chosen}
@@ -106,11 +113,12 @@ def select(cands: list[dict], n: int) -> list[dict]:
             return ((c["family"] not in have_f) + (c["size"] not in have_s),  # 1. coverage
                     (c["family"], c["size"]) not in have_fs,  # 2. new combination
                     -fam[c["family"]],  # 3. balance families ...
+                    -mod[c["model"]],  # ... then models ...
                     -dif[c["difficulty"]] - siz[c["size"]],  # ... then difficulty and size
-                    -int(c["prompt"][1:]))
+                    -int(c["prompt"][1:]), c["model"])
         best = max(pool, key=score)
         chosen.append(best)
-        pool.remove(best)
+        pool = [c for c in pool if c["prompt"] != best["prompt"]]  # one scene per prompt
     return chosen, families
 
 
@@ -120,20 +128,22 @@ def main():
     ap.add_argument("--prompts", default="prompts/prompts.csv")
     ap.add_argument("--n", type=int, default=10)
     ap.add_argument("--out", default="results/e3_scene_selection")
+    ap.add_argument("--max-per-model", type=int, default=None, help="at most this many picks from one dataset (model)")
     ap.add_argument("--no-check", action="store_true", help="skip the E3 usability check (no world loading)")
     a = ap.parse_args()
     cands, rejected = candidates(a.datasets, a.prompts, not a.no_check)
-    chosen, _ = select(cands, a.n)
+    chosen, _ = select(cands, a.n, a.max_per_model)
     all_fams = sorted({FAMILY.get(p["cell_type"], p["cell_type"]) for p in csv.DictReader(open(a.prompts))})
     miss_f = [f for f in all_fams if f not in {c["family"] for c in chosen}]
     miss_s = [s for s in SIZES if s not in {c["size"] for c in chosen}]
     lines = [f"# E3 scene selection ({len(chosen)} of {a.n})", "",
              f"From {', '.join(a.datasets)}: {len(cands)} usable candidates, {len(rejected)} rejected.", "",
-             "| # | prompt | cell type | size | W x D (m) | difficulty | people | run |", "|---|---|---|---|---|---|---|---|"]
+             "| # | prompt | cell type | size | W x D (m) | difficulty | people | source model | run |", "|---|---|---|---|---|---|---|---|---|"]
     for i, c in enumerate(chosen, 1):
         lines.append(f"| {i} | {c['prompt']} | {c['cell_type']} | {c['size']} | {c['width_m']:g} x {c['depth_m']:g} | {c['difficulty']} | "
-                     f"{c['n_people']} | `{c['run_id']}` |")
-    lines += ["", f"Families: {dict(Counter(c['family'] for c in chosen))}. Sizes: {dict(Counter(c['size'] for c in chosen))}.",
+                     f"{c['n_people']} | {c['model']} | `{c['run_id']}` |")
+    lines += ["", f"Families: {dict(Counter(c['family'] for c in chosen))}. Sizes: {dict(Counter(c['size'] for c in chosen))}. "
+              f"Models: {dict(Counter(c['model'] for c in chosen))}.",
               f"**Missing:** families {miss_f or 'none'}, sizes {miss_s or 'none'}"
               + ("" if len(chosen) == a.n else f", and {a.n - len(chosen)} scene(s) short of {a.n}") + "."]
     if rejected:
