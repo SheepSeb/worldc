@@ -27,6 +27,24 @@ tmux new-window -t e2samples -n p23 "bash -c 'E2_WAIT_FOR=P23 $R/scripts/e2_samp
   accepted constrained P23 record. Then it runs 4 passes over P23. If E1 rejects P23, it keeps waiting.
 - **Logs:** `dataset/e2_samples/main.log` and `p23.log`.
 
+- **Pass 4 redo:** pass 4 of window `main` (started 2026-10-30 00:53:18) was killed by mistake at 01:13 during its first
+  run (P05, which wrote no record; its folder `runs/20261029T225320_3f5c9b00` is incomplete and ignored), and the pass
+  skipped P08, P15 and P16. It was rerun from 2026-10-30 01:14:20 EET in tmux `e2samples` (log `redo.log`) with
+  `scripts/e2_samples.sh P05,P08,P15,P16 1`.
+
+## GLM batch (`glm-5.3-flash:cloud`)
+
+The same design for a second model: 4 extra constrained runs for each of the 5 prompts, its E1 run being sample 1.
+Records go to `dataset/e2_samples/glm-5.3-flash_cloud/`. GLM runs at its Ollama thinking default (max), directly
+like DeepSeek. Started 2026-10-30 09:19:45 EET in tmux `e2samples_glm`, after GLM's E1 batch and the DeepSeek redo had
+both finished (a queued start at 01:38 never fired: its wait loop matched its own tmux session by name prefix):
+
+```
+E2_MODEL=ollama:glm-5.3-flash:cloud $R/scripts/e2_samples.sh P05,P08,P15,P16,P23 4 2>&1 | tee -a $R/dataset/e2_samples/glm.log
+```
+
+Analysis: `scripts/e2_within.py --e1 dataset/e1/glm-5.3-flash_cloud --samples dataset/e2_samples/glm-5.3-flash_cloud --out results/e2_within_glm`.
+
 ## Prompts
 
 | prompt | cell type | size | difficulty | E1 sample |

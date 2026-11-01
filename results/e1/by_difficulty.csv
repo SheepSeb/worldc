@@ -1,0 +1,13 @@
+model,difficulty,runs,accepted
+claude-sonnet-5-5,easy,10,9
+claude-sonnet-5-5,medium,10,7
+claude-sonnet-5-5,hard,10,8
+deepseek-v4.1-flash_cloud,easy,10,9
+deepseek-v4.1-flash_cloud,medium,10,10
+deepseek-v4.1-flash_cloud,hard,10,8
+gemma4_31b-cloud,easy,10,4
+gemma4_31b-cloud,medium,10,3
+gemma4_31b-cloud,hard,10,0
+glm-5.3-flash_cloud,easy,10,7
+glm-5.3-flash_cloud,medium,10,6
+glm-5.3-flash_cloud,hard,10,7

@@ -1,9 +1,9 @@
 {
- "label": "PRELIMINARY, n = 14 prompts (P01\u2013P15, without P14)",
+ "label": "PRELIMINARY, n = 27 prompts (P01\u2013P29, without P14, P26)",
  "preliminary": true,
  "variant": "constrained",
  "e1": "dataset/e1/deepseek-v4.1-flash_cloud",
- "e1_records": 15,
+ "e1_records": 29,
  "prompts": [
   "P01",
   "P02",
@@ -18,32 +18,45 @@
   "P11",
   "P12",
   "P13",
-  "P15"
+  "P15",
+  "P16",
+  "P17",
+  "P18",
+  "P19",
+  "P20",
+  "P21",
+  "P22",
+  "P23",
+  "P24",
+  "P25",
+  "P27",
+  "P28",
+  "P29"
  ],
  "grid": 64,
  "boot": 2000,
  "iou": {
   "e1": {
-   "n_scenes": 14,
-   "n_pairs": 91,
-   "median_iou": 0.06077981651376147,
+   "n_scenes": 27,
+   "n_pairs": 351,
+   "median_iou": 0.06341463414634146,
    "ci95": [
-    0.02733485193621868,
-    0.11313068459064005
+    0.04528985507246377,
+    0.09602632087717843
    ],
-   "mean_iou": 0.07304901425616982,
-   "occupied_fraction_mean": 0.11054338727678571
+   "mean_iou": 0.07983067747156565,
+   "occupied_fraction_mean": 0.1108669704861111
   },
   "recipe": {
-   "n_scenes": 14,
-   "n_pairs": 91,
-   "median_iou": 0.048252911813643926,
+   "n_scenes": 27,
+   "n_pairs": 351,
+   "median_iou": 0.050505050505050504,
    "ci95": [
-    0.030534351145038167,
-    0.08175182481751825
+    0.04205607476635514,
+    0.07151515151515152
    ],
-   "mean_iou": 0.056493620574905444,
-   "occupied_fraction_mean": 0.08553641183035714
+   "mean_iou": 0.06332550540790603,
+   "occupied_fraction_mean": 0.08660662615740741
   },
   "template": {
    "n_scenes": 29,
@@ -60,30 +73,30 @@
  "table1": [
   {
    "method": "LLM (E1)",
-   "prompts": 14,
-   "attempted": 15,
-   "accepted": 14,
-   "acceptance": 0.9333333333333333,
-   "adherence": 0.8928571428571429,
-   "plausibility": 0.8596285714285715,
-   "median_iou": 0.06077981651376147,
+   "prompts": 27,
+   "attempted": 29,
+   "accepted": 27,
+   "acceptance": 0.9310344827586207,
+   "adherence": 0.8938222222222223,
+   "plausibility": 0.8697074074074074,
+   "median_iou": 0.06341463414634146,
    "ci95": [
-    0.02733485193621868,
-    0.11313068459064005
+    0.04528985507246377,
+    0.09602632087717843
    ]
   },
   {
    "method": "Recipe",
-   "prompts": 14,
-   "attempted": 14,
-   "accepted": 14,
+   "prompts": 27,
+   "attempted": 27,
+   "accepted": 27,
    "acceptance": 1.0,
    "adherence": 1.0,
-   "plausibility": 0.9504,
-   "median_iou": 0.048252911813643926,
+   "plausibility": 0.958851851851852,
+   "median_iou": 0.050505050505050504,
    "ci95": [
-    0.030534351145038167,
-    0.08175182481751825
+    0.04205607476635514,
+    0.07151515151515152
    ]
   },
   {
