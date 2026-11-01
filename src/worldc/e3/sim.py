@@ -64,7 +64,7 @@ FROZEN_S, FROZEN_M = 30.0, 0.10
 POLICIES = ("blind", "fields", "aware")
 # Frozen policy definitions: the git tag of the commit that fixed them.  Every trial row records it (``policy_provenance``);
 # changing a policy means a new tag, not an edit under this one.
-POLICIES_TAG = "e3-policies-v1"
+POLICIES_TAG = "e3-policies-v1.1"  # v1 + the optional reactive-walker hook (walkers=None: identical to v1)
 POLICY_FILES = ("src/worldc/e3/sim.py", "src/worldc/assets/library/robots/isaac_5.1_robots.json")
 OUTCOMES = ("success", "collision", "frozen", "timeout", "goal_unreachable", "goal_missed")
 
@@ -175,10 +175,12 @@ def _human_block(world: World, H: np.ndarray) -> np.ndarray:
     return blocked
 
 
-def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: float | None = None) -> dict:
+def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: float | None = None, walkers=None) -> dict:
     """Simulate one trial; ``H`` is (steps, n, 2) worker positions at DT.  Returns metrics, events and the robot trajectory.
 
-    ``th`` is the travel heading; the body's yaw is ``th - world.phi0`` (as isaac_drive: heading = robot yaw + phi0)."""
+    ``th`` is the travel heading; the body's yaw is ``th - world.phi0`` (as isaac_drive: heading = robot yaw + phi0).
+    ``walkers`` (default None = the main grid) is an object whose ``step(x, y, yaw, half)`` returns the walkers' positions given the
+    robot's pose (``reactive.ReactiveWalkers``); ``H`` then holds their precomputed tours."""
     assert policy in POLICIES
     legs = static_legs(world) if legs is None else legs
     timeout = timeout_s(world, legs) if timeout is None else timeout
@@ -207,8 +209,8 @@ def run_trial(world: World, H: np.ndarray, policy: str, legs=None, timeout: floa
     t = 0.0
     for k in range(n_steps):
         t = k * DT
-        Hk = H[k]
         yaw = th - phi0
+        Hk = H[k] if walkers is None else walkers.step(x, y, yaw, world.body_half)
         moving = abs(v) > MOVING_V or abs(w) > MOVING_W
         # ---- metrics
         gp = gaps(x, y, yaw, world.body_half, Hk)[0] if len(Hk) else np.array([])
