@@ -1,8 +1,8 @@
-"""Reactive-walker ablation against the main grid: moving and stationary collisions (and success, frozen, time to goal) per policy x tier.
+"""Walker-model ablation (walk-around, or the withdrawn waiting variant) against the main grid: moving and stationary collisions (and success, frozen, time to goal) per policy x tier.
 
     uv run python scripts/e3_ablation_report.py out/e3/grid out/e3/ablation_reactive --out results/e3_ablation_reactive
 
-Both runs use the same scenes, variants, seeds and policies; only the walkers differ (``walkers_reactive``).  Estimates and CIs are
+Both runs use the same scenes, variants, seeds and policies; only the walkers differ (the ``walkers`` column).  Estimates and CIs are
 e3_analysis's (cluster bootstrap over scenes, then seeds).  The paired test compares the per-scene means of the two runs per policy x
 tier (Wilcoxon over the 10 scenes, Holm within each metric over the 9 policy x tier cells).
 """
@@ -58,9 +58,11 @@ def main():
         v = [r[k] for r in rows if r["tier"] == t and r["policy"] == p]
         return float(np.mean(v)) if v else float("nan")
 
-    head = ["Tier", "Policy"] + [f"{h}: main -> reactive" for h, *_ in METRICS] + ["Walker stops/trial", "Walker waiting (s)/trial", "Scenes up / down, moving (Holm p)", "Scenes up / down, stationary (Holm p)"]
+    wcols = ([("Walker replans/trial", "walker_replans"), ("Walker detour (s)/trial", "walker_detour_s"), ("No-path events/trial", "walker_no_path")] if "walker_replans" in abl_rows[0]
+             else [("Walker stops/trial", "walker_stops"), ("Walker waiting (s)/trial", "walker_held_s")])
+    head = ["Tier", "Policy"] + [f"{h}: main -> ablation" for h, *_ in METRICS] + [w[0] for w in wcols] + ["Scenes up / down, moving (Holm p)", "Scenes up / down, stationary (Holm p)"]
     md = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
-    flat = [["tier", "policy"] + [f"{m}_{k}_{v}" for _, m, _, _ in METRICS for k in ("main", "reactive") for v in ("point", "lo", "hi")] + ["walker_stops", "walker_held_s"]]
+    flat = [["tier", "policy"] + [f"{m}_{k}_{v}" for _, m, _, _ in METRICS for k in ("main", "reactive") for v in ("point", "lo", "hi")] + [w[1] for w in wcols]]
     for t in A.TIERS:
         for i, p in enumerate(A.POLICIES):
             cells = [t if i == 0 else "", A.POLICY_LABEL[p]]
@@ -68,21 +70,22 @@ def main():
             for _, m, d, pc in METRICS:
                 cells.append(f"{A.fmt(*em[m][(t, p)][:3], digits=d, pct=pc)} -> {A.fmt(*ea[m][(t, p)][:3], digits=d, pct=pc)}")
                 row += [round(float(v), 4) for v in (*em[m][(t, p)][:3], *ea[m][(t, p)][:3])]
-            cells += [f"{ws(abl_rows, t, p, 'walker_stops'):.1f}", f"{ws(abl_rows, t, p, 'walker_held_s'):.1f}"]
+            cells += [f"{ws(abl_rows, t, p, w[1]):.1f}" for w in wcols]
             for k in ("moving_collisions", "stationary_collisions"):
                 r = tests[(k, t, p)]
                 cells.append(f"{r['up']} / {r['down']} ({'<0.001' if r['p_holm'] < 0.001 else f'{r['p_holm']:.3f}'})")
             md.append("| " + " | ".join(cells) + " |")
-            flat.append(row + [round(ws(abl_rows, t, p, "walker_stops"), 3), round(ws(abl_rows, t, p, "walker_held_s"), 3)])
+            flat.append(row + [round(ws(abl_rows, t, p, w[1]), 3) for w in wcols])
     outc = {}
-    for lab, rows in (("main", main_rows), ("reactive", abl_rows)):
+    for lab, rows in (("main", main_rows), ("reactive", abl_rows)):  # 'reactive' = the ablation run
         for t in A.TIERS:
             for p in A.POLICIES:
                 R = [r for r in rows if r["tier"] == t and r["policy"] == p]
                 outc[(lab, t, p)] = {o: sum(r["outcome"] == o for r in R) for o in ("success", "collision", "frozen", "timeout") }
-    md += ["", "Main run = walkers that do not react; reactive = a walker waits while the robot is within 0.5 m ahead of it and walks on after 1 s clear (no sidestep, instant stop). "
+    md += ["", "Main run = walkers that do not react; ablation = walkers that treat the robot as an obstacle and replan around it with A* (footprint + 0.3 m), no waiting "
+           "(or, for the withdrawn variant, walkers that wait). "
            f"Same {len(scenes)} scenes, seeds and policies; per cell 300 trials. Point estimate [95 % cluster-bootstrap CI]. 'Scenes up / down': scenes whose mean rose / fell in the "
-           "reactive run (Wilcoxon over scenes, Holm over the 9 cells per metric).", "", "Outcome counts per cell (of 300), main -> reactive:", "",
+           "ablation run (Wilcoxon over scenes, Holm over the 9 cells per metric).", "", "Outcome counts per cell (of 300), main -> ablation:", "",
            "| Tier | Policy | success | collision | frozen | timeout |", "|---|---|---|---|---|---|"]
     for t in A.TIERS:
         for p in A.POLICIES:
