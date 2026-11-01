@@ -1,0 +1,1 @@
+the recepie is what procedural generation would be, so it would maximize to have the minimum IoU between the object. We use it to show that the LLMs even if they provide diversity like the procedural generation while keeping the same prompt without adding additional information about what and how to change.

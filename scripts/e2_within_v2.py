@@ -460,20 +460,29 @@ def main():
     label = {"recipe_v4": "Recipe v4 (rules)", "recipe_v3": "Recipe v3 (no rules)", "template": "Template", "claude-sonnet-5-5": "Sonnet 5.5",
              "deepseek-v4.1-flash_cloud": "DeepSeek v4.1 flash", "glm-5.3-flash_cloud": "GLM 5.3 flash"}
     md = ["**E2 within-prompt study: layout diversity, spatial adherence and acceptance** (prompts " + ", ".join(PROMPTS) + ")", "",
-          "| Method | Samples | Within-prompt IoU [95% CI] | Spatial adherence [95% CI] | LLM acceptance per run | Recipe acceptance per attempt | Accepted samples per final build |",
-          "|---|---|---|---|---|---|---|"]
+          "| Method | Samples | Within-prompt IoU [95% CI] | Spatial adherence [95% CI] | LLM acceptance per run | Recipe acceptance per attempt | Accepted samples per final build (static) | Recipe samples also passing Isaac Sim physics |",
+          "|---|---|---|---|---|---|---|---|"]
+    phys = {}
+    if (out / "physics_recipes.csv").exists():  # from scripts/e2_physics_queue.py (e2_physics.json of every recipe scene)
+        for r in csv.DictReader(open(out / "physics_recipes.csv")):
+            m_ = {"recipe v4 (rules)": "recipe_v4", "recipe v3": "recipe_v3"}[r["method"]]
+            d_ = phys.setdefault(m_, [0, 0])
+            d_[0] += r["physics_status"] == "ok"
+            d_[1] += 1
     for m, s_ in summ.items():
         acc = s_["acceptance"]
         per_run = f"{acc['accepted']}/{acc['runs']} ({acc['accepted'] / acc['runs']:.0%})" if s_["kind"] == "llm" else "n/a"
         per_att = (f"{acc['attempts_ok']}/{acc['attempts']} ({acc['attempts_ok'] / acc['attempts']:.0%})" if "attempts" in acc
                    else f"{acc['accepted']}/{acc['runs']} ({acc['accepted'] / acc['runs']:.0%})" if s_["kind"] == "template" else "n/a")
         per_samp = f"{acc['accepted']}/{acc['runs']}" if s_["kind"] == "recipe" else "n/a"
-        md.append(f"| {label.get(m, m)} | {s_['scenes']} | {fmt(s_['iou'])} | {fmt(s_['spatial'])} | {per_run} | {per_att} | {per_samp} |")
+        pp = f"{phys[m][0]}/{phys[m][1]}" if m in phys else "n/a"
+        md.append(f"| {label.get(m, m)} | {s_['scenes']} | {fmt(s_['iou'])} | {fmt(s_['spatial'])} | {per_run} | {per_att} | {per_samp} | {pp} |")
     md += ["", "IoU: median over pairs of same-prompt samples on native-metre 0.1 m grids (lower = more diverse). Spatial adherence: mean over scenes of the mean rule "
            "score (1 = every instance of the rule satisfied; a rule whose objects are absent from the scene scores 0), `prompts/spatial_rules_e2_within.json`. "
            "The template is scored on P08 only (its prompt), so its spatial CI is degenerate. LLM acceptance: accepted constrained runs of these five prompts (E1 run + extra "
            "samples), per run. Recipe acceptance: per build attempt, counting every resampled seed; the last column is the number of the 25 samples that ended accepted. "
-           "The template builds once per seed."]
+           "The template builds once per seed. LLM acceptance already includes the final Isaac Sim physics check; the recipe's static acceptance does not, so the last "
+           "column gives the recipe samples that also pass it (`physics_recipes.csv`)."]
     (out / "table_within_v2.md").write_text("\n".join(md) + "\n")
     print("\n".join(md))
 

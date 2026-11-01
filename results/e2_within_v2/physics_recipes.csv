@@ -1,0 +1,51 @@
+method,scene,physics_status,error_codes
+recipe v4 (rules),P05_seed0,ok,
+recipe v4 (rules),P05_seed1,ok,
+recipe v4 (rules),P05_seed2,ok,
+recipe v4 (rules),P05_seed3,ok,
+recipe v4 (rules),P05_seed4,ok,
+recipe v4 (rules),P08_seed0,failed,physics.not_settled
+recipe v4 (rules),P08_seed1,failed,physics.not_settled
+recipe v4 (rules),P08_seed2,failed,physics.not_settled
+recipe v4 (rules),P08_seed3,ok,
+recipe v4 (rules),P08_seed4,failed,physics.not_settled
+recipe v4 (rules),P15_seed0,failed,physics.not_settled
+recipe v4 (rules),P15_seed1,failed,physics.not_settled
+recipe v4 (rules),P15_seed2,failed,physics.fell_through_floor;physics.fell_through_floor;physics.unstable;physics.unstable;physics.not_settled
+recipe v4 (rules),P15_seed3,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v4 (rules),P15_seed4,failed,physics.fell_through_floor;physics.unstable
+recipe v4 (rules),P16_seed0,ok,
+recipe v4 (rules),P16_seed1,ok,
+recipe v4 (rules),P16_seed2,ok,
+recipe v4 (rules),P16_seed3,ok,
+recipe v4 (rules),P16_seed4,ok,
+recipe v4 (rules),P23_seed0,failed,physics.not_settled
+recipe v4 (rules),P23_seed1,ok,
+recipe v4 (rules),P23_seed2,ok,
+recipe v4 (rules),P23_seed3,ok,
+recipe v4 (rules),P23_seed4,failed,physics.not_settled
+recipe v3,P05_seed0,ok,
+recipe v3,P05_seed1,ok,
+recipe v3,P05_seed2,ok,
+recipe v3,P05_seed3,ok,
+recipe v3,P05_seed4,ok,
+recipe v3,P08_seed0,failed,physics.not_settled
+recipe v3,P08_seed1,failed,physics.not_settled
+recipe v3,P08_seed2,failed,physics.not_settled
+recipe v3,P08_seed3,failed,physics.not_settled
+recipe v3,P08_seed4,failed,physics.not_settled
+recipe v3,P15_seed0,failed,physics.not_settled
+recipe v3,P15_seed1,failed,physics.not_settled
+recipe v3,P15_seed2,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v3,P15_seed3,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v3,P15_seed4,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v3,P16_seed0,ok,
+recipe v3,P16_seed1,ok,
+recipe v3,P16_seed2,ok,
+recipe v3,P16_seed3,ok,
+recipe v3,P16_seed4,ok,
+recipe v3,P23_seed0,ok,
+recipe v3,P23_seed1,ok,
+recipe v3,P23_seed2,ok,
+recipe v3,P23_seed3,ok,
+recipe v3,P23_seed4,ok,
