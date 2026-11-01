@@ -8,10 +8,13 @@ Input: the ``trials.csv`` of every scene (``scripts/e3_one_scene.py``), one row 
 * **CIs**: 95 % percentile intervals from a two-stage cluster bootstrap. Each replicate resamples scenes with
   replacement, then seeds within each drawn scene. The same draw is used for every (tier, policy) cell, so cells stay
   paired. With one scene this reduces to a bootstrap over seeds.
-* **Tests**: per tier, a paired Wilcoxon signed-rank test for each policy pair on identical (scene, seed) trials, for
-  robot-moving collisions and for time to goal. A trial that did not finish (frozen, timeout, ...) counts at its
-  ``timeout_s`` (worst case). Zero differences are dropped (``zero_method="wilcox"``); ``n`` is the number of non-zero
-  pairs. p-values are Holm-corrected within each metric over all tiers and pairs.
+* **Primary tests** (``tests.md`` / ``tests.csv``): the unit is the scene. Per scene and policy, the mean over its seeds of robot-moving
+  collisions and of time to goal (a trial that did not finish counts at its ``timeout_s``, worst case); per tier, a paired Wilcoxon
+  signed-rank test for each policy pair across the scenes (10 pairs). Zero differences are dropped (``zero_method="wilcox"``);
+  ``n_nonzero`` is the number of non-zero pairs. p-values are Holm-corrected within each metric over all tiers and pairs.
+  Table 2 carries a summary of them.
+* **Supplementary tests** (``tests_trial.md`` / ``tests_trial.csv``): the same on the 300 identical (scene, seed) trials per tier. The
+  trials of one scene are not independent (same scene, same people), so these p-values are optimistic.
 * **Outputs**: ``table2.md``, ``table2.tex``, ``tests.csv``, ``tests.md``, ``scatter.svg`` and ``scatter_points.csv``
   (moving collisions per trial against median time to goal, one point per policy x tier, with CIs), and ``stats.json``.
 * **Contacts** (``--logs``, the ``trials.jsonl[.gz]`` of every scene; nothing is re-simulated): each collision event already carries the
@@ -149,6 +152,41 @@ def holm(ps):
     return adj
 
 
+PER_TRIAL = {"moving_collisions": lambda r: r["collisions_robot_moving"],
+             "time_to_goal": lambda r: _ttg(r) if _ttg(r) is not None else r["timeout_s"]}
+
+
+def tests_by_scene(rows) -> list[dict]:
+    """Primary tests: per-scene means over the seeds, paired Wilcoxon across scenes, Holm within each metric."""
+    scenes = sorted({r["scene"] for r in rows})
+    out = []
+    for metric, fn in PER_TRIAL.items():
+        mean = {}
+        for tier in TIERS:
+            for pol in POLICIES:
+                for sc in scenes:
+                    v = [fn(r) for r in rows if r["scene"] == sc and r["tier"] == tier and r["policy"] == pol]
+                    mean[(tier, pol, sc)] = float(np.mean(v)) if v else np.nan
+        block = []
+        for tier in TIERS:
+            for a, b in PAIRS:
+                x = np.array([mean[(tier, a, sc)] for sc in scenes])
+                y = np.array([mean[(tier, b, sc)] for sc in scenes])
+                d = x - y
+                nz = int((d != 0).sum())
+                if nz == 0:
+                    stat, p = np.nan, 1.0
+                else:
+                    res = wilcoxon(x, y, zero_method="wilcox")
+                    stat, p = float(res.statistic), float(res.pvalue)
+                block.append({"metric": metric, "tier": tier, "a": a, "b": b, "scenes": len(scenes), "n_nonzero": nz, "mean_a": float(np.mean(x)), "mean_b": float(np.mean(y)),
+                              "median_diff": float(np.median(d)), "mean_diff": float(np.mean(d)), "a_better": int((d < 0).sum()), "b_better": int((d > 0).sum()), "W": stat, "p": p})
+        for row, pa in zip(block, holm(np.array([r["p"] for r in block]))):
+            row["p_holm"] = float(pa)
+        out += block
+    return out
+
+
 def tests(rows) -> list[dict]:
     by = {(r["scene"], r["tier"], r["seed"], r["policy"]): r for r in rows}
     keys = sorted({(r["scene"], r["seed"]) for r in rows})
@@ -207,6 +245,24 @@ def contact_cell(stats, t, p) -> str:
     if not c or not c["n"]:
         return "– [0]" if stats else "n/a"
     return f"{c['mean_v']:.2f} / {c['max_v']:.2f} [{c['n']}]"
+
+
+def tests_summary(T) -> tuple[str, str]:
+    """Primary tests as a compact table: one row per tier x pair, both metrics (per-scene means, Holm)."""
+    by = {(r["metric"], r["tier"], r["a"], r["b"]): r for r in T}
+    head = ["Tier", "A vs B", "Moving coll.: A / B (per-scene means)", "A better / B better (scenes)", "p (Holm)", "Time to goal (s): A / B", "A better / B better (scenes)", "p (Holm)"]
+    md = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+    tex = [r"\begin{tabular}{llrcrrcr}", r"\toprule", " & ".join(head) + r" \\", r"\midrule"]
+    pf = lambda p: "<0.001" if p < 0.001 else f"{p:.3f}"  # noqa: E731
+    for t in TIERS:
+        for a, b in PAIRS:
+            c, g = by[("moving_collisions", t, a, b)], by[("time_to_goal", t, a, b)]
+            cells = [t, f"{POLICY_LABEL[a].split(' ')[0]} vs {POLICY_LABEL[b].split(' ')[0]}", f"{c['mean_a']:.2f} / {c['mean_b']:.2f}", f"{c['a_better']} / {c['b_better']}", pf(c["p_holm"]),
+                     f"{g['mean_a']:.0f} / {g['mean_b']:.0f}", f"{g['a_better']} / {g['b_better']}", pf(g["p_holm"])]
+            md.append("| " + " | ".join(cells) + " |")
+            tex.append(" & ".join(cells).replace("<", r"$<$") + r" \\")
+    tex += [r"\bottomrule", r"\end{tabular}"]
+    return "\n".join(md), "\n".join(tex) + "\n"
 
 
 def table2(est, n_scenes, n_seeds, contact=None) -> tuple[str, str]:
@@ -426,8 +482,22 @@ def main():
     md, tex = table2(est, len(scenes), len(seeds), contact)
     (out / "table2.md").write_text(md)
     (out / "table2.tex").write_text(tex)
-    T = tests(rows)
+    TS = tests_by_scene(rows)  # primary: per-scene means, paired across scenes
     with open(out / "tests.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(TS[0]))
+        w.writeheader()
+        w.writerows(TS)
+    smd = ["| metric | tier | A vs B | scenes | non-zero | A better / B better | mean A | mean B | median diff (A-B) | p | p (Holm) |", "|---" * 11 + "|"]
+    for r in TS:
+        smd.append(f"| {r['metric']} | {r['tier']} | {r['a']} vs {r['b']} | {r['scenes']} | {r['n_nonzero']} | {r['a_better']} / {r['b_better']} | {r['mean_a']:.2f} | {r['mean_b']:.2f} | "
+                   f"{r['median_diff']:.2f} | {r['p']:.3g} | {r['p_holm']:.3g} |")
+    (out / "tests.md").write_text("\n".join(smd) + "\n\nPrimary: per-scene means over the seeds, paired Wilcoxon across scenes, Holm within each metric over tiers and pairs.\n")
+    tmd_summary, tmd_tex = tests_summary(TS)
+    (out / "table2_tests.tex").write_text(tmd_tex)
+    md = md + "\n**Primary tests** (per-scene means, paired Wilcoxon across the scenes, Holm-corrected within each metric; A better = lower value):\n\n" + tmd_summary + "\n"
+    (out / "table2.md").write_text(md)
+    T = tests(rows)  # supplementary: trial level
+    with open(out / "tests_trial.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(T[0]))
         w.writeheader()
         w.writerows(T)
@@ -435,7 +505,7 @@ def main():
     for r in T:
         tmd.append(f"| {r['metric']} | {r['tier']} | {r['a']} vs {r['b']} | {r['pairs']} | {r['n_nonzero']} | {r['a_better']} / {r['b_better']} | "
                    f"{r['median_diff']:.2f} | {r['p']:.3g} | {r['p_holm']:.3g} |")
-    (out / "tests.md").write_text("\n".join(tmd) + "\n")
+    (out / "tests_trial.md").write_text("\n".join(tmd) + "\n\nSupplementary: trial-level pairs (same scene and seed); trials of one scene are not independent, so these p-values are optimistic.\n")
     pts = scatter_svg(est, out / "scatter.svg")
     for key, name, title in (("size", "supp_by_size", "Size"), ("scene", "supp_by_scene", "Scene"), ("model", "supp_by_model", "Source model")):
         if any(r.get(key) is not None for r in rows):

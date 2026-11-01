@@ -1,20 +1,22 @@
-| metric | tier | A vs B | pairs | non-zero | A better / B better | median diff (A-B) | p | p (Holm) |
-|---|---|---|---|---|---|---|---|---|
-| moving_collisions | easy | blind vs fields | 300 | 137 | 5 / 132 | 0.00 | 4.21e-23 | 8.41e-23 |
-| moving_collisions | easy | blind vs aware | 300 | 168 | 0 / 168 | 1.00 | 5.19e-31 | 2.08e-30 |
-| moving_collisions | easy | fields vs aware | 300 | 66 | 0 / 66 | 0.00 | 3.8e-15 | 3.8e-15 |
-| moving_collisions | medium | blind vs fields | 300 | 246 | 9 / 237 | 2.00 | 1.01e-40 | 6.03e-40 |
-| moving_collisions | medium | blind vs aware | 300 | 265 | 0 / 265 | 3.00 | 1.25e-45 | 8.73e-45 |
-| moving_collisions | medium | fields vs aware | 300 | 164 | 0 / 164 | 1.00 | 7.78e-31 | 2.33e-30 |
-| moving_collisions | hard | blind vs fields | 300 | 281 | 10 / 271 | 4.00 | 1.16e-46 | 9.3e-46 |
-| moving_collisions | hard | blind vs aware | 300 | 294 | 0 / 294 | 5.00 | 4.21e-50 | 3.79e-49 |
-| moving_collisions | hard | fields vs aware | 300 | 224 | 0 / 224 | 1.00 | 1.73e-39 | 8.63e-39 |
-| time_to_goal | easy | blind vs fields | 300 | 238 | 237 / 1 | -4.10 | 8.64e-41 | 1.73e-40 |
-| time_to_goal | easy | blind vs aware | 300 | 298 | 290 / 8 | -13.62 | 2.38e-50 | 1.43e-49 |
-| time_to_goal | easy | fields vs aware | 300 | 298 | 285 / 13 | -6.50 | 1.51e-48 | 4.54e-48 |
-| time_to_goal | medium | blind vs fields | 300 | 293 | 293 / 0 | -19.30 | 8.5e-50 | 4.25e-49 |
-| time_to_goal | medium | blind vs aware | 300 | 300 | 300 / 0 | -66.50 | 5.78e-51 | 4.68e-50 |
-| time_to_goal | medium | fields vs aware | 300 | 298 | 297 / 1 | -44.82 | 1.24e-49 | 4.95e-49 |
-| time_to_goal | hard | blind vs fields | 300 | 300 | 300 / 0 | -48.33 | 6.01e-51 | 4.68e-50 |
-| time_to_goal | hard | blind vs aware | 300 | 300 | 300 / 0 | -119.65 | 5.2e-51 | 4.68e-50 |
-| time_to_goal | hard | fields vs aware | 300 | 234 | 233 / 1 | -48.65 | 2.44e-39 | 2.44e-39 |
+| metric | tier | A vs B | scenes | non-zero | A better / B better | mean A | mean B | median diff (A-B) | p | p (Holm) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| moving_collisions | easy | blind vs fields | 10 | 10 | 0 / 10 | 0.93 | 0.24 | 0.57 | 0.00195 | 0.0176 |
+| moving_collisions | easy | blind vs aware | 10 | 10 | 0 / 10 | 0.93 | 0.00 | 0.82 | 0.00195 | 0.0176 |
+| moving_collisions | easy | fields vs aware | 10 | 10 | 0 / 10 | 0.24 | 0.00 | 0.22 | 0.00195 | 0.0176 |
+| moving_collisions | medium | blind vs fields | 10 | 10 | 0 / 10 | 2.99 | 0.80 | 1.73 | 0.00195 | 0.0176 |
+| moving_collisions | medium | blind vs aware | 10 | 10 | 0 / 10 | 2.99 | 0.00 | 2.55 | 0.00195 | 0.0176 |
+| moving_collisions | medium | fields vs aware | 10 | 10 | 0 / 10 | 0.80 | 0.00 | 0.70 | 0.00195 | 0.0176 |
+| moving_collisions | hard | blind vs fields | 10 | 10 | 0 / 10 | 6.04 | 1.59 | 3.45 | 0.00195 | 0.0176 |
+| moving_collisions | hard | blind vs aware | 10 | 10 | 0 / 10 | 6.04 | 0.00 | 5.27 | 0.00195 | 0.0176 |
+| moving_collisions | hard | fields vs aware | 10 | 10 | 0 / 10 | 1.59 | 0.00 | 1.48 | 0.00195 | 0.0176 |
+| time_to_goal | easy | blind vs fields | 10 | 10 | 10 / 0 | 57.55 | 63.95 | -5.58 | 0.00195 | 0.0176 |
+| time_to_goal | easy | blind vs aware | 10 | 10 | 10 / 0 | 57.55 | 77.85 | -17.38 | 0.00195 | 0.0176 |
+| time_to_goal | easy | fields vs aware | 10 | 10 | 10 / 0 | 63.95 | 77.85 | -11.69 | 0.00195 | 0.0176 |
+| time_to_goal | medium | blind vs fields | 10 | 10 | 10 / 0 | 57.55 | 78.91 | -17.87 | 0.00195 | 0.0176 |
+| time_to_goal | medium | blind vs aware | 10 | 10 | 10 / 0 | 57.55 | 133.02 | -73.56 | 0.00195 | 0.0176 |
+| time_to_goal | medium | fields vs aware | 10 | 10 | 10 / 0 | 78.91 | 133.02 | -56.19 | 0.00195 | 0.0176 |
+| time_to_goal | hard | blind vs fields | 10 | 10 | 10 / 0 | 58.18 | 113.08 | -49.02 | 0.00195 | 0.0176 |
+| time_to_goal | hard | blind vs aware | 10 | 10 | 10 / 0 | 58.18 | 184.80 | -106.12 | 0.00195 | 0.0176 |
+| time_to_goal | hard | fields vs aware | 10 | 10 | 10 / 0 | 113.08 | 184.80 | -50.01 | 0.00195 | 0.0176 |
+
+Primary: per-scene means over the seeds, paired Wilcoxon across scenes, Holm within each metric over tiers and pairs.

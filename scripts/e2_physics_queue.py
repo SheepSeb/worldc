@@ -57,7 +57,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     os.nice(19)  # inherited by the Isaac Sim subprocesses
     log = lambda s: print(time.strftime("%F %T"), s, flush=True)  # noqa: E731
-    scenes = sorted(d for r in a.roots for d in Path(r).iterdir() if (d / "scene.usd").is_file() and (d / "e2_attempts.json").is_file())
+    scenes = sorted(d for r in a.roots for d in Path(r).iterdir() if (d / "scene.usd").is_file() and ((d / "e2_attempts.json").is_file() or (d / "record.json").is_file()))  # record.json: within-prompt recipe folders
     log(f"{len(scenes)} baseline scenes queued")
     seen = a.now
     for d in scenes:

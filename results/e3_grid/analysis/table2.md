@@ -11,3 +11,17 @@
 |  | Human-aware | 0.00 [0.00, 0.00] | 0.00 [0.00, 0.00] | 0.00 [0.00, 0.00] | 7.24 [4.78, 10.01] | 0.00 / 0.00 [2173] | 30 [9, 50] | 66 [45, 87] | 0.61 [0.56, 0.76] | 0.0 [0.0, 0.0] | 5.1 [1.6, 9.8] | 36.1 [27.0, 46.7] | 144 [105, 422] |
 
 10 scene(s) x 30 seeds per tier and policy. Point estimate with a 95 % cluster-bootstrap CI (scenes, then seeds). Means except min gap and time to goal (medians); time to goal over finished trials only. Moving + stationary = all collisions. Speed at contact: robot |v| at first contact, mean / max over every collision of the cell (stationary ones included, which pulls the mean down), n collisions in brackets, no CI; the split by moving / stationary is in contact_speed.md.
+
+**Primary tests** (per-scene means, paired Wilcoxon across the scenes, Holm-corrected within each metric; A better = lower value):
+
+| Tier | A vs B | Moving coll.: A / B (per-scene means) | A better / B better (scenes) | p (Holm) | Time to goal (s): A / B | A better / B better (scenes) | p (Holm) |
+|---|---|---|---|---|---|---|---|
+| easy | Blind vs Fields | 0.93 / 0.24 | 0 / 10 | 0.018 | 58 / 64 | 10 / 0 | 0.018 |
+| easy | Blind vs Human-aware | 0.93 / 0.00 | 0 / 10 | 0.018 | 58 / 78 | 10 / 0 | 0.018 |
+| easy | Fields vs Human-aware | 0.24 / 0.00 | 0 / 10 | 0.018 | 64 / 78 | 10 / 0 | 0.018 |
+| medium | Blind vs Fields | 2.99 / 0.80 | 0 / 10 | 0.018 | 58 / 79 | 10 / 0 | 0.018 |
+| medium | Blind vs Human-aware | 2.99 / 0.00 | 0 / 10 | 0.018 | 58 / 133 | 10 / 0 | 0.018 |
+| medium | Fields vs Human-aware | 0.80 / 0.00 | 0 / 10 | 0.018 | 79 / 133 | 10 / 0 | 0.018 |
+| hard | Blind vs Fields | 6.04 / 1.59 | 0 / 10 | 0.018 | 58 / 113 | 10 / 0 | 0.018 |
+| hard | Blind vs Human-aware | 6.04 / 0.00 | 0 / 10 | 0.018 | 58 / 185 | 10 / 0 | 0.018 |
+| hard | Fields vs Human-aware | 1.59 / 0.00 | 0 / 10 | 0.018 | 113 / 185 | 10 / 0 | 0.018 |
