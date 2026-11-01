@@ -68,51 +68,97 @@
   },
   "recipe_v4": {
    "kind": "recipe",
-   "scenes": 25,
+   "scenes": 23,
    "prompts": 5,
-   "pairs": 50,
+   "pairs": 43,
    "iou": [
-    0.220480027299226,
-    0.12287334593572778,
-    0.5820448877805486
+    0.24639423076923078,
+    0.10258576981578503,
+    0.6513083048919226
    ],
    "spatial": [
-    0.96,
-    0.88,
+    0.9547101449275361,
+    0.8695652173913045,
     1.0
    ],
    "acceptance": {
-    "runs": 25,
-    "accepted": 25,
-    "attempts": 77,
-    "attempts_ok": 25
+    "samples": 56,
+    "physics_ok": 23,
+    "static_builds": 194,
+    "static_ok": 55,
+    "reached": 4,
+    "per_prompt": {
+     "P05": {
+      "attempts": 5,
+      "physics_ok": 5
+     },
+     "P08": {
+      "attempts": 19,
+      "physics_ok": 5
+     },
+     "P15": {
+      "attempts": 20,
+      "physics_ok": 3
+     },
+     "P16": {
+      "attempts": 5,
+      "physics_ok": 5
+     },
+     "P23": {
+      "attempts": 7,
+      "physics_ok": 5
+     }
+    }
    },
    "room_mismatch_scenes": 0,
    "rules_present_mean": 5.0
   },
   "recipe_v3": {
    "kind": "recipe",
-   "scenes": 25,
+   "scenes": 24,
    "prompts": 5,
-   "pairs": 50,
+   "pairs": 46,
    "iou": [
-    0.054756005230917476,
-    0.03220524017467249,
-    0.07428302773859896
+    0.05362403372062277,
+    0.031477643404060576,
+    0.072782874617737
    ],
    "spatial": [
-    0.19366666666666663,
-    0.09,
-    0.30966666666666665
+    0.2111111111111111,
+    0.10200000000000001,
+    0.31766666666666665
    ],
    "acceptance": {
-    "runs": 25,
-    "accepted": 25,
-    "attempts": 65,
-    "attempts_ok": 25
+    "samples": 54,
+    "physics_ok": 24,
+    "static_builds": 145,
+    "static_ok": 53,
+    "reached": 4,
+    "per_prompt": {
+     "P05": {
+      "attempts": 5,
+      "physics_ok": 5
+     },
+     "P08": {
+      "attempts": 20,
+      "physics_ok": 4
+     },
+     "P15": {
+      "attempts": 19,
+      "physics_ok": 5
+     },
+     "P16": {
+      "attempts": 5,
+      "physics_ok": 5
+     },
+     "P23": {
+      "attempts": 5,
+      "physics_ok": 5
+     }
+    }
    },
    "room_mismatch_scenes": 0,
-   "rules_present_mean": 4.8
+   "rules_present_mean": 4.708333333333333
   },
   "template": {
    "kind": "template",
@@ -130,8 +176,17 @@
     0.875
    ],
    "acceptance": {
-    "runs": 30,
-    "accepted": 29
+    "samples": 20,
+    "physics_ok": 5,
+    "static_builds": 20,
+    "static_ok": 19,
+    "reached": 1,
+    "per_prompt": {
+     "P08": {
+      "attempts": 20,
+      "physics_ok": 5
+     }
+    }
    },
    "room_mismatch_scenes": 0,
    "rules_present_mean": 6.0

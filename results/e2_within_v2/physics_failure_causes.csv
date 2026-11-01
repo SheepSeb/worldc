@@ -1,0 +1,26 @@
+method,prompt,code,object,scenes_with_code,bodies
+recipe v4 (rules),P08,physics.not_settled,bench_laptop,13,24
+recipe v4 (rules),P15,physics.fell_through_floor,bench_transfer_case,10,14
+recipe v4 (rules),P15,physics.not_settled,bench_transfer_case,16,84
+recipe v4 (rules),P15,physics.unstable,bench_transfer_case,10,14
+recipe v4 (rules),P23,physics.not_settled,bench_laptop,2,2
+recipe v3,P08,physics.fell_through_floor,bench_laptop,1,1
+recipe v3,P08,physics.not_settled,bench_laptop,16,36
+recipe v3,P08,physics.unstable,bench_laptop,1,1
+recipe v3,P15,physics.fell_through_floor,bench_transfer_case,7,7
+recipe v3,P15,physics.not_settled,bench_transfer_case,13,58
+recipe v3,P15,physics.unstable,bench_transfer_case,7,7
+"recipe v3, 30 prompts",P07,physics.not_settled,bench_laptop,1,3
+"recipe v3, 30 prompts",P08,physics.not_settled,bench_laptop,1,1
+"recipe v3, 30 prompts",P09,physics.not_settled,bench_laptop,1,7
+"recipe v3, 30 prompts",P10,physics.not_settled,bench_laptop,1,6
+"recipe v3, 30 prompts",P15,physics.not_settled,bench_transfer_case,1,5
+"recipe v3, 30 prompts",P21,physics.not_settled,bench_laptop,1,1
+"recipe v3, 30 prompts",P26,physics.not_settled,returned_units,1,1
+"recipe v3, 30 prompts",P27,physics.not_settled,returned_units,1,2
+"recipe v3, 30 prompts",P27,physics.not_settled,bench_laptop,1,1
+"recipe v3, 30 prompts",P28,physics.not_settled,returned_units,1,2
+"recipe v3, 30 prompts",P29,physics.not_settled,returned_units,1,2
+"recipe v3, 30 prompts",P29,physics.not_settled,bench_laptop,1,1
+"recipe v3, 30 prompts",P30,physics.not_settled,bench_laptop,1,1
+"recipe v3, 30 prompts",P30,physics.not_settled,returned_units,1,1

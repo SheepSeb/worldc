@@ -1,0 +1,59 @@
+{
+ "physics_status": "failed",
+ "physics_first_attempt": null,
+ "ok": false,
+ "physics": {
+  "n_bodies_evaluated": 39,
+  "fraction_displacement_below_2cm": 0.8718,
+  "max_displacement_m": 0.0988,
+  "worst_movers": [
+   {
+    "body": "/World/bench_transfer_case/bench_transfer_case_0003",
+    "displacement_m": 0.099
+   },
+   {
+    "body": "/World/bench_transfer_case/bench_transfer_case_0000",
+    "displacement_m": 0.099
+   },
+   {
+    "body": "/World/bench_transfer_case/bench_transfer_case_0005",
+    "displacement_m": 0.098
+   },
+   {
+    "body": "/World/bench_transfer_case/bench_transfer_case_0001",
+    "displacement_m": 0.098
+   },
+   {
+    "body": "/World/bench_transfer_case/bench_transfer_case_0004",
+    "displacement_m": 0.098
+   }
+  ],
+  "fell_through_floor": [],
+  "robot": {
+   "asset": "dingo",
+   "kind": "wheeled_amr",
+   "ok": true,
+   "settled": true,
+   "drift_xy_m": 0.0003,
+   "dz_m": -0.0014,
+   "max_rise_m": -0.0014,
+   "final_speed_mps": 0.0,
+   "n_dofs": 2,
+   "needs_controller": false
+  },
+  "ran": true,
+  "ok": false,
+  "result_file": "/home/sebnae/ws/ws_startup/claude_scene_generator/out/e2_within/recipe_v4/P15_seed0/isaac_validation.json"
+ },
+ "issues": [
+  {
+   "severity": "error",
+   "code": "physics.not_settled",
+   "path": "",
+   "message": "Only 87.2% of bodies stayed within 2 cm.",
+   "hint": "Look at worst_movers; stacks may be unstable or overlapping.",
+   "data": {}
+  }
+ ],
+ "seconds": 61.3
+}

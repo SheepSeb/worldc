@@ -276,26 +276,50 @@ def llm_set(model: str, eval_dir: Path, variant="constrained"):
     return by, acc
 
 
+def _physics_ok(d: Path):
+    """True / False from the scene's e2_physics.json (Isaac Sim physics check), None if it has none."""
+    f = d / "e2_physics.json"
+    return None if not f.is_file() else json.loads(f.read_text())["physics_status"] == "ok"
+
+
 def recipe_set(root: Path):
-    by, att, ok_samples = {p: [] for p in PROMPTS}, [], 0
-    for d in sorted(root.glob("P*_seed*")):
-        pid = d.name.split("_")[0]
-        rec = json.loads((d / "record.json").read_text()) if (d / "record.json").exists() else {}
-        att.append((len(rec.get("history", [])), bool(rec.get("accepted")), rec.get("final_seed")))
-        if pid in by and rec.get("accepted"):
-            by[pid].append({"name": d.name, "dir": str(rec.get("scene_dir", d)), "final_seed": rec.get("final_seed")})
-    n_att = sum(a for a, _, _ in att)
-    acc = {"runs": len(att), "accepted": sum(ok for _, ok, _ in att), "attempts": n_att, "attempts_ok": sum(ok for _, ok, _ in att)}
+    """Per prompt the first SAMPLES physics-accepted samples (static check + Isaac Sim physics) in sample order, and the attempt accounting of
+    ``e2_recipe_sampling.py``: samples are tried in order until SAMPLES pass or MAX_ATTEMPTS samples were tried, every sample is one attempt."""
+    by, per = {p: [] for p in PROMPTS}, {}
+    builds = builds_ok = 0
+    for pid in PROMPTS:
+        dirs = sorted(root.glob(f"{pid}_seed*"), key=lambda d: int(d.name.rsplit("seed", 1)[1]))
+        att = passes = 0
+        for d in dirs:
+            rec = json.loads((d / "record.json").read_text()) if (d / "record.json").exists() else {}
+            att += 1
+            builds += len(rec.get("history", []))
+            builds_ok += bool(rec.get("accepted"))
+            if rec.get("accepted") and _physics_ok(d):
+                passes += 1
+                by[pid].append({"name": d.name, "dir": str(rec.get("scene_dir", d)), "final_seed": rec.get("final_seed")})
+            if passes >= SAMPLES:
+                break
+        per[pid] = {"attempts": att, "physics_ok": passes}
+    acc = {"samples": sum(v["attempts"] for v in per.values()), "physics_ok": sum(v["physics_ok"] for v in per.values()), "static_builds": builds, "static_ok": builds_ok,
+           "reached": sum(v["physics_ok"] >= SAMPLES for v in per.values()), "per_prompt": per}
     return {p: v[:SAMPLES] for p, v in by.items()}, acc
 
 
 def template_set(e2_results: Path, e2_out: Path):
-    recs = json.load(open(e2_results / "template_records.json"))
-    ok = sorted((r for r in recs if r["accepted"]), key=lambda r: r["scene"])[:SAMPLES]
-    pid = ok[0]["prompt_id"] if ok else "P08"
-    by = {p: [] for p in PROMPTS}
-    by[pid] = [{"name": r["scene"], "dir": str(e2_out / "template" / r["scene"])} for r in ok]
-    return by, {"runs": len(recs), "accepted": sum(r["accepted"] for r in recs)}
+    """The template's first SAMPLES seeds that built and pass physics (P08 only), attempts counted the same way."""
+    recs = sorted(json.load(open(e2_results / "template_records.json")), key=lambda r: r["scene"])
+    pid = next((r["prompt_id"] for r in recs if r["accepted"]), "P08")
+    by, att, ok = {p: [] for p in PROMPTS}, 0, 0
+    for r in recs:
+        att += 1
+        d = e2_out / "template" / r["scene"]
+        if r["accepted"] and _physics_ok(d):
+            ok += 1
+            by[pid].append({"name": r["scene"], "dir": str(d)})
+        if ok >= SAMPLES:
+            break
+    return by, {"samples": att, "physics_ok": ok, "static_builds": att, "static_ok": sum(r["accepted"] for r in recs[:att]), "reached": int(ok >= SAMPLES), "per_prompt": {pid: {"attempts": att, "physics_ok": ok}}}
 
 
 # ------------------------------------------------------------------------------------------------------------ maps
@@ -459,30 +483,31 @@ def main():
     fmt = lambda t: "n/a" if math.isnan(t[0]) else f"{t[0]:.2f} [{t[1]:.2f}, {t[2]:.2f}]"  # noqa: E731
     label = {"recipe_v4": "Recipe v4 (rules)", "recipe_v3": "Recipe v3 (no rules)", "template": "Template", "claude-sonnet-5-5": "Sonnet 5.5",
              "deepseek-v4.1-flash_cloud": "DeepSeek v4.1 flash", "glm-5.3-flash_cloud": "GLM 5.3 flash"}
-    md = ["**E2 within-prompt study: layout diversity, spatial adherence and acceptance** (prompts " + ", ".join(PROMPTS) + ")", "",
-          "| Method | Samples | Within-prompt IoU [95% CI] | Spatial adherence [95% CI] | LLM acceptance per run | Recipe acceptance per attempt | Accepted samples per final build (static) | Recipe samples also passing Isaac Sim physics |",
+    md = ["**E2 within-prompt study: layout diversity, spatial adherence and acceptance** (prompts " + ", ".join(PROMPTS) + "; physics-accepted samples only)", "",
+          "| Method | Samples used | Within-prompt IoU [95% CI] | Spatial adherence [95% CI] | LLM acceptance per run (static + physics) | Recipe / template: physics-accepted per sample tried | Static builds ok per build attempt | Prompts reaching 5 physics-accepted |",
           "|---|---|---|---|---|---|---|---|"]
-    phys = {}
-    if (out / "physics_recipes.csv").exists():  # from scripts/e2_physics_queue.py (e2_physics.json of every recipe scene)
-        for r in csv.DictReader(open(out / "physics_recipes.csv")):
-            m_ = {"recipe v4 (rules)": "recipe_v4", "recipe v3": "recipe_v3"}[r["method"]]
-            d_ = phys.setdefault(m_, [0, 0])
-            d_[0] += r["physics_status"] == "ok"
-            d_[1] += 1
     for m, s_ in summ.items():
         acc = s_["acceptance"]
-        per_run = f"{acc['accepted']}/{acc['runs']} ({acc['accepted'] / acc['runs']:.0%})" if s_["kind"] == "llm" else "n/a"
-        per_att = (f"{acc['attempts_ok']}/{acc['attempts']} ({acc['attempts_ok'] / acc['attempts']:.0%})" if "attempts" in acc
-                   else f"{acc['accepted']}/{acc['runs']} ({acc['accepted'] / acc['runs']:.0%})" if s_["kind"] == "template" else "n/a")
-        per_samp = f"{acc['accepted']}/{acc['runs']}" if s_["kind"] == "recipe" else "n/a"
-        pp = f"{phys[m][0]}/{phys[m][1]}" if m in phys else "n/a"
-        md.append(f"| {label.get(m, m)} | {s_['scenes']} | {fmt(s_['iou'])} | {fmt(s_['spatial'])} | {per_run} | {per_att} | {per_samp} | {pp} |")
-    md += ["", "IoU: median over pairs of same-prompt samples on native-metre 0.1 m grids (lower = more diverse). Spatial adherence: mean over scenes of the mean rule "
-           "score (1 = every instance of the rule satisfied; a rule whose objects are absent from the scene scores 0), `prompts/spatial_rules_e2_within.json`. "
-           "The template is scored on P08 only (its prompt), so its spatial CI is degenerate. LLM acceptance: accepted constrained runs of these five prompts (E1 run + extra "
-           "samples), per run. Recipe acceptance: per build attempt, counting every resampled seed; the last column is the number of the 25 samples that ended accepted. "
-           "The template builds once per seed. LLM acceptance already includes the final Isaac Sim physics check; the recipe's static acceptance does not, so the last "
-           "column gives the recipe samples that also pass it (`physics_recipes.csv`)."]
+        if s_["kind"] == "llm":
+            per_run, per_samp, per_build, reach = f"{acc['accepted']}/{acc['runs']} ({acc['accepted'] / acc['runs']:.0%})", "n/a", "n/a", f"{sum(1 for p in PROMPTS if len([x for x in methods[m][1][p]]) >= SAMPLES)}/5"
+        else:
+            per_run = "n/a"
+            per_samp = f"{acc['physics_ok']}/{acc['samples']} ({acc['physics_ok'] / max(acc['samples'], 1):.0%})"
+            per_build = f"{acc['static_ok']}/{acc['static_builds']} ({acc['static_ok'] / max(acc['static_builds'], 1):.0%})"
+            reach = f"{acc['reached']}/{1 if s_['kind'] == 'template' else 5}"
+        md.append(f"| {label.get(m, m)} | {s_['scenes']} | {fmt(s_['iou'])} | {fmt(s_['spatial'])} | {per_run} | {per_samp} | {per_build} | {reach} |")
+    pp = ["", "Recipe attempts per prompt (physics-accepted / samples tried, stop at 5 passes or 20 samples):", "", "| Method | " + " | ".join(PROMPTS) + " |", "|---|" + "---|" * len(PROMPTS)]
+    for m, s_ in summ.items():
+        if s_["kind"] != "llm":
+            per = s_["acceptance"]["per_prompt"]
+            pp.append(f"| {label.get(m, m)} | " + " | ".join(f"{per[p]['physics_ok']}/{per[p]['attempts']}" if p in per else "-" for p in PROMPTS) + " |")
+    md += pp
+    md += ["", "Only physics-accepted scenes are used for every method (LLM: accepted = static `check_scene` + the final Isaac Sim physics check; recipe and template: static + the same physics check "
+           "run by `scripts/e2_physics_queue.py`). IoU: median over pairs of same-prompt samples on native-metre 0.1 m grids (lower = more diverse); a prompt with fewer than 5 samples "
+           "contributes fewer pairs (none with fewer than 2). Spatial adherence: mean over scenes of the mean rule score (1 = every instance satisfied; an absent object scores 0), "
+           "`prompts/spatial_rules_e2_within.json`. The template is scored on P08 only, so its spatial CI is degenerate. The recipe is sampled seed by seed (seed base + k, +1000 retries on a "
+           "failed rule / build / static check) until 5 samples pass physics or 20 samples were tried; every sample is one attempt and the static build retries are counted in the "
+           "fourth-from-last column."]
     (out / "table_within_v2.md").write_text("\n".join(md) + "\n")
     print("\n".join(md))
 

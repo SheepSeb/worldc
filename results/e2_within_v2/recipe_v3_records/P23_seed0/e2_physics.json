@@ -1,0 +1,29 @@
+{
+ "physics_status": "ok",
+ "physics_first_attempt": null,
+ "ok": true,
+ "physics": {
+  "n_bodies_evaluated": 8,
+  "fraction_displacement_below_2cm": 1.0,
+  "max_displacement_m": 0.0004,
+  "worst_movers": [],
+  "fell_through_floor": [],
+  "robot": {
+   "asset": "dingo",
+   "kind": "wheeled_amr",
+   "ok": true,
+   "settled": true,
+   "drift_xy_m": 0.0003,
+   "dz_m": -0.0014,
+   "max_rise_m": -0.0014,
+   "final_speed_mps": 0.0001,
+   "n_dofs": 2,
+   "needs_controller": false
+  },
+  "ran": true,
+  "ok": true,
+  "result_file": "/home/sebnae/ws/ws_startup/claude_scene_generator/out/e2_within/recipe/P23_seed0/isaac_validation.json"
+ },
+ "issues": [],
+ "seconds": 29.8
+}

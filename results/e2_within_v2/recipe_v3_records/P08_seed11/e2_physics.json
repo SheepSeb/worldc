@@ -1,0 +1,77 @@
+{
+ "physics_status": "failed",
+ "physics_first_attempt": null,
+ "ok": false,
+ "physics": {
+  "n_bodies_evaluated": 19,
+  "fraction_displacement_below_2cm": 0.7368,
+  "max_displacement_m": 1.074,
+  "worst_movers": [
+   {
+    "body": "/World/bench_laptop/bench_laptop_0003",
+    "displacement_m": 1.074
+   },
+   {
+    "body": "/World/bench_laptop/bench_laptop_0002",
+    "displacement_m": 0.118
+   },
+   {
+    "body": "/World/bench_laptop/bench_laptop_0001",
+    "displacement_m": 0.118
+   },
+   {
+    "body": "/World/bench_laptop/bench_laptop_0004",
+    "displacement_m": 0.114
+   },
+   {
+    "body": "/World/bench_laptop/bench_laptop_0000",
+    "displacement_m": 0.114
+   }
+  ],
+  "fell_through_floor": [
+   "/World/bench_laptop/bench_laptop_0003"
+  ],
+  "robot": {
+   "asset": "dingo",
+   "kind": "wheeled_amr",
+   "ok": true,
+   "settled": true,
+   "drift_xy_m": 0.0003,
+   "dz_m": -0.0014,
+   "max_rise_m": -0.0014,
+   "final_speed_mps": 0.0,
+   "n_dofs": 2,
+   "needs_controller": false
+  },
+  "ran": true,
+  "ok": false,
+  "result_file": "/home/sebnae/ws/ws_startup/claude_scene_generator/out/e2_within/recipe/P08_seed11/isaac_validation.json"
+ },
+ "issues": [
+  {
+   "severity": "error",
+   "code": "physics.fell_through_floor",
+   "path": "/World/bench_laptop/bench_laptop_0003",
+   "message": "/World/bench_laptop/bench_laptop_0003 fell through the floor.",
+   "hint": "Check its collider and spawn height.",
+   "data": {}
+  },
+  {
+   "severity": "error",
+   "code": "physics.unstable",
+   "path": "/World/bench_laptop/bench_laptop_0003",
+   "message": "/World/bench_laptop/bench_laptop_0003 moved faster than 1 m/s (3.626).",
+   "hint": "Usually an interpenetrating spawn.",
+   "data": {}
+  },
+  {
+   "severity": "error",
+   "code": "physics.not_settled",
+   "path": "",
+   "message": "Only 73.7% of bodies stayed within 2 cm.",
+   "hint": "Look at worst_movers; stacks may be unstable or overlapping.",
+   "data": {}
+  }
+ ],
+ "seconds": 40.8
+}

@@ -6,14 +6,42 @@ recipe v4 (rules),P05_seed3,ok,
 recipe v4 (rules),P05_seed4,ok,
 recipe v4 (rules),P08_seed0,failed,physics.not_settled
 recipe v4 (rules),P08_seed1,failed,physics.not_settled
+recipe v4 (rules),P08_seed11,failed,physics.not_settled
+recipe v4 (rules),P08_seed12,failed,physics.not_settled
+recipe v4 (rules),P08_seed13,ok,
+recipe v4 (rules),P08_seed14,failed,physics.not_settled
+recipe v4 (rules),P08_seed15,failed,physics.not_settled
+recipe v4 (rules),P08_seed16,failed,physics.not_settled
+recipe v4 (rules),P08_seed17,failed,physics.not_settled
+recipe v4 (rules),P08_seed18,ok,
 recipe v4 (rules),P08_seed2,failed,physics.not_settled
 recipe v4 (rules),P08_seed3,ok,
 recipe v4 (rules),P08_seed4,failed,physics.not_settled
+recipe v4 (rules),P08_seed5,failed,physics.not_settled
+recipe v4 (rules),P08_seed6,failed,physics.not_settled
+recipe v4 (rules),P08_seed7,ok,
+recipe v4 (rules),P08_seed8,failed,physics.not_settled
+recipe v4 (rules),P08_seed9,ok,
 recipe v4 (rules),P15_seed0,failed,physics.not_settled
 recipe v4 (rules),P15_seed1,failed,physics.not_settled
-recipe v4 (rules),P15_seed2,failed,physics.fell_through_floor;physics.fell_through_floor;physics.unstable;physics.unstable;physics.not_settled
-recipe v4 (rules),P15_seed3,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v4 (rules),P15_seed10,ok,
+recipe v4 (rules),P15_seed11,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed12,failed,physics.not_settled
+recipe v4 (rules),P15_seed13,ok,
+recipe v4 (rules),P15_seed14,failed,physics.not_settled
+recipe v4 (rules),P15_seed15,ok,
+recipe v4 (rules),P15_seed16,failed,physics.not_settled
+recipe v4 (rules),P15_seed17,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed18,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed19,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed2,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed3,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
 recipe v4 (rules),P15_seed4,failed,physics.fell_through_floor;physics.unstable
+recipe v4 (rules),P15_seed5,failed,physics.not_settled
+recipe v4 (rules),P15_seed6,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed7,failed,physics.not_settled
+recipe v4 (rules),P15_seed8,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v4 (rules),P15_seed9,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
 recipe v4 (rules),P16_seed0,ok,
 recipe v4 (rules),P16_seed1,ok,
 recipe v4 (rules),P16_seed2,ok,
@@ -24,6 +52,8 @@ recipe v4 (rules),P23_seed1,ok,
 recipe v4 (rules),P23_seed2,ok,
 recipe v4 (rules),P23_seed3,ok,
 recipe v4 (rules),P23_seed4,failed,physics.not_settled
+recipe v4 (rules),P23_seed5,ok,
+recipe v4 (rules),P23_seed6,ok,
 recipe v3,P05_seed0,ok,
 recipe v3,P05_seed1,ok,
 recipe v3,P05_seed2,ok,
@@ -31,14 +61,42 @@ recipe v3,P05_seed3,ok,
 recipe v3,P05_seed4,ok,
 recipe v3,P08_seed0,failed,physics.not_settled
 recipe v3,P08_seed1,failed,physics.not_settled
+recipe v3,P08_seed10,failed,physics.not_settled
+recipe v3,P08_seed11,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P08_seed12,ok,
+recipe v3,P08_seed13,ok,
+recipe v3,P08_seed14,ok,
+recipe v3,P08_seed15,failed,physics.not_settled
+recipe v3,P08_seed16,failed,physics.not_settled
+recipe v3,P08_seed17,ok,
+recipe v3,P08_seed18,failed,physics.not_settled
+recipe v3,P08_seed19,failed,physics.not_settled
 recipe v3,P08_seed2,failed,physics.not_settled
 recipe v3,P08_seed3,failed,physics.not_settled
 recipe v3,P08_seed4,failed,physics.not_settled
+recipe v3,P08_seed5,failed,physics.not_settled
+recipe v3,P08_seed6,failed,physics.not_settled
+recipe v3,P08_seed7,failed,physics.not_settled
+recipe v3,P08_seed8,failed,physics.not_settled
+recipe v3,P08_seed9,failed,physics.not_settled
 recipe v3,P15_seed0,failed,physics.not_settled
 recipe v3,P15_seed1,failed,physics.not_settled
-recipe v3,P15_seed2,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
-recipe v3,P15_seed3,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
-recipe v3,P15_seed4,failed,physics.fell_through_floor;physics.unstable;physics.not_settled
+recipe v3,P15_seed10,ok,
+recipe v3,P15_seed11,failed,physics.not_settled
+recipe v3,P15_seed12,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed13,failed,physics.not_settled
+recipe v3,P15_seed14,ok,
+recipe v3,P15_seed15,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed16,failed,physics.not_settled
+recipe v3,P15_seed17,failed,physics.not_settled
+recipe v3,P15_seed18,ok,
+recipe v3,P15_seed2,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed3,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed4,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed5,ok,
+recipe v3,P15_seed6,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
+recipe v3,P15_seed8,ok,
+recipe v3,P15_seed9,failed,physics.fell_through_floor;physics.not_settled;physics.unstable
 recipe v3,P16_seed0,ok,
 recipe v3,P16_seed1,ok,
 recipe v3,P16_seed2,ok,
@@ -49,3 +107,33 @@ recipe v3,P23_seed1,ok,
 recipe v3,P23_seed2,ok,
 recipe v3,P23_seed3,ok,
 recipe v3,P23_seed4,ok,
+"recipe v3, 30 prompts",P01,ok,
+"recipe v3, 30 prompts",P02,ok,
+"recipe v3, 30 prompts",P03,ok,
+"recipe v3, 30 prompts",P04,ok,
+"recipe v3, 30 prompts",P05,ok,
+"recipe v3, 30 prompts",P06,ok,
+"recipe v3, 30 prompts",P07,failed,physics.not_settled
+"recipe v3, 30 prompts",P08,failed,physics.not_settled
+"recipe v3, 30 prompts",P09,failed,physics.not_settled
+"recipe v3, 30 prompts",P10,failed,physics.not_settled
+"recipe v3, 30 prompts",P11,ok,
+"recipe v3, 30 prompts",P12,ok,
+"recipe v3, 30 prompts",P13,ok,
+"recipe v3, 30 prompts",P14,ok,
+"recipe v3, 30 prompts",P15,failed,physics.not_settled
+"recipe v3, 30 prompts",P16,ok,
+"recipe v3, 30 prompts",P17,ok,
+"recipe v3, 30 prompts",P18,ok,
+"recipe v3, 30 prompts",P19,ok,
+"recipe v3, 30 prompts",P20,ok,
+"recipe v3, 30 prompts",P21,failed,physics.not_settled
+"recipe v3, 30 prompts",P22,ok,
+"recipe v3, 30 prompts",P23,ok,
+"recipe v3, 30 prompts",P24,ok,
+"recipe v3, 30 prompts",P25,ok,
+"recipe v3, 30 prompts",P26,failed,physics.not_settled
+"recipe v3, 30 prompts",P27,failed,physics.not_settled
+"recipe v3, 30 prompts",P28,failed,physics.not_settled
+"recipe v3, 30 prompts",P29,failed,physics.not_settled
+"recipe v3, 30 prompts",P30,failed,physics.not_settled

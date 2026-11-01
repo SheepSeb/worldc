@@ -13,27 +13,27 @@
 
 ### Lines of code
 
-- `src/worldc/recipes/remanufacturing.py`: **+316 / -13** lines against the v3 recipe (git diff HEAD); the file is 1016 lines now. The default path (`rules=None`) is unchanged: v3 specs are identical for 28/28 seeds checked.
+- `src/worldc/recipes/remanufacturing.py`: **+316 / -13** lines against the v3 recipe (git diff 2fd800f^, the commit before recipe v4); the file is 1016 lines now. The default path (`rules=None`) is unchanged: v3 specs are identical for 28/28 seeds checked.
 - `prompts/spatial_rules_e2_within.json`: 334 non-blank lines (the rules themselves, 26 rules).
-- `scripts/e2_recipe_within.py`: 42 non-blank lines in total; the v4 part is the `--rules` flag (about 8 lines).
-- Scoring and analysis (`scripts/e2_within_v2.py`), shared by all methods, not recipe effort: 470 non-blank lines.
+- `scripts/e2_recipe_within.py`: 48 non-blank lines in total; the v4 part is the `--rules` flag (about 8 lines).
+- Scoring and analysis (`scripts/e2_within_v2.py`), shared by all methods, not recipe effort: 502 non-blank lines.
 
 ### Attempts per accepted sample (seeds base+k, retried at +1000 j, up to 11 attempts)
 
 | Recipe | Prompt | Attempts per sample | Mean | Max | Failed attempts: rule unsatisfiable | Failed attempts: static build / solver |
 |---|---|---|---|---|---|---|
 | v4 (rules) | P05 | 2, 9, 1, 3, 3 | 3.6 | 9 | 11 | 2 |
-| v4 (rules) | P08 | 8, 2, 2, 1, 3 | 3.2 | 8 | 10 | 1 |
-| v4 (rules) | P15 | 4, 4, 3, 1, 5 | 3.4 | 5 | 10 | 2 |
+| v4 (rules) | P08 | 8, 2, 11, 5, 3, 3, 2, 1, 3, 3, 2, 2, 1, 3, 3, 8, 5, 8, 7 | 4.2 | 11 | 41 | 21 |
+| v4 (rules) | P15 | 4, 4, 1, 6, 1, 2, 4, 2, 2, 1, 1, 4, 3, 1, 5, 6, 2, 10, 2, 2 | 3.1 | 10 | 36 | 7 |
 | v4 (rules) | P16 | 2, 1, 1, 2, 1 | 1.4 | 2 | 2 | 0 |
-| v4 (rules) | P23 | 5, 4, 3, 6, 1 | 3.8 | 6 | 9 | 5 |
-| v4 (rules) | all | | 3.1 | 9 | | |
+| v4 (rules) | P23 | 5, 4, 3, 6, 1, 4, 3 | 3.7 | 6 | 11 | 8 |
+| v4 (rules) | all | | 3.5 | 11 | | |
 | v3 | P05 | 3, 2, 1, 1, 1 | 1.6 | 3 | 0 | 3 |
-| v3 | P08 | 7, 4, 5, 2, 3 | 4.2 | 7 | 0 | 16 |
-| v3 | P15 | 4, 5, 5, 1, 1 | 3.2 | 5 | 0 | 11 |
+| v3 | P08 | 7, 4, 1, 3, 2, 1, 7, 2, 3, 2, 3, 4, 5, 2, 3, 3, 1, 1, 2, 4 | 3.0 | 7 | 0 | 40 |
+| v3 | P15 | 4, 5, 1, 4, 3, 1, 3, 1, 3, 2, 2, 5, 1, 1, 7, 1, 11, 1, 1 | 3.0 | 11 | 0 | 39 |
 | v3 | P16 | 1, 2, 1, 1, 1 | 1.2 | 2 | 0 | 1 |
 | v3 | P23 | 2, 2, 1, 6, 3 | 2.8 | 6 | 0 | 9 |
-| v3 | all | | 2.6 | 7 | | |
+| v3 | all | | 2.7 | 11 | | |
 
 ### Special-case workarounds in recipe v4
 

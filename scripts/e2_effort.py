@@ -22,9 +22,9 @@ for p in ("P05", "P08", "P15", "P16", "P23"):
 print(f"| total | {tot} | |\n")
 
 print("### Lines of code\n")
-num = subprocess.run(["git", "diff", "--numstat", "HEAD", "--", "src/worldc/recipes/remanufacturing.py"], capture_output=True, text=True).stdout.split()
+num = subprocess.run(["git", "diff", "--numstat", "2fd800f^", "--", "src/worldc/recipes/remanufacturing.py"], capture_output=True, text=True).stdout.split()
 src_lines = open("src/worldc/recipes/remanufacturing.py").read().splitlines()
-print(f"- `src/worldc/recipes/remanufacturing.py`: **+{num[0]} / -{num[1]}** lines against the v3 recipe (git diff HEAD); the file is {len(src_lines)} lines now. "
+print(f"- `src/worldc/recipes/remanufacturing.py`: **+{num[0]} / -{num[1]}** lines against the v3 recipe (git diff 2fd800f^, the commit before recipe v4); the file is {len(src_lines)} lines now. "
       f"The default path (`rules=None`) is unchanged: v3 specs are identical for 28/28 seeds checked.")
 nb = lambda f: sum(1 for ln in open(f) if ln.strip())  # noqa: E731
 print(f"- `prompts/spatial_rules_e2_within.json`: {nb('prompts/spatial_rules_e2_within.json')} non-blank lines (the rules themselves, {tot} rules).")

@@ -1,0 +1,459 @@
+[
+ {
+  "prompt": "P05",
+  "attempts": 5,
+  "passes": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "reached_target": true,
+  "static_builds": 8,
+  "physics_checked": 5,
+  "samples": [
+   {
+    "sample": 0,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2005,
+    "physics": "ok"
+   },
+   {
+    "sample": 1,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1006,
+    "physics": "ok"
+   },
+   {
+    "sample": 2,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 7,
+    "physics": "ok"
+   },
+   {
+    "sample": 3,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 8,
+    "physics": "ok"
+   },
+   {
+    "sample": 4,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 9,
+    "physics": "ok"
+   }
+  ]
+ },
+ {
+  "prompt": "P08",
+  "attempts": 20,
+  "passes": [
+   12,
+   13,
+   14,
+   17
+  ],
+  "reached_target": false,
+  "static_builds": 60,
+  "physics_checked": 20,
+  "samples": [
+   {
+    "sample": 0,
+    "static_ok": true,
+    "static_attempts": 7,
+    "final_seed": 6008,
+    "physics": "failed"
+   },
+   {
+    "sample": 1,
+    "static_ok": true,
+    "static_attempts": 4,
+    "final_seed": 3009,
+    "physics": "failed"
+   },
+   {
+    "sample": 2,
+    "static_ok": true,
+    "static_attempts": 5,
+    "final_seed": 4010,
+    "physics": "failed"
+   },
+   {
+    "sample": 3,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1011,
+    "physics": "failed"
+   },
+   {
+    "sample": 4,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2012,
+    "physics": "failed"
+   },
+   {
+    "sample": 5,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2013,
+    "physics": "failed"
+   },
+   {
+    "sample": 6,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 14,
+    "physics": "failed"
+   },
+   {
+    "sample": 7,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 15,
+    "physics": "failed"
+   },
+   {
+    "sample": 8,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1016,
+    "physics": "failed"
+   },
+   {
+    "sample": 9,
+    "static_ok": true,
+    "static_attempts": 4,
+    "final_seed": 3017,
+    "physics": "failed"
+   },
+   {
+    "sample": 10,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 18,
+    "physics": "failed"
+   },
+   {
+    "sample": 11,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2019,
+    "physics": "failed"
+   },
+   {
+    "sample": 12,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1020,
+    "physics": "ok"
+   },
+   {
+    "sample": 13,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 21,
+    "physics": "ok"
+   },
+   {
+    "sample": 14,
+    "static_ok": true,
+    "static_attempts": 7,
+    "final_seed": 6022,
+    "physics": "ok"
+   },
+   {
+    "sample": 15,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1023,
+    "physics": "failed"
+   },
+   {
+    "sample": 16,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2024,
+    "physics": "failed"
+   },
+   {
+    "sample": 17,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1025,
+    "physics": "ok"
+   },
+   {
+    "sample": 18,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2026,
+    "physics": "failed"
+   },
+   {
+    "sample": 19,
+    "static_ok": true,
+    "static_attempts": 4,
+    "final_seed": 3027,
+    "physics": "failed"
+   }
+  ]
+ },
+ {
+  "prompt": "P15",
+  "attempts": 19,
+  "passes": [
+   5,
+   8,
+   10,
+   14,
+   18
+  ],
+  "reached_target": true,
+  "static_builds": 57,
+  "physics_checked": 18,
+  "samples": [
+   {
+    "sample": 0,
+    "static_ok": true,
+    "static_attempts": 4,
+    "final_seed": 3015,
+    "physics": "failed"
+   },
+   {
+    "sample": 1,
+    "static_ok": true,
+    "static_attempts": 5,
+    "final_seed": 4016,
+    "physics": "failed"
+   },
+   {
+    "sample": 2,
+    "static_ok": true,
+    "static_attempts": 5,
+    "final_seed": 4017,
+    "physics": "failed"
+   },
+   {
+    "sample": 3,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 18,
+    "physics": "failed"
+   },
+   {
+    "sample": 4,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 19,
+    "physics": "failed"
+   },
+   {
+    "sample": 5,
+    "static_ok": true,
+    "static_attempts": 7,
+    "final_seed": 6020,
+    "physics": "ok"
+   },
+   {
+    "sample": 6,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 21,
+    "physics": "failed"
+   },
+   {
+    "sample": 7,
+    "static_ok": false,
+    "static_attempts": 11,
+    "final_seed": 10022,
+    "physics": "static_failed"
+   },
+   {
+    "sample": 8,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 23,
+    "physics": "ok"
+   },
+   {
+    "sample": 9,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 24,
+    "physics": "failed"
+   },
+   {
+    "sample": 10,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 25,
+    "physics": "ok"
+   },
+   {
+    "sample": 11,
+    "static_ok": true,
+    "static_attempts": 4,
+    "final_seed": 3026,
+    "physics": "failed"
+   },
+   {
+    "sample": 12,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2027,
+    "physics": "failed"
+   },
+   {
+    "sample": 13,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 28,
+    "physics": "failed"
+   },
+   {
+    "sample": 14,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2029,
+    "physics": "ok"
+   },
+   {
+    "sample": 15,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 30,
+    "physics": "failed"
+   },
+   {
+    "sample": 16,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2031,
+    "physics": "failed"
+   },
+   {
+    "sample": 17,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1032,
+    "physics": "failed"
+   },
+   {
+    "sample": 18,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1033,
+    "physics": "ok"
+   }
+  ]
+ },
+ {
+  "prompt": "P16",
+  "attempts": 5,
+  "passes": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "reached_target": true,
+  "static_builds": 6,
+  "physics_checked": 5,
+  "samples": [
+   {
+    "sample": 0,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 16,
+    "physics": "ok"
+   },
+   {
+    "sample": 1,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1017,
+    "physics": "ok"
+   },
+   {
+    "sample": 2,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 18,
+    "physics": "ok"
+   },
+   {
+    "sample": 3,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 19,
+    "physics": "ok"
+   },
+   {
+    "sample": 4,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 20,
+    "physics": "ok"
+   }
+  ]
+ },
+ {
+  "prompt": "P23",
+  "attempts": 5,
+  "passes": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "reached_target": true,
+  "static_builds": 14,
+  "physics_checked": 5,
+  "samples": [
+   {
+    "sample": 0,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1023,
+    "physics": "ok"
+   },
+   {
+    "sample": 1,
+    "static_ok": true,
+    "static_attempts": 2,
+    "final_seed": 1024,
+    "physics": "ok"
+   },
+   {
+    "sample": 2,
+    "static_ok": true,
+    "static_attempts": 1,
+    "final_seed": 25,
+    "physics": "ok"
+   },
+   {
+    "sample": 3,
+    "static_ok": true,
+    "static_attempts": 6,
+    "final_seed": 5026,
+    "physics": "ok"
+   },
+   {
+    "sample": 4,
+    "static_ok": true,
+    "static_attempts": 3,
+    "final_seed": 2027,
+    "physics": "ok"
+   }
+  ]
+ }
+]
