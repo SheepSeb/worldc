@@ -41,11 +41,11 @@ Rule fixed before running: workers always 1 / 3 / 6; occluders = as many as fit,
 ## Files
 
 - `trials.csv`: all 2,700 rows (scene, source model, family, size, tier, workers, occluders, seed, policy, outcome and metrics, provenance).
-- `analysis/`: `table2.md` / `.tex`, `tests.md` / `.csv` (paired Wilcoxon, Holm), `scatter.svg`, and the supplementary breakdowns
+- `analysis/`: `table2.md` / `.tex` (moving and stationary collisions, speed at contact), `contact_speed.md` / `.csv` and `collisions.csv` (every collision with the robot's v, w at contact), `tests.md` / `.csv` (paired Wilcoxon, Holm), `scatter.svg`, and the supplementary breakdowns
   `supp_by_size`, `supp_by_scene`, `supp_by_model` (`.md` / `.csv`).
 - `scenes/<scene>/`: `variants_report.json`, `e3_variant_{base,hard}.json`, `map_{base,hard}.png`, `trials.jsonl.gz` (drawn workers,
   events, trajectory and digest of every trial; for the later kinematic replay), `run.log`.
 - `grid_summary.json`: per-scene run summary.
 
 Regenerate: `uv run python scripts/e3_grid.py --seeds 30 --jobs 8` then
-`uv run python scripts/e3_analysis.py out/e3/grid/P*/trials.csv --out results/e3_grid/analysis`.
+`uv run python scripts/e3_analysis.py out/e3/grid/P*/trials.csv --logs out/e3/grid/P*/trials.jsonl --out results/e3_grid/analysis`.

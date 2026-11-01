@@ -14,6 +14,11 @@ Input: the ``trials.csv`` of every scene (``scripts/e3_one_scene.py``), one row 
   pairs. p-values are Holm-corrected within each metric over all tiers and pairs.
 * **Outputs**: ``table2.md``, ``table2.tex``, ``tests.csv``, ``tests.md``, ``scatter.svg`` and ``scatter_points.csv``
   (moving collisions per trial against median time to goal, one point per policy x tier, with CIs), and ``stats.json``.
+* **Contacts** (``--logs``, the ``trials.jsonl[.gz]`` of every scene; nothing is re-simulated): each collision event already carries the
+  robot's ``robot_v`` / ``robot_w`` at first contact and the ``robot_moving`` tag (|v| > 0.05 m/s or |w| > 0.2 rad/s). ``collisions.csv``
+  lists every event; ``contact_speed.md/.csv`` gives the speed-at-contact distribution per tier x policy and the checks (the tag agrees
+  with the logged v / w, per-trial counts agree with ``trials.csv``, human-aware's contacts). Table 2 shows moving and stationary
+  collisions side by side and the mean / max robot speed at contact (pooled over the collisions of the cell, no CI).
 * **Supplementary breakdowns** (``supp_by_size.md/.csv``, ``supp_by_scene.md/.csv``, ``supp_by_model.md/.csv``): the same estimates
   (moving collisions per trial, success, time to goal) per room size S / M / L, per scene and per source model, using the ``size``,
   ``scene`` and ``model`` columns of the trial rows; the CI resamples the scenes of the group (a single scene: the seeds only).
@@ -185,7 +190,8 @@ COLUMNS = [  # (header, metric, digits, pct)
     ("Moving coll./trial", "moving_collisions", 2, False),
     ("of which from behind", "moving_collisions_from_behind", 2, False),
     ("of which already braking", "moving_collisions_braking", 2, False),
-    ("All coll./trial", "all_collisions", 1, False),
+    ("Stationary coll./trial", "stationary_collisions", 2, False),
+    ("Speed at contact mean / max (m/s) [n]", "__contact__", 2, False),
     ("Success (%)", "success", 0, True),
     ("Frozen (%)", "frozen", 0, True),
     ("Min gap moving (m)", "min_gap_moving", 2, False),
@@ -196,19 +202,28 @@ COLUMNS = [  # (header, metric, digits, pct)
 ]
 
 
-def table2(est, n_scenes, n_seeds) -> tuple[str, str]:
+def contact_cell(stats, t, p) -> str:
+    c = stats.get((t, p)) if stats else None
+    if not c or not c["n"]:
+        return "– [0]" if stats else "n/a"
+    return f"{c['mean_v']:.2f} / {c['max_v']:.2f} [{c['n']}]"
+
+
+def table2(est, n_scenes, n_seeds, contact=None) -> tuple[str, str]:
     head = ["Tier", "Policy"] + [c[0] for c in COLUMNS]
     md = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     tex = [r"\begin{tabular}{ll" + "r" * len(COLUMNS) + "}", r"\toprule", " & ".join(head).replace("%", r"\%") + r" \\", r"\midrule"]
     for t in TIERS:
         for i, p in enumerate(POLICIES):
-            cells = [fmt(*est[m][(t, p)][:3], digits=d, pct=pc) for _, m, d, pc in COLUMNS]
+            cells = [contact_cell(contact, t, p) if m == "__contact__" else fmt(*est[m][(t, p)][:3], digits=d, pct=pc) for _, m, d, pc in COLUMNS]
             md.append(f"| {t if i == 0 else ''} | {POLICY_LABEL[p]} | " + " | ".join(cells) + " |")
             tex.append(" & ".join([t.capitalize() if i == 0 else "", POLICY_LABEL[p]] + [c.replace("–", "--") for c in cells]) + r" \\")
         tex.append(r"\midrule" if t != TIERS[-1] else r"\bottomrule")
     tex.append(r"\end{tabular}")
     note = (f"\n\n{n_scenes} scene(s) x {n_seeds} seeds per tier and policy. Point estimate with a 95 % cluster-bootstrap CI "
-            "(scenes, then seeds). Means except min gap and time to goal (medians); time to goal over finished trials only.")
+            "(scenes, then seeds). Means except min gap and time to goal (medians); time to goal over finished trials only. "
+            "Moving + stationary = all collisions. Speed at contact: robot |v| at first contact, mean / max over every collision of the cell "
+            "(stationary ones included, which pulls the mean down), n collisions in brackets, no CI; the split by moving / stationary is in contact_speed.md.")
     return "\n".join(md) + note + "\n", "\n".join(tex) + "\n"
 
 
@@ -273,6 +288,96 @@ def _marker(kind, x, y, c):
     return f'<polygon points="{x:.1f},{y - 6.5:.1f} {x - 6:.1f},{y + 4.5:.1f} {x + 6:.1f},{y + 4.5:.1f}" fill="{c}"/>'
 
 
+BINS = (("v < 0.05, w < 0.2 (stationary)", lambda v, w: v <= 0.05 and w <= 0.2), ("v < 0.05, turning (w > 0.2)", lambda v, w: v <= 0.05 and w > 0.2),
+        ("0.05 < v <= 0.25", lambda v, w: 0.05 < v <= 0.25), ("0.25 < v <= 0.5", lambda v, w: 0.25 < v <= 0.5), ("v > 0.5", lambda v, w: v > 0.5))
+
+
+def read_events(log_paths):
+    """(collision rows, {(scene, tier, seed, policy): (collisions, moving collisions)}) from the trial logs."""
+    import gzip
+
+    ev, per_trial = [], {}
+    for path in log_paths:
+        opener = gzip.open if str(path).endswith(".gz") else open
+        with opener(path, "rt") as f:
+            for ln in f:
+                r = json.loads(ln)
+                hits = [e for e in r["events"] if e.get("type") == "collision"]
+                per_trial[(r["scene"], r["tier"], int(r["seed"]), r["policy"])] = (len(hits), sum(e["robot_moving"] for e in hits))
+                for e in hits:
+                    ev.append({"scene": r["scene"], "model": r.get("model"), "size": r.get("size"), "tier": r["tier"], "policy": r["policy"], "seed": int(r["seed"]),
+                               "t": e["t"], "worker": e["worker"], "robot_v": e["robot_v"], "robot_w": e["robot_w"], "speed": abs(e["robot_v"]),
+                               "moving": bool(e["robot_moving"]), "from_behind": bool(e["from_behind"]), "holding": bool(e["robot_holding"]), "state": e["state"]})
+    return ev, per_trial
+
+
+def contact_stats(ev):
+    out = {}
+    for t in TIERS:
+        for p in POLICIES:
+            E = [e for e in ev if e["tier"] == t and e["policy"] == p]
+            v = np.array([e["speed"] for e in E]) if E else np.array([])
+            mv = np.array([e["speed"] for e in E if e["moving"]])
+            sv = np.array([e["speed"] for e in E if not e["moving"]])
+            w = np.array([abs(e["robot_w"]) for e in E]) if E else np.array([])
+            q = lambda a, f: float(f(a)) if len(a) else float("nan")  # noqa: E731
+            out[(t, p)] = {"n": len(E), "n_moving": int(sum(e["moving"] for e in E)), "n_stationary": int(sum(not e["moving"] for e in E)),
+                           "mean_v": q(v, np.mean), "median_v": q(v, np.median), "p90_v": float(np.percentile(v, 90)) if len(v) else float("nan"), "max_v": q(v, np.max),
+                           "mean_v_moving": q(mv, np.mean), "max_v_moving": q(mv, np.max), "mean_v_stationary": q(sv, np.mean), "max_v_stationary": q(sv, np.max),
+                           "max_w": q(w, np.max), "bins": [int(sum(f(e["speed"], abs(e["robot_w"])) for e in E)) for _, f in BINS]}
+    return out
+
+
+def contact_checks(ev, per_trial, trial_rows):
+    """Does the logged tag agree with the logged v / w, and do the per-trial event counts agree with trials.csv?"""
+    tol = 0.0051  # v and w are logged rounded to 0.01
+    wrong, edge = [], []
+    for e in ev:
+        calc = e["speed"] > 0.05 or abs(e["robot_w"]) > 0.2
+        if calc != e["moving"]:
+            near = abs(e["speed"] - 0.05) <= tol or abs(abs(e["robot_w"]) - 0.2) <= tol
+            (edge if near else wrong).append(e)
+    csv_counts = {(r["scene"], r["tier"], r["seed"], r["policy"]): (int(r["collisions"]), int(r["collisions_robot_moving"])) for r in trial_rows}
+    mism = [k for k in per_trial if csv_counts.get(k) != per_trial[k]]
+    return {"events": len(ev), "trials_in_logs": len(per_trial), "tag_disagrees": wrong, "tag_disagrees_within_rounding": edge, "trials_count_mismatch": mism,
+            "trials_missing_in_csv": [k for k in per_trial if k not in csv_counts]}
+
+
+def write_contacts(out: Path, ev, stats, checks):
+    with open(out / "collisions.csv", "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(ev[0]))
+        w.writeheader()
+        w.writerows(ev)
+    flat = [["tier", "policy", "collisions", "moving", "stationary", "mean_v", "median_v", "p90_v", "max_v", "mean_v_moving", "max_v_moving", "mean_v_stationary",
+             "max_v_stationary", "max_abs_w"] + [b for b, _ in BINS]]
+    md = ["## Robot speed at first contact, per tier x policy", "",
+          "| Tier | Policy | Collisions | Moving | Stationary | |v| mean | median | p90 | max | |v| mean, moving | max, moving | max |w| (rad/s) | " + " | ".join(b for b, _ in BINS) + " |",
+          "|" + "---|" * (12 + len(BINS))]
+    nn = lambda x: "–" if x != x else f"{x:.2f}"  # noqa: E731
+    for t in TIERS:
+        for p in POLICIES:
+            c = stats[(t, p)]
+            flat.append([t, p, c["n"], c["n_moving"], c["n_stationary"]] + [round(c[k], 3) if c[k] == c[k] else "" for k in ("mean_v", "median_v", "p90_v", "max_v", "mean_v_moving",
+                                                                                           "max_v_moving", "mean_v_stationary", "max_v_stationary", "max_w")] + c["bins"])
+            md.append(f"| {t} | {POLICY_LABEL[p]} | {c['n']} | {c['n_moving']} | {c['n_stationary']} | {nn(c['mean_v'])} | {nn(c['median_v'])} | {nn(c['p90_v'])} | {nn(c['max_v'])} | "
+                      f"{nn(c['mean_v_moving'])} | {nn(c['max_v_moving'])} | {nn(c['max_w'])} | " + " | ".join(str(b) for b in c["bins"]) + " |")
+    with open(out / "contact_speed.csv", "w", newline="") as f:
+        csv.writer(f).writerows(flat)
+    aw = [e for e in ev if e["policy"] == "aware"]
+    md += ["\n## Checks\n",
+           f"- **Events:** {checks['events']} collision events in {checks['trials_in_logs']} logged trials.",
+           f"- **Tag vs logged v / w:** {len(checks['tag_disagrees'])} events where `robot_moving` disagrees with (|v| > 0.05 or |w| > 0.2) beyond the 0.01 rounding of the log; "
+           f"{len(checks['tag_disagrees_within_rounding'])} within the rounding band of a threshold.",
+           f"- **Per-trial counts vs trials.csv:** {len(checks['trials_count_mismatch'])} trials differ (collisions, moving collisions); {len(checks['trials_missing_in_csv'])} logged trials missing in the csv.",
+           f"- **Human-aware:** {len(aw)} collisions in total, {sum(e['moving'] for e in aw)} tagged moving; |v| at contact: max "
+           f"{max((e['speed'] for e in aw), default=float('nan')):.2f} m/s, {sum(e['speed'] > 0.0 for e in aw)} with any non-zero |v|, max |w| "
+           f"{max((abs(e['robot_w']) for e in aw), default=float('nan')):.2f} rad/s."]
+    for name, key in (("Tag disagrees (beyond rounding)", "tag_disagrees"), ("Tag disagrees within rounding", "tag_disagrees_within_rounding")):
+        for e in checks[key][:10]:
+            md.append(f"  - {name}: {e['scene']} {e['tier']} {e['policy']} seed {e['seed']} t {e['t']}: v {e['robot_v']}, w {e['robot_w']}, tagged moving {e['moving']}")
+    (out / "contact_speed.md").write_text("\n".join(md) + "\n")
+
+
 SUPP = [("Moving coll./trial", "moving_collisions", 2, False), ("Success (%)", "success", 0, True), ("Frozen (%)", "frozen", 0, True),
         ("Time to goal (s)", "time_to_goal", 0, False)]
 
@@ -304,6 +409,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--boot", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=0, help="bootstrap RNG seed")
+    ap.add_argument("--logs", nargs="*", default=[], help="trials.jsonl[.gz] of every scene (collision events: speed at contact)")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -311,7 +417,13 @@ def main():
     scenes = sorted({r["scene"] for r in rows})
     seeds = sorted({r["seed"] for r in rows})
     est = estimate(rows, a.boot, a.seed)
-    md, tex = table2(est, len(scenes), len(seeds))
+    contact = None
+    if a.logs:
+        ev, per_trial = read_events(a.logs)
+        contact = contact_stats(ev)
+        checks = contact_checks(ev, per_trial, rows)
+        write_contacts(out, ev, contact, checks)
+    md, tex = table2(est, len(scenes), len(seeds), contact)
     (out / "table2.md").write_text(md)
     (out / "table2.tex").write_text(tex)
     T = tests(rows)
