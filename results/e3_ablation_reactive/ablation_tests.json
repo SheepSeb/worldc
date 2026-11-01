@@ -1,0 +1,146 @@
+{
+ "moving_collisions/easy/blind": {
+  "tier": "easy",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/easy/fields": {
+  "tier": "easy",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/easy/aware": {
+  "tier": "easy",
+  "policy": "aware",
+  "up": 0,
+  "down": 0,
+  "p": 1.0,
+  "p_holm": 1.0
+ },
+ "moving_collisions/medium/blind": {
+  "tier": "medium",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/medium/fields": {
+  "tier": "medium",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/medium/aware": {
+  "tier": "medium",
+  "policy": "aware",
+  "up": 0,
+  "down": 0,
+  "p": 1.0,
+  "p_holm": 1.0
+ },
+ "moving_collisions/hard/blind": {
+  "tier": "hard",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/hard/fields": {
+  "tier": "hard",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "moving_collisions/hard/aware": {
+  "tier": "hard",
+  "policy": "aware",
+  "up": 0,
+  "down": 0,
+  "p": 1.0,
+  "p_holm": 1.0
+ },
+ "stationary_collisions/easy/blind": {
+  "tier": "easy",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/easy/fields": {
+  "tier": "easy",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/easy/aware": {
+  "tier": "easy",
+  "policy": "aware",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/medium/blind": {
+  "tier": "medium",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/medium/fields": {
+  "tier": "medium",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/medium/aware": {
+  "tier": "medium",
+  "policy": "aware",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/hard/blind": {
+  "tier": "hard",
+  "policy": "blind",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/hard/fields": {
+  "tier": "hard",
+  "policy": "fields",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ },
+ "stationary_collisions/hard/aware": {
+  "tier": "hard",
+  "policy": "aware",
+  "up": 0,
+  "down": 10,
+  "p": 0.001953125,
+  "p_holm": 0.017578125
+ }
+}

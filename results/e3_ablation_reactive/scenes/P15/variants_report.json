@@ -1,0 +1,39 @@
+{
+ "scene": "P15",
+ "model": "claude-sonnet-5-5",
+ "source_run": "20261030T095745_91fdb0bb",
+ "occluder_count": 4,
+ "occluder_candidates": 638,
+ "occluders_rejected": {
+  "spacing": 2,
+  "blocks_aisle_or_goal": 0,
+  "solver": 0
+ },
+ "build_attempts_hard": 1,
+ "base": {
+  "goals": 14,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 3,
+   "bench": 48,
+   "cell_gate": 3
+  },
+  "task_points_off_aisle_network": 0,
+  "task_points_reachable": true
+ },
+ "hard": {
+  "goals": 14,
+  "unreachable_goal_legs": [],
+  "task_points": {
+   "door": 3,
+   "bench": 48,
+   "cell_gate": 3
+  },
+  "task_points_off_aisle_network": 0,
+  "task_points_lost_vs_base": [],
+  "task_points_reachable": true
+ },
+ "six_workers_plan": "ok",
+ "ok": true,
+ "replay_hard_seed0_blind": "identical"
+}
