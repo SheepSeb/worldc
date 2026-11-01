@@ -1,0 +1,20 @@
+model,prompt,run,object,asset,family,codes,max_displacement_m
+claude-sonnet-5-5,P06,20261030T082729_c3a558df,bench_laptops_b,laptop,laptop,not_settled,0.114
+claude-sonnet-5-5,P06,20261030T082729_c3a558df,laptops,laptop,laptop,not_settled,0.118
+claude-sonnet-5-5,P08,20261030T084048_3dc2eed0,laptops,laptop,laptop,fell_through_floor;not_settled;unstable,0.83
+claude-sonnet-5-5,P12,20261030T092006_75f5e005,returned_cases,transfer_case,transfer case,not_settled,0.104
+claude-sonnet-5-5,P13,20261030T093312_5ba1bc22,gearboxes,transfer_case,transfer case,not_settled,0.115
+claude-sonnet-5-5,P30,20261030T130236_2a08d72b,transfer_cases,transfer_case,transfer case,fell_through_floor;unstable,0.0
+deepseek-v4.1-flash_cloud,P14,20261029T170158_ed438709,bench_gearboxes_e,transfer_case,transfer case,fell_through_floor;not_settled;unstable,1.265
+deepseek-v4.1-flash_cloud,P14,20261029T170158_ed438709,bench_gearboxes_w,transfer_case,transfer case,not_settled,0.098
+deepseek-v4.1-flash_cloud,P26,20261029T205751_e8922325,bench_laptop,laptop,laptop,fell_through_floor;not_settled;unstable,0.778
+deepseek-v4.1-flash_cloud,P30,20261029T223225_2a08d72b,bench_gearboxes,transfer_case,transfer case,fell_through_floor;unstable,0.0
+glm-5.3-flash_cloud,P06,20261030T002039_c3a558df,laptops,laptop,laptop,not_settled,0.134
+glm-5.3-flash_cloud,P08,20261030T004038_3dc2eed0,bench_laptops,isaac_sm_laptop,laptop,not_settled,0.164
+glm-5.3-flash_cloud,P10,20261030T012711_a68c6509,laptops,isaac_sm_laptop,laptop,not_settled,0.172
+glm-5.3-flash_cloud,P11,20261030T014032_f8a7aee5,bench_gearboxes,transfer_case,transfer case,not_settled,0.099
+glm-5.3-flash_cloud,P11,20261030T014032_f8a7aee5,returned_gearboxes,transfer_case,transfer case,not_settled,0.097
+glm-5.3-flash_cloud,P12,20261030T015353_75f5e005,incoming_cases,simready_drivetrain_transfer_case_b01,transfer case,not_settled,0.098
+glm-5.3-flash_cloud,P13,20261030T020822_5ba1bc22,bench_cases,transfer_case,transfer case,not_settled,0.098
+glm-5.3-flash_cloud,P25,20261030T044045_1eadf8f3,klt_on_belt,klt_bin,other,not_settled,2.395
+glm-5.3-flash_cloud,P28,20261030T050737_e70bc8c5,transfer_cases,transfer_case,transfer case,fell_through_floor;not_settled;unstable,1.326

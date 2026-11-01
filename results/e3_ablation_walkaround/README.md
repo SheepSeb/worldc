@@ -15,6 +15,9 @@ around it with A*, **never waiting**:
 - **Checks:** walker motion stays continuous (at most 0.085 m per 0.05 s step, the cap of the fixed walkers); the contact checks pass
   as in the main run (`analysis/contact_speed.md`: tag agrees with logged v / w, per-trial counts agree, all 227 human-aware contacts at
   |v| = |w| = 0).
+- **Verification:** `verification.md` recomputes both runs per policy x tier from the raw trial logs (`scripts/e3_ablation_verify.py`) and
+  re-simulates 48 logged trials (`scripts/e3_ablation_resim_check.py`, all identical). Blind walk-around and fields main-run totals coincide in
+  the medium and hard tiers (239 and 477 moving collisions) but the trials and per-scene counts differ: a coincidence of two independent runs.
 - **Withdrawn earlier version:** walkers that wait deadlocked by construction and are not reported (`results/e3_ablation_wait_WITHDRAWN`).
 
 ## Result (`ablation_reactive.md` / `.csv`; main -> walk-around, easy / medium / hard)

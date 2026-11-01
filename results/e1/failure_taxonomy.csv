@@ -1,7 +1,7 @@
 class,claude-sonnet-5-5,deepseek-v4.1-flash_cloud,gemma4_31b-cloud,glm-5.3-flash_cloud
 accepted,24,27,7,20
-physics failed: physics.fell_through_floor,2,3,0,1
-physics failed: physics.not_settled,3,0,0,7
+"physics failed, asset-induced (laptop / transfer case)",5,3,0,7
+"physics failed, other object (klt_bin)",0,0,0,1
 "static failure, repair cap reached: solver: placement unsatisfiable",1,0,8,1
 "static failure, repair cap reached: spec error: id",0,0,0,1
 "static failure, repair cap reached: static check: human_path_robot_spawn",0,0,1,0

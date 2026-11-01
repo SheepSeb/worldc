@@ -18,13 +18,16 @@ Analysis only (no builds, no Isaac Sim, nice 19).  Reads every ``dataset/e1/<mod
   for the static ``check_scene`` alone (accepted or physics-failed runs), which separates the final physics check from the loop.
 * **Failure taxonomy** (``failure_taxonomy.md/.csv``): per model, runs by outcome class.  Physics failures (the loop produced a statically
   valid scene, the final Isaac Sim physics check rejected it) are kept apart from static failures (no valid scene; by stop reason and the
-  family of the last validation / build / check error) and split by the first physics error code.
+  family of the last validation / build / check error).  A physics failure is **asset-induced** when every failing object is a laptop or a
+  transfer case (``e1_physics_objects.py``: the objects behind each failure); a second table splits physics failures by their first error
+  code.  ``physics_failure_objects.md/.csv`` list the failing objects of every physics-failed run.
 * **Outputs** in ``--out``: ``table1_e1.md`` / ``.tex``, ``runs.csv`` (one row per run), ``by_difficulty.csv``,
   ``acceptance_at_k.*``, ``failure_taxonomy.*``, ``summary.json``, ``eval_<model>.csv``.
 """
 from __future__ import annotations
 
 import argparse
+import collections
 import csv
 import json
 import os
@@ -36,6 +39,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import e2_prelim as P  # noqa: E402  (helpers)
+import e1_physics_objects as PO  # noqa: E402  (failing objects of a physics-failed run)
 
 N_PROMPTS = 30
 FIELDS = ("n_benches", "n_robot_cells", "conveyor", "n_racks", "n_doors", "n_people")
@@ -114,7 +118,7 @@ def taxonomy(rows: list[dict]) -> dict:
         if r["accepted"]:
             tax["accepted"] += 1
         elif r["final_status"] == "physics_failed":
-            tax["physics failed: " + (r["physics_codes"].split(";")[0] if r["physics_codes"] else "no code recorded")] += 1
+            tax["physics failed, asset-induced (laptop / transfer case)" if r["asset_induced"] else "physics failed, other object (" + (r["physics_assets"] or "none recorded") + ")"] += 1
         else:
             how = "repair cap reached" if r["stop_reason"] == "max_repairs" else "stopped without a valid scene"
             tax[f"static failure, {how}: " + static_family([c for c in r["static_codes"].split(";") if c])] += 1
@@ -140,7 +144,8 @@ def model_runs(ds: Path, variant: str, prompts: dict, out: Path) -> list[dict]:
     rows = []
     for pid, (r, e) in sorted(latest.items()):
         u, prm = r.get("usage") or {}, r.get("params") or {}
-        rows.append({"stop_reason": r.get("stop_reason") or "", "physics_codes": ";".join(physics_codes(r)), "static_codes": ";".join(static_codes(r)),
+        objs = PO.failing_objects(ds, r) if r.get("final_status") == "physics_failed" else []
+        rows.append({"asset_induced": PO.asset_induced(objs), "physics_assets": ";".join(sorted({o["asset"] for o in objs})), "stop_reason": r.get("stop_reason") or "", "physics_codes": ";".join(physics_codes(r)), "static_codes": ";".join(static_codes(r)),
                      "model": ds.name, "prompt_id": pid, "difficulty": prompts[pid]["difficulty"], "run_id": r["run_id"],
                      "accepted": bool(r["accepted"]), "final_status": r.get("final_status") or "",
                      "error": (r.get("error") or "")[:80], "turns": u.get("turns"), "repairs": u.get("repairs"),
@@ -227,6 +232,13 @@ def main():
     classes = sorted({c for s_ in summary.values() for c in s_["taxonomy"]}, key=lambda c: (c != "accepted", not c.startswith("physics"), c))
     tx = ["| Class | " + " | ".join(summary) + " |", "|---|" + "---|" * len(summary)]
     tx += [f"| {c} | " + " | ".join(str(s_["taxonomy"].get(c, 0)) for s_ in summary.values()) + " |" for c in classes]
+    bycode = collections.Counter()
+    for r_ in rows:
+        if r_["final_status"] == "physics_failed":
+            bycode[(r_["model"], (r_["physics_codes"].split(";")[0] if r_["physics_codes"] else "no code recorded"))] += 1
+    codes = sorted({c for _, c in bycode})
+    tx += ["", "Physics failures by their first error code (the first listed in the failing check):", "", "| Code | " + " | ".join(summary) + " |", "|---|" + "---|" * len(summary)]
+    tx += [f"| {c} | " + " | ".join(str(bycode.get((m, c), 0)) for m in summary) + " |" for c in codes]
     (out / "failure_taxonomy.md").write_text("\n".join(tx) + "\n\nRuns per outcome class (30 prompts per model). Physics failures: the loop ended with a statically valid scene and the final Isaac Sim "
                                             "physics check rejected it; static failures: no valid scene (stop reason, family of the first error of the last validate / build / check).\n")
     with open(out / "failure_taxonomy.csv", "w", newline="") as f:

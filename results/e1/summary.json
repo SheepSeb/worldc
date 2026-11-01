@@ -229,8 +229,7 @@
    },
    "taxonomy": {
     "accepted": 24,
-    "physics failed: physics.not_settled": 3,
-    "physics failed: physics.fell_through_floor": 2,
+    "physics failed, asset-induced (laptop / transfer case)": 5,
     "static failure, repair cap reached: solver: placement unsatisfiable": 1
    },
    "static_pass": 29,
@@ -474,7 +473,7 @@
    },
    "taxonomy": {
     "accepted": 27,
-    "physics failed: physics.fell_through_floor": 3
+    "physics failed, asset-induced (laptop / transfer case)": 3
    },
    "static_pass": 30,
    "by_difficulty": {
@@ -966,9 +965,9 @@
    "taxonomy": {
     "static failure, repair cap reached: spec error: id": 1,
     "accepted": 20,
-    "physics failed: physics.not_settled": 7,
+    "physics failed, asset-induced (laptop / transfer case)": 7,
     "static failure, repair cap reached: solver: placement unsatisfiable": 1,
-    "physics failed: physics.fell_through_floor": 1
+    "physics failed, other object (klt_bin)": 1
    },
    "static_pass": 28,
    "by_difficulty": {
