@@ -13,9 +13,9 @@ rejected, reachability of every robot goal and task point in both variants, work
 ``trials.jsonl`` (appended after every trial; drawn workers, events, trajectory, digest) and ``trials.csv`` (rebuilt at the end).
 A trial already in ``trials.jsonl`` is skipped, so an interrupted run resumes exactly where it stopped.
 
-``--reactive`` runs the walkers-reactive ablation (``worldc.e3.reactive``: a walker waits while the robot is within 0.5 m ahead, walks on
-after 1 s clear): the same scenes, tiers, seeds and policies, rows tagged ``walkers_reactive = True`` and with ``walker_stops`` /
-``walker_held_s``.  ``--variants-from`` reuses the variants (and their reports) built for the main grid.
+``--walkers walkaround`` runs the walk-around ablation (``worldc.e3.reactive.WalkAroundWalkers``: walkers treat the robot as an obstacle and replan around it
+with A*, footprint + 0.3 m, no waiting): the same scenes, tiers, seeds and policies, rows tagged ``walkers = walkaround`` and with ``walker_replans`` /
+``walker_detour_s`` / ``walker_no_path``.  ``--walkers wait`` is the withdrawn waiting variant (deadlocks with the cautious policies).  ``--variants-from`` reuses the variants (and their reports) built for the main grid.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import e3_one_scene as O  # noqa: E402  (TIERS, base_image, digest, summarize)
 from worldc.e3 import sim as S  # noqa: E402
-from worldc.e3.reactive import ReactiveWalkers  # noqa: E402
+from worldc.e3.reactive import ReactiveWalkers, WalkAroundWalkers  # noqa: E402
 from worldc.e3.tiers import connected, lost_points, make_variants  # noqa: E402
 from worldc.e3.walkers import workers  # noqa: E402
 from worldc.e3.world import load_world  # noqa: E402
@@ -82,6 +82,23 @@ def build_scene(entry: dict, out: Path, log, variants_from=None) -> dict:
     return rep
 
 
+def make_walkers(kind: str, H, world, info):
+    """The walker model of a trial: None (the main grid), ``wait`` (withdrawn) or ``walkaround``; plus the row columns it adds."""
+    if kind == "wait":
+        return ReactiveWalkers(H, S.DT)
+    if kind == "walkaround":
+        return WalkAroundWalkers(H, world, info, S.DT)
+    return None
+
+
+def walker_columns(kind: str, rw) -> dict:
+    if kind == "wait":
+        return {"walker_stops": rw.stops, "walker_held_s": round(rw.held_steps * S.DT, 2)}
+    if kind == "walkaround":
+        return rw.summary()
+    return {}
+
+
 def done_keys(path: Path) -> set:
     keys = set()
     if path.exists():
@@ -95,7 +112,7 @@ def done_keys(path: Path) -> set:
 
 
 def run_scene(args) -> dict:
-    entry, root, seeds, variants_only, reactive, variants_from = args
+    entry, root, seeds, variants_only, walkers, variants_from = args
     name = entry["prompt"]
     out = Path(root) / name
     out.mkdir(parents=True, exist_ok=True)
@@ -138,10 +155,10 @@ def run_scene(args) -> dict:
                 H, info = workers(world, seed, n, timeout + 1.0, S.DT)
                 for pol in todo:
                     t2 = time.time()
-                    rw = ReactiveWalkers(H, S.DT) if reactive else None
+                    rw = make_walkers(walkers, H, world, info)
                     res = S.run_trial(world, H, pol, legs[variant], timeout, walkers=rw)
                     row = {**meta, "variant": variant, "tier": tier, "workers": n, "occluders": occ, "seed": seed, "timeout_s": round(timeout, 1),
-                           "walkers_reactive": bool(reactive), "walker_stops": rw.stops if rw else 0, "walker_held_s": round(rw.held_steps * S.DT, 2) if rw else 0.0,
+                           "walkers": walkers, **walker_columns(walkers, rw),
                            "wall_s": round(time.time() - t2, 2), **{k: v for k, v in res.items() if k not in ("events", "arrivals", "trajectory")}}
                     jf.write(json.dumps({**row, "workers_drawn": info, "events": res["events"], "arrivals": res["arrivals"],
                                          "trajectory": res["trajectory"], "digest": O.digest(res)}) + "\n")
@@ -156,7 +173,7 @@ def run_scene(args) -> dict:
     if logged:
         w = load_world(vdir / "hard" / "scene")
         H, _ = workers(w, 0, O.TIERS["hard"][1], timeout + 1.0, S.DT)
-        again = S.run_trial(w, H, "blind", S.static_legs(w), timeout, walkers=ReactiveWalkers(H, S.DT) if reactive else None)
+        again = S.run_trial(w, H, "blind", S.static_legs(w), timeout, walkers=make_walkers(walkers, H, w, _)) 
         rep["replay_hard_seed0_blind"] = "identical" if O.digest(again) == logged["digest"] else "DIFFERENT"
         (out / "variants_report.json").write_text(json.dumps(rep, indent=1))
     rows = []
@@ -180,14 +197,14 @@ def main():
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--only", default="", help="comma-separated prompt ids")
     ap.add_argument("--variants-only", action="store_true")
-    ap.add_argument("--reactive", action="store_true", help="ablation: walkers wait for the robot (worldc.e3.reactive)")
+    ap.add_argument("--walkers", choices=("fixed", "wait", "walkaround"), default="fixed", help="walker model: fixed (main grid), walkaround (ablation), wait (withdrawn)")
     ap.add_argument("--variants-from", default=None, help="reuse the variants built under this grid folder (<folder>/<scene>/scenes)")
     a = ap.parse_args()
     chosen = json.loads(Path(a.selection).read_text())["chosen"]
     if a.only:
         chosen = [c for c in chosen if c["prompt"] in a.only.split(",")]
     Path(a.out).mkdir(parents=True, exist_ok=True)
-    jobs = [(c, a.out, a.seeds, a.variants_only, a.reactive, a.variants_from) for c in chosen]
+    jobs = [(c, a.out, a.seeds, a.variants_only, a.walkers, a.variants_from) for c in chosen]
     t0 = time.time()
     with ProcessPoolExecutor(max_workers=a.jobs) as ex:
         results = []
